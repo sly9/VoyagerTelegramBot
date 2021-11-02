@@ -17,7 +17,7 @@ class TelegramBot:
         myobj = {'chat_id': TelegramBot.GROUP_CHAT_ID, 'text': message,'parse_mode':'html'}
         requests.post(url, data = myobj)
         
-    def send_base64_photo(base64_encoded_image, filename, caption = ''):
+    def send_base64_photo(base64_encoded_image, filename='preview.jpg', caption = ''):
         file_content=base64.b64decode(base64_encoded_image)
         f =  tempfile.TemporaryFile()
         f.write(file_content)
@@ -36,16 +36,7 @@ class TelegramBot:
         thumb_f.close()
         
 if __name__ == '__main__':
-#     #TelegramBot.send_text_message('''<pre>+--------+-------+--------+
-# | Symbol | Price | Change |
-# +--------+-------+--------+
-# | ABC    | 20.85 |  1.626 |
-# | DEF    | 78.95 |  0.099 |
-# | GHI    | 23.45 |  0.192 |
-# | JKL    | 98.85 |  0.292 |
-# +--------+-------+--------+</pre>''')
-  
-# TelegramBot.send_text_message('hello world')
+    TelegramBot.send_text_message('hello world')
     with open("Iris.jpg", "rb") as image_file:
       encoded_string = base64.b64encode(image_file.read())
       TelegramBot.send_base64_photo(encoded_string,'Iris.jpg')

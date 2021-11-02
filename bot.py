@@ -10,6 +10,8 @@ from collections import deque
 from voyager_client import VoyagerClient
 
 class VoyagerConnectionManager:
+    SERVER_ADDRESS='ws://liuyi.us:5950/'
+    
     def __init__(self):
         self.ws = None
         self.keep_alive_thread = None
@@ -39,7 +41,7 @@ class VoyagerConnectionManager:
         command = self.command_queue.popleft()
         self.ongoing_command = command
         print('sending command .. %s' % json.dumps(command))
-        self.ws.send(json.dumps(command))
+        self.ws.send(json.dumps(command)+'\r\n')
 
     def on_message(self,ws, message_string):
         message = json.loads(message_string)
@@ -67,7 +69,7 @@ class VoyagerConnectionManager:
         
 
     def run_forever(self):
-        self.ws = websocket.WebSocketApp("ws://liuyi.us:5950/",
+        self.ws = websocket.WebSocketApp(VoyagerConnectionManager.SERVER_ADDRESS,
                             on_open=self.on_open,
                             on_message=self.on_message,
                             on_error=self.on_error,
@@ -77,8 +79,7 @@ class VoyagerConnectionManager:
 
     def keep_alive_routine(self):
         count = 0
-        while True:
-            
+        while True:            
             self.ws.send('{"Event":"Polling","Timestamp":%d,"Inst":1}\r\n' % time.time())
             time.sleep(5)
         
