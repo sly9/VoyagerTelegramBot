@@ -3,6 +3,7 @@ import base64
 import io
 from collections import defaultdict
 from datetime import datetime
+from statistics import mean, stdev
 
 import matplotlib.pyplot as plt
 
@@ -46,7 +47,10 @@ class VoyagerClient:
         self.configs = configs
 
         self.total_exposures = defaultdict(float)
+
         self.hfd_list = list()
+        self.star_idx = list()
+
         self.guide_x = list()
         self.guide_y = list()
         # self.guide_time = list()
@@ -159,11 +163,14 @@ class VoyagerClient:
     def handle_jpg_ready(self, message):
         expo = message['Expo']
         filter_name = message['Filter']
-        self.total_exposures[filter_name] += expo
-
-        sequence_target = message['SequenceTarget']
         HFD = message['HFD']
         star_index = message['StarIndex']
+
+        self.total_exposures[filter_name] += expo
+        self.hfd_list.append((HFD, filter_name))
+        self.star_idx.append((star_index, filter_name))
+
+        sequence_target = message['SequenceTarget']
         base64_photo = message['Base64Data']
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
             sequence_target, expo, filter_name, HFD, star_index)
@@ -188,31 +195,38 @@ class VoyagerClient:
 
     def good_night_stats(self):
         n_figs = len(self.configs['good_night_stats'])
-        fig, axs = plt.subplots(n_figs, figsize=(5, 3 * n_figs), squeeze=False)
+        fig, axs = plt.subplots(n_figs, figsize=(15, 5 * n_figs), squeeze=False)
         fig_idx = 0
         if 'HFDPlot' in self.configs['good_night_stats']:
             # self.send_image_message()
-            print('hfd', self.hfd_list)
-
             n_img = len(self.hfd_list)
             img_ids = range(n_img)
             hfd_values = list()
             dot_colors = list()
-            dot_markers = list()
+            star_idxes = list()
             for idx, (v, f) in enumerate(self.hfd_list):
                 hfd_values.append(v)
+                star_idxes.append(self.star_idx[idx][0])
                 filter_normed = filter_mapping[f.upper()]
                 dot_colors.append(filter_meta[filter_normed]['color'])
 
             axs[fig_idx, 0].scatter(img_ids, hfd_values, c=dot_colors)
-            axs[fig_idx, 0].plot(img_ids, hfd_values)
-            axs[fig_idx, 0].set_title('HFD Plot')
+            axs[fig_idx, 0].plot(img_ids, hfd_values, color='purple')
+            axs[fig_idx, 0].tick_params(axis='y', labelcolor='purple')
+            axs[fig_idx, 0].set_ylabel('HFD', color='purple')
 
-            # plt.show()
+            sencondary_ax = axs[fig_idx, 0].twinx()
+            sencondary_ax.scatter(img_ids, star_idxes, c=dot_colors)
+            sencondary_ax.plot(img_ids, star_idxes, color='orange')
+            sencondary_ax.tick_params(axis='y', labelcolor='orange')
+            sencondary_ax.set_ylabel('star index', color='orange')
+
+            axs[fig_idx, 0].set_title('HFD Plot')
+            axs[fig_idx, 0].set_xlabel('image id')
+
             fig_idx += 1
 
         if 'ExposurePlot' in self.configs['good_night_stats']:
-            print('exposure')
             filters = [filter_mapping[f.upper()] for f in self.total_exposures.keys()]
             cum_exposures = self.total_exposures.values()
 
