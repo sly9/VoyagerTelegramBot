@@ -1,7 +1,8 @@
 version: 0.2
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
-ignored_events: [ ControlData, ShotRunning, Polling, VikingManaged, RemoteActionResult ]  # DO NOT CHANGE
+ignored_events: [ ControlData, ShotRunning, Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
 good_night_stats: [ HFDPlot, ExposurePlot ]  # Select chart types of stats
+send_image_msgs: 1  # Send jpeg images to chats
 log_json_fn: <log_file_name>  # [Optional] If exists, all received JSON messages will be stored in specific file.
 voyager_setting:
   url: <voyager_url>  # URL for remote Voyager Server

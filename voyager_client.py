@@ -128,7 +128,7 @@ class VoyagerClient:
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
             sequence_target, expo, filter_name, HFD, star_index)
 
-        if expo >= self.configs['exposure_limit']:
+        if expo >= self.configs['exposure_limit'] and self.configs['send_image_msgs']:
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
             self.send_image_message(base64_photo, new_filename, telegram_message)
