@@ -5,6 +5,7 @@ import json
 import time
 import uuid
 from collections import deque
+from datetime import datetime
 
 import websocket
 
@@ -27,7 +28,9 @@ class VoyagerConnectionManager:
 
         self.dump_log = 'log_json_fn' in configs
         if self.dump_log:
-            self.log_json_f = open(configs['log_json_fn'], 'w')
+            now = datetime.now()
+            date_str = now.strftime('%Y_%m_%d_')
+            self.log_json_f = open(date_str + configs['log_json_fn'] + '.txt', 'w')
 
     def send_command(self, command_name, params):
         params['UID'] = str(uuid.uuid1())
@@ -57,7 +60,7 @@ class VoyagerConnectionManager:
     def on_message(self, ws, message_string):
         message = json.loads(message_string)
         if self.dump_log:
-            self.log_json_f.write(message_string)
+            self.log_json_f.write(message_string.strip() + '\n')
 
         if 'jsonrpc' in message:
             print(message)
