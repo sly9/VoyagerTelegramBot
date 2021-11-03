@@ -1,3 +1,4 @@
 pyyaml
 websocket-client
 requests
+Pillow
