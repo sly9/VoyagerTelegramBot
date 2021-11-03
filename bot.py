@@ -13,8 +13,6 @@ from voyager_client import VoyagerClient
 
 
 class VoyagerConnectionManager:
-    SERVER_ADDRESS='ws://liuyi.us:5950/'
-    
     def __init__(self):
         configs = Configs().configs
         self.voyager_url = configs['voyager_setting']['url']
@@ -26,6 +24,10 @@ class VoyagerConnectionManager:
         self.command_queue = deque([])
         self.ongoing_command = None
         self.next_id = 1
+
+        self.dump_log = 'log_json_fn' in configs
+        if self.dump_log:
+            self.log_json_f = open(configs['log_json_fn'], 'w')
 
     def send_command(self, command_name, params):
         params['UID'] = str(uuid.uuid1())
@@ -43,22 +45,28 @@ class VoyagerConnectionManager:
             print('wait a while before sending out the second command.')
             # this command will be invoked later for sure
             return
+
         if len(self.command_queue) == 0:
             return
+
         command = self.command_queue.popleft()
         self.ongoing_command = command
         print('sending command .. %s' % json.dumps(command))
-        self.ws.send(json.dumps(command)+'\r\n')
+        self.ws.send(json.dumps(command) + '\r\n')
 
     def on_message(self, ws, message_string):
         message = json.loads(message_string)
+        if self.dump_log:
+            self.log_json_f.write(message_string)
 
         if 'jsonrpc' in message:
             print(message)
+
             # some command finished, try to see if we have anything else.
             self.ongoing_command = None
             self.try_to_process_next_command()
             return
+
         event = message['Event']
         self.voyager_client.parse_message(event, message)
 
@@ -66,6 +74,10 @@ class VoyagerConnectionManager:
         print(error)
 
     def on_close(self, ws, close_status_code, close_msg):
+        if self.dump_log:
+            self.log_json_f.flush()
+            self.log_json_f.close()
+
         print("### closed ###")
 
     def on_open(self, ws):
