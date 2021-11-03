@@ -53,9 +53,9 @@ class VoyagerClient:
         if self.telegram_bot:
             self.telegram_bot.send_text_message(msg_text)
 
-    def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = ''):
+    def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '', as_doc: bool = True):
         if self.telegram_bot:
-            self.telegram_bot.send_base64_photo(base64_img, image_fn, msg_text)
+            self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
 
     def parse_message(self, event, message):
         if event == 'Version':
@@ -186,7 +186,7 @@ class VoyagerClient:
         img_bytes.seek(0)
         base64_img = base64.b64encode(img_bytes.read())
         self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
-                                msg_text='Statistics for last night')
+                                msg_text='Statistics for last night', as_doc=False)
 
 
 if __name__ == '__main__':
