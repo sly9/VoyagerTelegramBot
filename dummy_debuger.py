@@ -19,8 +19,13 @@ class DummyDebugger:
             self.connection_manager.on_message(ws=None, message_string=msg.strip())
             time.sleep(self.interval)
 
+    def good_night(self):
+        self.connection_manager.on_close(ws=None, close_status_code=0, close_msg='Dummy Debugger Stopped')
+
 
 if __name__ == "__main__":
-    dd = DummyDebugger(interval=1)
+    dd = DummyDebugger(interval=0)
     dd.load_messages('log_json_dump.txt')
+    # dd.load_messages('guide.txt')
     dd.dummy_send()
+    dd.good_night()
