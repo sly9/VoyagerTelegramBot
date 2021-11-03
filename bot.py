@@ -58,6 +58,10 @@ class VoyagerConnectionManager:
         self.ws.send(json.dumps(command) + '\r\n')
 
     def on_message(self, ws, message_string):
+        if not message_string or not message_string.strip():
+            # Empty message string, nothing to do
+            return
+
         message = json.loads(message_string)
         if self.dump_log:
             self.log_json_f.write(message_string.strip() + '\n')
