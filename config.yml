@@ -1,6 +1,7 @@
 version: 0.2
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
 ignored_events: [ ControlData, ShotRunning, Polling, VikingManaged, RemoteActionResult ]  # DO NOT CHANGE
+good_night_stats: [ HFDPlot, ExposurePlot ]
 voyager_setting:
   url: <voyager_url>  # URL for remote Voyager Server
   port: <voyager_port>  # port of remote Voyager Server
