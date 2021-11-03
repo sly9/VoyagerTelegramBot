@@ -6,6 +6,7 @@ from datetime import datetime
 from statistics import mean, stdev
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from configs import Configs
 from telegram import TelegramBot
@@ -46,7 +47,7 @@ class VoyagerClient:
         self.telegram_bot = TelegramBot(configs=configs['telegram_setting'])
         self.configs = configs
 
-        self.total_exposures = defaultdict(float)
+        self.total_exposures = defaultdict(lambda: defaultdict(float))
 
         self.hfd_list = list()
         self.star_idx = list()
@@ -136,8 +137,8 @@ class VoyagerClient:
             self.guided = False
             self.guide_x.append(guide_x)
             self.guide_y.append(guide_y)
-            # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat, is_tracking, is_slewing,
-            #                                               guide_x, guide_y))guide_y
+            # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
+            #                                               is_tracking, is_slewing, guide_x, guide_y))
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
@@ -165,12 +166,12 @@ class VoyagerClient:
         filter_name = message['Filter']
         HFD = message['HFD']
         star_index = message['StarIndex']
+        sequence_target = message['SequenceTarget']
 
-        self.total_exposures[filter_name] += expo
+        self.total_exposures[sequence_target][filter_name] += expo
         self.hfd_list.append((HFD, filter_name))
         self.star_idx.append((star_index, filter_name))
 
-        sequence_target = message['SequenceTarget']
         base64_photo = message['Base64Data']
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
             sequence_target, expo, filter_name, HFD, star_index)
@@ -195,7 +196,7 @@ class VoyagerClient:
 
     def good_night_stats(self):
         n_figs = len(self.configs['good_night_stats'])
-        fig, axs = plt.subplots(n_figs, figsize=(15, 5 * n_figs), squeeze=False)
+        fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
         fig_idx = 0
         if 'HFDPlot' in self.configs['good_night_stats']:
             # self.send_image_message()
@@ -210,35 +211,61 @@ class VoyagerClient:
                 filter_normed = filter_mapping[f.upper()]
                 dot_colors.append(filter_meta[filter_normed]['color'])
 
-            axs[fig_idx, 0].scatter(img_ids, hfd_values, c=dot_colors)
-            axs[fig_idx, 0].plot(img_ids, hfd_values, color='purple')
-            axs[fig_idx, 0].tick_params(axis='y', labelcolor='purple')
-            axs[fig_idx, 0].set_ylabel('HFD', color='purple')
+            ax = axs[fig_idx, 0]
 
-            sencondary_ax = axs[fig_idx, 0].twinx()
-            sencondary_ax.scatter(img_ids, star_idxes, c=dot_colors)
-            sencondary_ax.plot(img_ids, star_idxes, color='orange')
-            sencondary_ax.tick_params(axis='y', labelcolor='orange')
-            sencondary_ax.set_ylabel('star index', color='orange')
+            ax.scatter(img_ids, hfd_values, c=dot_colors)
+            ax.plot(img_ids, hfd_values, color='purple')
+            ax.tick_params(axis='y', labelcolor='purple')
+            ax.set_ylabel('HFD', color='purple')
 
-            axs[fig_idx, 0].set_title('HFD Plot')
-            axs[fig_idx, 0].set_xlabel('image id')
+            secondary_ax = ax.twinx()
+            secondary_ax.scatter(img_ids, star_idxes, c=dot_colors)
+            secondary_ax.plot(img_ids, star_idxes, color='orange')
+            secondary_ax.tick_params(axis='y', labelcolor='orange')
+            secondary_ax.set_ylabel('star index', color='orange')
+
+            ax.set_title('HFD and StarIndex Plot')
+            ax.set_xlabel('image id')
+            ax.legend()
 
             fig_idx += 1
 
         if 'ExposurePlot' in self.configs['good_night_stats']:
-            filters = [filter_mapping[f.upper()] for f in self.total_exposures.keys()]
-            cum_exposures = self.total_exposures.values()
+            all_filters = set(
+                [filter_mapping[f.upper()] for target in self.total_exposures.keys() for f in self.total_exposures[target]])
 
-            axs[fig_idx, 0].bar(filters, cum_exposures)
-            axs[fig_idx, 0].set_title('Cumulative Exposure Time by Filter')
+            filter_exposures = dict()
+            for f in all_filters:
+                filter_exposures[filter_mapping[f.upper()]] = list()
+
+            for target in self.total_exposures.keys():
+                for f in self.total_exposures[target]:
+                    filter_exposures[filter_mapping[f.upper()]].append( self.total_exposures[target][f])
+
+            n_filters = len(all_filters)
+            n_targets = len(self.total_exposures.keys())
+            x = np.arange(n_targets)
+            width = 0.35
+
+            ax = axs[fig_idx, 0]
+
+            for idx, filter_name in enumerate(all_filters):
+                rect = ax.bar(x - (0.5 - idx /n_targets) * width , filter_exposures[filter_name], width/n_filters, label=filter_name)
+                ax.bar_label(rect, padding=3)
+                # plt.show()
+
+            ax.set_ylabel('Exposure Time(s)')
+            ax.set_title('Cumulative Exposure Time by Filter')
+            # ax.axes.set_xticks(x, list(self.total_exposures.keys()))
+            ax.legend()
 
             fig_idx += 1
 
         if 'GuidePlot' in self.configs['good_night_stats']:
-            axs[fig_idx, 0].plot(self.guide_x)
-            axs[fig_idx, 0].plot(self.guide_y)
-            axs[fig_idx, 0].set_title(
+            ax = axs[fig_idx, 0]
+            ax.plot(self.guide_x)
+            ax.plot(self.guide_y)
+            ax.set_title(
                 'Guiding Plot\n'
                 'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
                 'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
@@ -248,6 +275,9 @@ class VoyagerClient:
                     y_std=stdev(self.guide_y),
                 ))
             fig_idx += 1
+
+        fig.tight_layout()
+        # plt.show()
 
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='jpg')
