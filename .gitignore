@@ -11,6 +11,7 @@ __pycache__/
 
 # config file with token
 config.yml
+*log_json_dump.txt
 
 # Distribution / packaging
 .Python
