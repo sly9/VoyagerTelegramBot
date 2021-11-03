@@ -47,6 +47,7 @@ class VoyagerClient:
 
         self.total_exposures = defaultdict(float)
         self.hfd_list = list()
+        self.ignored_counter = 0
 
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
@@ -58,20 +59,30 @@ class VoyagerClient:
 
     def parse_message(self, event, message):
         if event == 'Version':
+            self.ignored_counter = 0
             self.handle_version(message)
         elif event == 'NewJPGReady':
+            self.ignored_counter = 0
             self.handle_jpg_ready(message)
         elif event == 'AutoFocusResult':
+            self.ignored_counter = 0
             self.handle_focus_result(message)
         elif event == 'LogEvent':
+            self.ignored_counter = 0
             self.handle_log(message)
         elif event in self.configs['ignored_events']:
             # do nothing
             message.pop('Event', None)
             message.pop('Host', None)
             message.pop('Inst', None)
-            print('.', end='', flush=True)
+            self.ignored_counter += 1
+            if self.ignored_counter >= 30:
+                print('.', end='\n', flush=True)
+                self.ignored_counter = 0
+            else:
+                print('.', end='', flush=True)
         else:
+            self.ignored_counter = 0
             timestamp = message['Timestamp']
             message.pop('Timestamp', None)
             print('[%s][%s]: %s' % (datetime.fromtimestamp(timestamp), event, message))
