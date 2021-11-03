@@ -13,6 +13,8 @@ from voyager_client import VoyagerClient
 
 
 class VoyagerConnectionManager:
+    SERVER_ADDRESS='ws://liuyi.us:5950/'
+    
     def __init__(self):
         configs = Configs().configs
         self.voyager_url = configs['voyager_setting']['url']
@@ -46,7 +48,7 @@ class VoyagerConnectionManager:
         command = self.command_queue.popleft()
         self.ongoing_command = command
         print('sending command .. %s' % json.dumps(command))
-        self.ws.send(json.dumps(command))
+        self.ws.send(json.dumps(command)+'\r\n')
 
     def on_message(self, ws, message_string):
         message = json.loads(message_string)
@@ -73,7 +75,6 @@ class VoyagerConnectionManager:
             self.keep_alive_thread = _thread.start_new_thread(self.keep_alive_routine, ())
 
     def run_forever(self):
-
         self.ws = websocket.WebSocketApp(
             'ws://{server_url}:{port}/'.format(server_url=self.voyager_url, port=self.voyager_port),
             on_open=self.on_open,

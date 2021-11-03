@@ -44,16 +44,7 @@ class TelegramBot:
 
 
 if __name__ == '__main__':
-    #     #TelegramBot.send_text_message('''<pre>+--------+-------+--------+
-    # | Symbol | Price | Change |
-    # +--------+-------+--------+
-    # | ABC    | 20.85 |  1.626 |
-    # | DEF    | 78.95 |  0.099 |
-    # | GHI    | 23.45 |  0.192 |
-    # | JKL    | 98.85 |  0.292 |
-    # +--------+-------+--------+</pre>''')
-
-    # TelegramBot.send_text_message('hello world')
+    TelegramBot.send_text_message('hello world')
     with open("Iris.jpg", "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
         TelegramBot.send_base64_photo(encoded_string, 'Iris.jpg')
