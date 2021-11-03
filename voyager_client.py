@@ -47,6 +47,13 @@ class VoyagerClient:
 
         self.total_exposures = defaultdict(float)
         self.hfd_list = list()
+        self.guide_x = list()
+        self.guide_y = list()
+        # self.guide_time = list()
+        self.img_fn = ''
+        self.guiding_idx = -1
+        self.guided = False
+
         self.ignored_counter = 0
 
     def send_text_message(self, msg_text: str = ''):
@@ -70,6 +77,12 @@ class VoyagerClient:
         elif event == 'LogEvent':
             self.ignored_counter = 0
             self.handle_log(message)
+        elif event == 'ShotRunning':
+            self.ignored_counter = 0
+            self.handle_shot_running(message)
+        elif event == 'ControlData':
+            self.ignored_counter = 0
+            self.handle_control_data(message)
         elif event in self.configs['ignored_events']:
             # do nothing
             message.pop('Event', None)
@@ -94,6 +107,33 @@ class VoyagerClient:
             version=message['VOYVersion'])
 
         self.send_text_message(telegram_message)
+
+    def handle_shot_running(self, message):
+        timestamp = message['Timestamp']
+        main_shot_elapsed = message['Elapsed']
+        guiding_shot_idx = message['ElapsedPerc']
+        img_fn = message['File']
+        if img_fn != self.img_fn or guiding_shot_idx != self.guiding_idx:
+            # new image or new guiding image
+            self.img_fn = img_fn
+            self.guiding_idx = guiding_shot_idx
+            self.guided = True
+            # print('!!!{} G{}-D{}'.format(timestamp, main_shot_elapsed, guiding_shot_idx))
+
+    def handle_control_data(self, message):
+        timestamp = message['Timestamp']
+        guide_stat = message['GUIDESTAT']
+        dither_stat = message['DITHSTAT']
+        is_tracking = message['MNTTRACK']
+        is_slewing = message['MNTSLEW']
+        guide_x = message['GUIDEX']
+        guide_y = message['GUIDEY']
+        if self.guided:
+            self.guided = False
+            self.guide_x.append(guide_x)
+            self.guide_y.append(guide_y)
+            # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat, is_tracking, is_slewing,
+            #                                               guide_x, guide_y))guide_y
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
@@ -179,6 +219,20 @@ class VoyagerClient:
             axs[fig_idx, 0].bar(filters, cum_exposures)
             axs[fig_idx, 0].set_title('Cumulative Exposure Time by Filter')
 
+            fig_idx += 1
+
+        if 'GuidePlot' in self.configs['good_night_stats']:
+            axs[fig_idx, 0].plot(self.guide_x)
+            axs[fig_idx, 0].plot(self.guide_y)
+            axs[fig_idx, 0].set_title(
+                'Guiding Plot\n'
+                'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
+                'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
+                    x_mean=mean(self.guide_x), x_min=min(self.guide_x), x_max=max(self.guide_x),
+                    x_std=stdev(self.guide_x),
+                    y_mean=mean(self.guide_y), y_min=min(self.guide_y), y_max=max(self.guide_y),
+                    y_std=stdev(self.guide_y),
+                ))
             fig_idx += 1
 
         img_bytes = io.BytesIO()
