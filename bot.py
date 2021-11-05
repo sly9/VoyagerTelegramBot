@@ -14,23 +14,24 @@ from voyager_client import VoyagerClient
 
 
 class VoyagerConnectionManager:
-    def __init__(self):
-        configs = Configs().configs
-        self.voyager_url = configs['voyager_setting']['url']
-        self.voyager_port = configs['voyager_setting']['port']
+    def __init__(self, configs=None):
+        if configs is None:
+            configs = Configs().configs
+        self.configs = configs
+        self.voyager_url = self.configs['voyager_setting']['url']
+        self.voyager_port = self.configs['voyager_setting']['port']
 
         self.ws = None
         self.keep_alive_thread = None
-        self.voyager_client = VoyagerClient(configs=configs)
+        self.voyager_client = VoyagerClient(configs=self.configs)
         self.command_queue = deque([])
         self.ongoing_command = None
         self.next_id = 1
 
-        self.dump_log = 'log_json_fn' in configs
-        if self.dump_log:
-            now = datetime.now()
-            date_str = now.strftime('%Y_%m_%d_')
-            self.log_json_f = open(date_str + configs['log_json_fn'] + '.txt', 'w')
+        self.should_dump_log = 'log_json_fn' in self.configs
+        self.log_file = None
+        self.reconnect_delay_sec = 1
+        self.should_exit_keep_alive_thread = False
 
     def send_command(self, command_name, params):
         params['UID'] = str(uuid.uuid1())
@@ -63,8 +64,8 @@ class VoyagerConnectionManager:
             return
 
         message = json.loads(message_string)
-        if self.dump_log:
-            self.log_json_f.write(message_string.strip() + '\n')
+        if self.should_dump_log:
+            self.log_file.write(message_string.strip() + '\n')
 
         if 'jsonrpc' in message:
             # some command finished, try to see if we have anything else.
@@ -78,7 +79,6 @@ class VoyagerConnectionManager:
     def on_error(self, ws, error):
         if self.dump_log and self.log_json_f:
             self.log_json_f.flush()
-            # self.log_json_f.close()
 
         self.voyager_client.good_night_stats()
 
@@ -92,11 +92,28 @@ class VoyagerConnectionManager:
         self.voyager_client.good_night_stats()
 
         print("### [{code}] {msg} ###".format(code=close_status_code, msg=close_msg))
+        # try to reconnect with an exponentially increasing delay
+        time.sleep(self.reconnect_delay_sec)
+        if self.reconnect_delay_sec < 512:
+            # doubles the reconnect delay so that we don't DOS server.
+            self.reconnect_delay_sec = self.reconnect_delay_sec * 2
+        # reset keep alive thread
+        self.should_exit_keep_alive_thread = True
+        self.keep_alive_thread = None
+        self.run_forever()
 
     def on_open(self, ws):
+        if self.should_dump_log:
+            now = datetime.now()
+            date_str = now.strftime('%Y_%m_%d_')
+            self.log_file = open(date_str + self.configs['log_json_fn'], 'a')
+        # Reset the reconnection delay to 1 sec
+        self.reconnect_delay_sec = 1
+
         self.send_command('RemoteSetDashboardMode', {'IsOn': True})
         self.send_command('RemoteSetLogEvent', {'IsOn': True, 'Level': 0})
         if self.keep_alive_thread is None:
+            self.should_exit_keep_alive_thread = False
             self.keep_alive_thread = _thread.start_new_thread(self.keep_alive_routine, ())
 
     def run_forever(self):
@@ -110,12 +127,11 @@ class VoyagerConnectionManager:
         self.ws.run_forever()
 
     def keep_alive_routine(self):
-        while True:
+        while not self.should_exit_keep_alive_thread:
             self.ws.send('{"Event":"Polling","Timestamp":%d,"Inst":1}\r\n' % time.time())
             time.sleep(5)
 
 
 if __name__ == "__main__":
-    # websocket.enableTrace(True)
     connection_manager = VoyagerConnectionManager()
     connection_manager.run_forever()
