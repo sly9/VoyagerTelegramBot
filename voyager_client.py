@@ -6,9 +6,7 @@ from datetime import datetime
 from statistics import mean, stdev
 
 import matplotlib.pyplot as plt
-import numpy as np
 
-from configs import Configs
 from telegram import TelegramBot
 
 filter_meta = {
@@ -47,19 +45,22 @@ class VoyagerClient:
         self.telegram_bot = TelegramBot(configs=configs['telegram_setting'])
         self.configs = configs
 
-        self.total_exposures = defaultdict(lambda: defaultdict(float))
+        # interval vars
+        self.running_seq = ''
+        self.img_fn = ''
+        self.guiding_idx = -1
+        self.guided = False
+
+        self.ignored_counter = 0
+
+        # stats
+        self.total_exposures = defaultdict(float)
 
         self.hfd_list = list()
         self.star_idx = list()
 
         self.guide_x = list()
         self.guide_y = list()
-        # self.guide_time = list()
-        self.img_fn = ''
-        self.guiding_idx = -1
-        self.guided = False
-
-        self.ignored_counter = 0
 
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
@@ -133,12 +134,26 @@ class VoyagerClient:
         is_slewing = message['MNTSLEW']
         guide_x = message['GUIDEX']
         guide_y = message['GUIDEY']
+        running_seq = message['RUNSEQ']
         if self.guided:
             self.guided = False
             self.guide_x.append(guide_x)
             self.guide_y.append(guide_y)
             # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
             #                                               is_tracking, is_slewing, guide_x, guide_y))
+
+        if running_seq != self.running_seq:
+            self.good_night_stats()
+            self.running_seq = running_seq
+
+            # reset statistics
+            self.total_exposures = defaultdict(float)
+
+            self.hfd_list = list()
+            self.star_idx = list()
+
+            self.guide_x = list()
+            self.guide_y = list()
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
@@ -168,7 +183,7 @@ class VoyagerClient:
         star_index = message['StarIndex']
         sequence_target = message['SequenceTarget']
 
-        self.total_exposures[sequence_target][filter_name] += expo
+        self.total_exposures[filter_name] += expo
         self.hfd_list.append((HFD, filter_name))
         self.star_idx.append((star_index, filter_name))
 
@@ -195,11 +210,13 @@ class VoyagerClient:
         self.send_text_message(telegram_message)
 
     def good_night_stats(self):
+        if len(self.hfd_list) < 2:
+            return
+
         n_figs = len(self.configs['good_night_stats'])
         fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
         fig_idx = 0
         if 'HFDPlot' in self.configs['good_night_stats']:
-            # self.send_image_message()
             n_img = len(self.hfd_list)
             img_ids = range(n_img)
             hfd_values = list()
@@ -224,40 +241,21 @@ class VoyagerClient:
             secondary_ax.tick_params(axis='y', labelcolor='orange')
             secondary_ax.set_ylabel('star index', color='orange')
 
-            ax.set_title('HFD and StarIndex Plot')
             ax.set_xlabel('image id')
-            ax.legend()
+            ax.set_title('HFD and StarIndex Plot ({target})'.format(target=self.running_seq))
 
             fig_idx += 1
 
         if 'ExposurePlot' in self.configs['good_night_stats']:
-            all_filters = set(
-                [filter_mapping[f.upper()] for target in self.total_exposures.keys() for f in self.total_exposures[target]])
-
-            filter_exposures = dict()
-            for f in all_filters:
-                filter_exposures[filter_mapping[f.upper()]] = list()
-
-            for target in self.total_exposures.keys():
-                for f in self.total_exposures[target]:
-                    filter_exposures[filter_mapping[f.upper()]].append( self.total_exposures[target][f])
-
-            n_filters = len(all_filters)
-            n_targets = len(self.total_exposures.keys())
-            x = np.arange(n_targets)
-            width = 0.35
-
             ax = axs[fig_idx, 0]
 
-            for idx, filter_name in enumerate(all_filters):
-                rect = ax.bar(x - (0.5 - idx /n_targets) * width , filter_exposures[filter_name], width/n_filters, label=filter_name)
-                ax.bar_label(rect, padding=3)
-                # plt.show()
+            x = [filter_mapping[f] for f in self.total_exposures.keys()]
+            v = self.total_exposures.values()
+            rect = ax.bar(x, v, width=0.3)
+            ax.bar_label(rect, padding=3)
 
             ax.set_ylabel('Exposure Time(s)')
-            ax.set_title('Cumulative Exposure Time by Filter')
-            # ax.axes.set_xticks(x, list(self.total_exposures.keys()))
-            ax.legend()
+            ax.set_title('Cumulative Exposure Time by Filter ({target})'.format(target=self.running_seq))
 
             fig_idx += 1
 
@@ -265,43 +263,26 @@ class VoyagerClient:
             ax = axs[fig_idx, 0]
             ax.plot(self.guide_x)
             ax.plot(self.guide_y)
+
             ax.set_title(
-                'Guiding Plot\n'
+                'Guiding Plot ({target})\n'
                 'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
                 'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
+                    target=self.running_seq,
                     x_mean=mean(self.guide_x), x_min=min(self.guide_x), x_max=max(self.guide_x),
                     x_std=stdev(self.guide_x),
                     y_mean=mean(self.guide_y), y_min=min(self.guide_y), y_max=max(self.guide_y),
                     y_std=stdev(self.guide_y),
                 ))
+
             fig_idx += 1
 
         fig.tight_layout()
-        # plt.show()
 
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='jpg')
         img_bytes.seek(0)
         base64_img = base64.b64encode(img_bytes.read())
         self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
-                                msg_text='Statistics for last night', as_doc=False)
-
-
-if __name__ == '__main__':
-    test_client = VoyagerClient(configs=Configs().configs)
-    test_client.hfd_list = [(1.1, 'H'),
-                            (1.2, 'H'),
-                            (1.4, 'S'),
-                            (1.1, 'Ha'),
-                            (1.2, 'S'),
-                            (1.4, 'SII'),
-                            (1.1, 'O'),
-                            (1.2, 'OIII'),
-                            (1.4, 'O3'),
-                            (1.1, 'L'),
-                            (1.2, 'L'),
-                            (1.4, 's')]
-
-    test_client.total_exposures = {'H': 1000, 'S': 500, 'L': 300}
-
-    test_client.good_night_stats()
+                                msg_text='Statistics for {target}'.format(target=self.running_seq),
+                                as_doc=False)
