@@ -2,3 +2,4 @@ pyyaml
 websocket-client
 requests
 Pillow
+matplotlib

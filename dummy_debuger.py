@@ -1,14 +1,16 @@
 import time
 
 from bot import VoyagerConnectionManager
+from configs import Configs
 
 
 class DummyDebugger:
     def __init__(self, interval: int = 5):
         self.interval = interval
         self.messages = None
-
-        self.connection_manager = VoyagerConnectionManager()
+        configs = Configs().configs
+        configs.pop('log_json_fn')
+        self.connection_manager = VoyagerConnectionManager(configs)
 
     def load_messages(self, msg_fn: str = None):
         with open(msg_fn, 'r') as msg_f:
@@ -25,7 +27,7 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger(interval=0)
-    dd.load_messages('log_json_dump.txt')
+    dd.load_messages('log.txt')
     # dd.load_messages('guide.txt')
     dd.dummy_send()
     dd.good_night()
