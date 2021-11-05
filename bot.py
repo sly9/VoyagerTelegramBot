@@ -76,16 +76,16 @@ class VoyagerConnectionManager:
         self.voyager_client.parse_message(event, message)
 
     def on_error(self, ws, error):
-        if self.dump_log:
+        if self.dump_log and self.log_json_f:
             self.log_json_f.flush()
-            self.log_json_f.close()
+            # self.log_json_f.close()
 
         self.voyager_client.good_night_stats()
 
         print("### {error} ###".format(error=error))
 
     def on_close(self, ws, close_status_code, close_msg):
-        if self.dump_log:
+        if self.dump_log and self.log_json_f:
             self.log_json_f.flush()
             self.log_json_f.close()
 
