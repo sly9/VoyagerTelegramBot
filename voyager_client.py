@@ -4,19 +4,22 @@ import io
 from collections import defaultdict
 from datetime import datetime
 from statistics import mean, stdev
+
+import matplotlib
+
 from sequence_stat import ExposureInfo, SequenceStat
 import matplotlib.pyplot as plt
 
 from telegram import TelegramBot
 
 filter_meta = {
-    'Ha': {'marker': '+', 'color': '#1f77b4'},
-    'SII': {'marker': 'v', 'color': '#ff7f0e'},
-    'OIII': {'marker': 'o', 'color': '#2ca02c'},
-    'L': {'marker': '+', 'color': 'grey'},
-    'R': {'marker': '+', 'color': 'red'},
-    'G': {'marker': '+', 'color': 'green'},
-    'B': {'marker': '+', 'color': 'blue'},
+    'Ha': {'marker': '+', 'color': '#E53935'},
+    'SII': {'marker': 'v', 'color': '#B71C1C'},
+    'OIII': {'marker': 'o', 'color': '#3F51B5'},
+    'L': {'marker': '+', 'color': '#9E9E9E'},
+    'R': {'marker': '+', 'color': '#F44336'},
+    'G': {'marker': '+', 'color': '#4CAF50'},
+    'B': {'marker': '+', 'color': '#2196F3'},
 }
 
 
@@ -193,6 +196,8 @@ class VoyagerClient:
         if self.current_sequence_stat().name == '':
             # one-off shots doesn't need stats, we only care about sequences.
             return
+        plt.rcParams.update({'font.size': 40})
+
         n_figs = len(self.configs['good_night_stats'])
         fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
         fig_idx = 0
@@ -229,8 +234,14 @@ class VoyagerClient:
         if 'ExposurePlot' in self.configs['good_night_stats']:
             ax = axs[fig_idx, 0]
             total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
-            rect = ax.bar(total_exposure_stat.keys(), total_exposure_stat.values(), width=0.3)
-            ax.bar_label(rect, padding=3)
+            rectangles = ax.bar(total_exposure_stat.keys(), total_exposure_stat.values())
+            for i in range(len(total_exposure_stat)):
+                color_name = list(total_exposure_stat.keys())[i]
+                color = filter_meta[color_name]['color']
+                rect = rectangles[i]
+                rect.set_color(color)
+
+            ax.bar_label(rectangles, label_type='center', fontsize=48)
 
             ax.set_ylabel('Exposure Time(s)')
             ax.set_title('Cumulative Exposure Time by Filter ({target})'.format(target=self.running_seq))

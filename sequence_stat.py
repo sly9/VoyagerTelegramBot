@@ -69,5 +69,8 @@ class SequenceStat:
         """
         result = defaultdict(float)
         for expo in self.exposure_info_list:
+            if expo.exposure_time <= 10:
+                # TODO: arbitrary time, define it in configs
+                continue
             result[expo.filter_name] += expo.exposure_time
         return result

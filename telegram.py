@@ -7,6 +7,7 @@ from typing import Dict
 
 import requests
 from PIL import Image
+import time
 
 
 class TelegramBot:
@@ -31,6 +32,8 @@ class TelegramBot:
                 requests.post(self.urls['text'], data=myobj)
 
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '', as_document: bool = True):
+        if self.configs['debugging']:
+            time.sleep(5)
         file_content = base64.b64decode(base64_encoded_image)
 
         f = tempfile.TemporaryFile()
