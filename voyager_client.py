@@ -4,7 +4,7 @@ import io
 from collections import defaultdict
 from datetime import datetime
 from statistics import mean, stdev
-
+from sequence_stat import ExposureInfo, SequenceStat
 import matplotlib.pyplot as plt
 
 from telegram import TelegramBot
@@ -53,14 +53,15 @@ class VoyagerClient:
 
         self.ignored_counter = 0
 
-        # stats
-        self.total_exposures = defaultdict(float)
+        # old stats
+        self.total_exposures_deprecated = defaultdict(float)
+        self.hfd_list_deprecated = list()
+        self.star_idx_deprecated = list()
+        self.guide_x_deprecated = list()
+        self.guide_y_deprecated = list()
 
-        self.hfd_list = list()
-        self.star_idx = list()
-
-        self.guide_x = list()
-        self.guide_y = list()
+        # new stats
+        self.sequence_map = dict()
 
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
@@ -135,25 +136,31 @@ class VoyagerClient:
         guide_x = message['GUIDEX']
         guide_y = message['GUIDEY']
         running_seq = message['RUNSEQ']
+        running_dragscript = message['RUNDS']
+
         if self.guided:
             self.guided = False
-            self.guide_x.append(guide_x)
-            self.guide_y.append(guide_y)
+            # old stat code
+            self.guide_x_deprecated.append(guide_x)
+            self.guide_y_deprecated.append(guide_y)
+            # new stat code
+            self.add_guide_error_stat(guide_x, guide_y)
             # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
             #                                               is_tracking, is_slewing, guide_x, guide_y))
 
-        if running_seq != self.running_seq:
+        if running_dragscript == '':
+            # clear data if there's no drag script running.
+            self.sequence_map = {}
+
+        if running_seq != '' and running_seq != self.running_seq:
             self.good_night_stats()
-            self.running_seq = running_seq
-
-            # reset statistics
-            self.total_exposures = defaultdict(float)
-
-            self.hfd_list = list()
-            self.star_idx = list()
-
-            self.guide_x = list()
-            self.guide_y = list()
+            # reset old statistics
+            self.total_exposures_deprecated = defaultdict(float)
+            self.hfd_list_deprecated = list()
+            self.star_idx_deprecated = list()
+            self.guide_x_deprecated = list()
+            self.guide_y_deprecated = list()
+        self.running_seq = running_seq
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
@@ -176,6 +183,16 @@ class VoyagerClient:
             filter_index, position, HFD)
         self.send_text_message(telegram_message)
 
+    def current_sequence_stat(self) -> SequenceStat:
+        self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
+        return self.sequence_map[self.running_seq]
+
+    def add_exposure_stats(self, exposure: ExposureInfo):
+        self.current_sequence_stat().add_exposure(exposure)
+
+    def add_guide_error_stat(self, error_x: float, error_y: float):
+        self.current_sequence_stat().add_guide_error((error_x, error_y))
+
     def handle_jpg_ready(self, message):
         expo = message['Expo']
         filter_name = message['Filter']
@@ -183,9 +200,14 @@ class VoyagerClient:
         star_index = message['StarIndex']
         sequence_target = message['SequenceTarget']
 
-        self.total_exposures[filter_name] += expo
-        self.hfd_list.append((HFD, filter_name))
-        self.star_idx.append((star_index, filter_name))
+        # new stat code
+        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=HFD, star_index=star_index)
+        self.add_exposure_stats(exposure)
+
+        # old stat code
+        self.total_exposures_deprecated[filter_name] += expo
+        self.hfd_list_deprecated.append((HFD, filter_name))
+        self.star_idx_deprecated.append((star_index, filter_name))
 
         base64_photo = message['Base64Data']
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
@@ -210,22 +232,21 @@ class VoyagerClient:
         self.send_text_message(telegram_message)
 
     def good_night_stats(self):
-        if len(self.hfd_list) < 2:
-            return
-
         n_figs = len(self.configs['good_night_stats'])
         fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
         fig_idx = 0
+        sequence_stat = self.current_sequence_stat()
         if 'HFDPlot' in self.configs['good_night_stats']:
-            n_img = len(self.hfd_list)
+            n_img = sequence_stat.exposure_count()
             img_ids = range(n_img)
             hfd_values = list()
             dot_colors = list()
-            star_idxes = list()
-            for idx, (v, f) in enumerate(self.hfd_list):
-                hfd_values.append(v)
-                star_idxes.append(self.star_idx[idx][0])
-                filter_normed = filter_mapping[f.upper()]
+            star_indices = list()
+            for idx, exposure_info in enumerate(sequence_stat.exposure_info_list):
+                hfd_values.append(exposure_info.hfd)
+                star_indices.append(exposure_info.star_index)
+                # TODO: move filter name normalization to ExposureInfo class
+                filter_normed = filter_mapping[exposure_info.filter_name]
                 dot_colors.append(filter_meta[filter_normed]['color'])
 
             ax = axs[fig_idx, 0]
@@ -236,8 +257,8 @@ class VoyagerClient:
             ax.set_ylabel('HFD', color='purple')
 
             secondary_ax = ax.twinx()
-            secondary_ax.scatter(img_ids, star_idxes, c=dot_colors)
-            secondary_ax.plot(img_ids, star_idxes, color='orange')
+            secondary_ax.scatter(img_ids, star_indices, c=dot_colors)
+            secondary_ax.plot(img_ids, star_indices, color='orange')
             secondary_ax.tick_params(axis='y', labelcolor='orange')
             secondary_ax.set_ylabel('star index', color='orange')
 
@@ -248,10 +269,11 @@ class VoyagerClient:
 
         if 'ExposurePlot' in self.configs['good_night_stats']:
             ax = axs[fig_idx, 0]
+            total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
 
-            x = [filter_mapping[f] for f in self.total_exposures.keys()]
-            v = self.total_exposures.values()
-            rect = ax.bar(x, v, width=0.3)
+            normalized_filter_names = list(map(lambda x: filter_mapping[x], total_exposure_stat.keys()))
+            exposure_values = total_exposure_stat.values()
+            rect = ax.bar(normalized_filter_names, exposure_values, width=0.3)
             ax.bar_label(rect, padding=3)
 
             ax.set_ylabel('Exposure Time(s)')
@@ -260,21 +282,24 @@ class VoyagerClient:
             fig_idx += 1
 
         if 'GuidePlot' in self.configs['good_night_stats']:
+            if len(sequence_stat.guide_x_error_list) < 3:
+                print('not possible to calculate mean')
             ax = axs[fig_idx, 0]
-            ax.plot(self.guide_x)
-            ax.plot(self.guide_y)
+            ax.plot(sequence_stat.guide_x_error_list)
+            ax.plot(sequence_stat.guide_y_error_list)
 
             ax.set_title(
                 'Guiding Plot ({target})\n'
                 'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
                 'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
                     target=self.running_seq,
-                    x_mean=mean(self.guide_x), x_min=min(self.guide_x), x_max=max(self.guide_x),
-                    x_std=stdev(self.guide_x),
-                    y_mean=mean(self.guide_y), y_min=min(self.guide_y), y_max=max(self.guide_y),
-                    y_std=stdev(self.guide_y),
+                    x_mean=mean(sequence_stat.guide_x_error_list), x_min=min(sequence_stat.guide_x_error_list),
+                    x_max=max(sequence_stat.guide_x_error_list),
+                    x_std=stdev(sequence_stat.guide_x_error_list),
+                    y_mean=mean(sequence_stat.guide_y_error_list), y_min=min(sequence_stat.guide_y_error_list),
+                    y_max=max(sequence_stat.guide_y_error_list),
+                    y_std=stdev(sequence_stat.guide_y_error_list),
                 ))
-
             fig_idx += 1
 
         fig.tight_layout()
