@@ -18,7 +18,7 @@ class VoyagerConnectionManager:
         if configs is None:
             configs = Configs().configs
         self.configs = configs
-        self.voyager_url = self.configs['voyager_setting']['url']
+        self.voyager_domain = self.configs['voyager_setting']['domain']
         self.voyager_port = self.configs['voyager_setting']['port']
 
         self.ws = None
@@ -113,7 +113,7 @@ class VoyagerConnectionManager:
 
     def run_forever(self):
         self.ws = websocket.WebSocketApp(
-            'ws://{server_url}:{port}/'.format(server_url=self.voyager_url, port=self.voyager_port),
+            'ws://{server_url}:{port}/'.format(server_url=self.voyager_domain, port=self.voyager_port),
             on_open=self.on_open,
             on_message=self.on_message,
             on_error=self.on_error,

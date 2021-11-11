@@ -53,7 +53,8 @@ class SequenceStat:
         self.guide_y_error_list = list()  # list of guide error on y axis in pixel
 
     def add_exposure(self, exposure: ExposureInfo):
-        self.exposure_info_list.append(exposure)
+        if exposure.exposure_time > 30:
+            self.exposure_info_list.append(exposure)
 
     def add_guide_error(self, guide_error: tuple):
         self.guide_x_error_list.append(guide_error[0])
@@ -69,8 +70,5 @@ class SequenceStat:
         """
         result = defaultdict(float)
         for expo in self.exposure_info_list:
-            if expo.exposure_time <= 10:
-                # TODO: arbitrary time, define it in configs
-                continue
             result[expo.filter_name] += expo.exposure_time
         return result

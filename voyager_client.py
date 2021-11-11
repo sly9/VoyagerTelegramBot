@@ -1,15 +1,10 @@
 #!/bin/env python3
 import base64
 import io
-from collections import defaultdict
 from datetime import datetime
 from statistics import mean, stdev
-
-import matplotlib
-
-from sequence_stat import ExposureInfo, SequenceStat
 import matplotlib.pyplot as plt
-
+from sequence_stat import ExposureInfo, SequenceStat
 from telegram import TelegramBot
 
 filter_meta = {
@@ -36,7 +31,6 @@ class VoyagerClient:
 
         self.ignored_counter = 0
 
-        # new stats
         self.sequence_map = dict()
 
     def send_text_message(self, msg_text: str = ''):
@@ -86,7 +80,7 @@ class VoyagerClient:
     def handle_version(self, message):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
             host_name=message['Host'],
-            url=self.configs['voyager_setting']['url'],
+            url=self.configs['voyager_setting']['domain'],
             version=message['VOYVersion'])
 
         self.send_text_message(telegram_message)
@@ -125,7 +119,7 @@ class VoyagerClient:
             self.sequence_map = {}
 
         if running_seq != self.running_seq:
-            self.good_night_stats()
+            self.report_stats_for_current_sequence()
             self.running_seq = running_seq
 
     def handle_focus_result(self, message):
@@ -192,29 +186,31 @@ class VoyagerClient:
             return
         self.send_text_message(telegram_message)
 
-    def good_night_stats(self):
+    def report_stats_for_current_sequence(self):
         if self.current_sequence_stat().name == '':
             # one-off shots doesn't need stats, we only care about sequences.
             return
-        plt.rcParams.update({'font.size': 40})
-        plt.rcParams.update({'font.weight': 'bold'})
-
-        n_figs = len(self.configs['good_night_stats'])
-        fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
-        fig_idx = 0
         sequence_stat = self.current_sequence_stat()
-        if 'HFDPlot' in self.configs['good_night_stats']:
-            n_img = sequence_stat.exposure_count()
-            img_ids = range(n_img)
+
+        plt.rcParams.update({'text.color': '#F5F5F5', 'font.size': 40, 'font.weight': 'bold',
+                             'axes.edgecolor': '#F5F5F5', 'xtick.color': '#F5F5F5', 'ytick.color': '#F5F5F5',
+                             'figure.facecolor': '#212121'})
+
+        figure_count = len(self.configs['sequence_stats_config'])
+        fig, axes = plt.subplots(figure_count, figsize=(30, 10 * figure_count), squeeze=False)
+        figure_index = 0
+        if 'HFDPlot' in self.configs['sequence_stats_config']:
+            img_ids = range(sequence_stat.exposure_count())
             hfd_values = list()
             dot_colors = list()
             star_indices = list()
-            for idx, exposure_info in enumerate(sequence_stat.exposure_info_list):
+            for exposure_info in sequence_stat.exposure_info_list:
                 hfd_values.append(exposure_info.hfd)
                 star_indices.append(exposure_info.star_index)
                 dot_colors.append(filter_meta[exposure_info.filter_name]['color'])
 
-            ax = axs[fig_idx, 0]
+            ax = axes[figure_index, 0]
+            ax.set_facecolor('#212121')
 
             ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
             ax.plot(img_ids, hfd_values, color='#0D47A1', linewidth=10)
@@ -228,16 +224,20 @@ class VoyagerClient:
             secondary_ax.set_ylabel('Star Index', color='#388E3C')
 
             ax.set_xlabel('Image Index')
+            ax.xaxis.label.set_color('#F5F5F5')
             ax.set_title('HFD and StarIndex Plot ({target})'.format(target=self.running_seq))
 
-            fig_idx += 1
+            figure_index += 1
 
-        if 'ExposurePlot' in self.configs['good_night_stats']:
-            ax = axs[fig_idx, 0]
+        if 'ExposurePlot' in self.configs['sequence_stats_config']:
+            ax = axes[figure_index, 0]
+            ax.set_facecolor('#212121')
             total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
-            rectangles = ax.bar(total_exposure_stat.keys(), total_exposure_stat.values())
-            for i in range(len(total_exposure_stat)):
-                color_name = list(total_exposure_stat.keys())[i]
+            keys = list(total_exposure_stat.keys())
+            values = total_exposure_stat.values()
+            rectangles = ax.bar(keys, values)
+            for i in range(len(keys)):
+                color_name = keys[i]
                 color = filter_meta[color_name]['color']
                 rect = rectangles[i]
                 rect.set_color(color)
@@ -247,29 +247,31 @@ class VoyagerClient:
             ax.set_ylabel('Exposure Time(s)')
             ax.set_title('Cumulative Exposure Time by Filter ({target})'.format(target=self.running_seq))
 
-            fig_idx += 1
+            figure_index += 1
 
-        if 'GuidePlot' in self.configs['good_night_stats']:
+        if 'GuidePlot' in self.configs['sequence_stats_config']:
             if len(sequence_stat.guide_x_error_list) < 3:
                 print('not possible to calculate mean')
-            ax = axs[fig_idx, 0]
+            ax = axes[figure_index, 0]
+            ax.set_facecolor('#212121')
             ax.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
             ax.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
 
+            abs_x_list = [abs(number) for number in sequence_stat.guide_x_error_list]
+            abs_y_list = [abs(number) for number in sequence_stat.guide_y_error_list]
             ax.set_title(
-                'Guiding Plot ({target})\n'
+                'Guiding Plot ({target})(avg/min/max/std)\n'
                 'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
                 'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
                     target=self.running_seq,
-                    x_mean=mean(sequence_stat.guide_x_error_list), x_min=min(sequence_stat.guide_x_error_list),
-                    x_max=max(sequence_stat.guide_x_error_list),
-                    x_std=stdev(sequence_stat.guide_x_error_list),
-                    y_mean=mean(sequence_stat.guide_y_error_list), y_min=min(sequence_stat.guide_y_error_list),
-                    y_max=max(sequence_stat.guide_y_error_list),
-                    y_std=stdev(sequence_stat.guide_y_error_list),
+                    x_mean=mean(abs_x_list), x_min=min(abs_x_list),
+                    x_max=max(abs_x_list),
+                    x_std=stdev(abs_x_list),
+                    y_mean=mean(abs_y_list), y_min=min(abs_y_list),
+                    y_max=max(abs_y_list),
+                    y_std=stdev(abs_y_list),
                 ))
-            fig_idx += 1
-
+            figure_index += 1
         fig.tight_layout()
 
         img_bytes = io.BytesIO()
