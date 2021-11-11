@@ -5,7 +5,7 @@ sequence_stats_config: [ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart type
 send_image_msgs: 1  # Send jpeg images to chats
 log_json_fn: <log_file_name>  # [Optional] If exists, all received JSON messages will be stored in specific file.
 voyager_setting:
-  url: <voyager_url>  # Domain or IP for remote Voyager Server
+  domain: <voyager_url>  # Domain or IP for remote Voyager Server
   port: <voyager_port>  # port of remote Voyager Server
   username: <user_name>
   password: <password>
