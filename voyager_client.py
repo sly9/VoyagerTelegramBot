@@ -197,6 +197,7 @@ class VoyagerClient:
             # one-off shots doesn't need stats, we only care about sequences.
             return
         plt.rcParams.update({'font.size': 40})
+        plt.rcParams.update({'font.weight': 'bold'})
 
         n_figs = len(self.configs['good_night_stats'])
         fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
