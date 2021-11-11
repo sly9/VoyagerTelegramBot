@@ -11,6 +11,7 @@ import websocket
 
 from configs import Configs
 from voyager_client import VoyagerClient
+from log_writer import LogWriter
 
 
 class VoyagerConnectionManager:
@@ -28,8 +29,8 @@ class VoyagerConnectionManager:
         self.ongoing_command = None
         self.next_id = 1
 
-        self.should_dump_log = 'log_json_fn' in self.configs
-        self.log_file = None
+        self.log_writer = LogWriter(configs=configs)
+
         self.reconnect_delay_sec = 1
         self.should_exit_keep_alive_thread = False
 
@@ -64,8 +65,7 @@ class VoyagerConnectionManager:
             return
 
         message = json.loads(message_string)
-        if self.should_dump_log:
-            self.log_file.write(message_string.strip() + '\n')
+        self.log_writer.write_line(message_string)
 
         if 'jsonrpc' in message:
             # some command finished, try to see if we have anything else.
@@ -77,14 +77,11 @@ class VoyagerConnectionManager:
         self.voyager_client.parse_message(event, message)
 
     def on_error(self, ws, error):
-        if self.should_dump_log and self.log_file:
-            self.log_file.flush()
+        self.log_writer.maybe_flush()
         print("### {error} ###".format(error=error))
 
     def on_close(self, ws, close_status_code, close_msg):
-        if self.should_dump_log and self.log_file:
-            self.log_file.flush()
-            self.log_file.close()
+        #self.log_writer.maybe_flush()
 
         print("### [{code}] {msg} ###".format(code=close_status_code, msg=close_msg))
         # try to reconnect with an exponentially increasing delay
@@ -98,10 +95,6 @@ class VoyagerConnectionManager:
         self.run_forever()
 
     def on_open(self, ws):
-        if self.should_dump_log:
-            now = datetime.now()
-            date_str = now.strftime('%Y_%m_%d_')
-            self.log_file = open(date_str + self.configs['log_json_fn'], 'a')
         # Reset the reconnection delay to 1 sec
         self.reconnect_delay_sec = 1
 
@@ -125,7 +118,6 @@ class VoyagerConnectionManager:
         while not self.should_exit_keep_alive_thread:
             self.ws.send('{"Event":"Polling","Timestamp":%d,"Inst":1}\r\n' % time.time())
             time.sleep(5)
-
 
 if __name__ == "__main__":
     connection_manager = VoyagerConnectionManager()

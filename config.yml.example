@@ -3,7 +3,7 @@ exposure_limit: 30 # The preview image will not be generated if exposure is less
 ignored_events: [ ControlData, ShotRunning, Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
 sequence_stats_config: [ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart types of stats
 send_image_msgs: 1  # Send jpeg images to chats
-log_json_fn: <log_file_name>  # [Optional] If exists, all received JSON messages will be stored in specific file.
+should_dump_log: True  # [Optional] If exists, all received JSON messages will be stored in specific file.
 voyager_setting:
   domain: <voyager_url>  # Domain or IP for remote Voyager Server
   port: <voyager_port>  # port of remote Voyager Server
@@ -12,4 +12,4 @@ voyager_setting:
 telegram_setting:
   bot_token: <telegram_token>
   chat_ids: [ <chat_id_0>, <chat_id_1> ]  # Comma separated list of telegram chat ids
-
+timezone: US/Mountain
