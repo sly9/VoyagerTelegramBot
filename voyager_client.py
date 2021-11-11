@@ -214,14 +214,14 @@ class VoyagerClient:
 
             ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
             ax.plot(img_ids, hfd_values, color='#0D47A1', linewidth=10)
-            ax.tick_params(axis='y', labelcolor='#0D47A1')
-            ax.set_ylabel('HFD', color='#0D47A1')
+            ax.tick_params(axis='y', labelcolor='#64B5F6')
+            ax.set_ylabel('HFD', color='#64B5F6')
 
             secondary_ax = ax.twinx()
             secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500)
             secondary_ax.plot(img_ids, star_indices, color='#388E3C', linewidth=10)
-            secondary_ax.tick_params(axis='y', labelcolor='#388E3C')
-            secondary_ax.set_ylabel('Star Index', color='#388E3C')
+            secondary_ax.tick_params(axis='y', labelcolor='#81C784')
+            secondary_ax.set_ylabel('Star Index', color='#81C784')
 
             ax.set_xlabel('Image Index')
             ax.xaxis.label.set_color('#F5F5F5')
