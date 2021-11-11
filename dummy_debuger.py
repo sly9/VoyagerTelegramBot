@@ -9,7 +9,8 @@ class DummyDebugger:
         self.interval = interval
         self.messages = None
         configs = Configs().configs
-        configs.pop('log_json_fn')
+        configs['debugging'] = True
+        configs.pop('should_dump_log')
         self.connection_manager = VoyagerConnectionManager(configs)
 
     def load_messages(self, msg_fn: str = None):
@@ -19,15 +20,14 @@ class DummyDebugger:
     def dummy_send(self):
         for msg in self.messages:
             self.connection_manager.on_message(ws=None, message_string=msg.strip())
-            time.sleep(self.interval)
 
     def good_night(self):
-        self.connection_manager.on_close(ws=None, close_status_code=0, close_msg='Dummy Debugger Stopped')
+        self.connection_manager.voyager_client.telegram_bot.write_footer()
+
 
 
 if __name__ == "__main__":
     dd = DummyDebugger(interval=0)
     dd.load_messages('log.txt')
-    # dd.load_messages('guide.txt')
     dd.dummy_send()
     dd.good_night()

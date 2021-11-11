@@ -26,14 +26,9 @@ class TelegramBot:
     def send_text_message(self, message):
         for chat_id in self.chat_ids:
             myobj = {'chat_id': chat_id, 'text': message, 'parse_mode': 'html'}
-            if self.configs['debugging']:
-                print(message)
-            else:
-                requests.post(self.urls['text'], data=myobj)
+            requests.post(self.urls['text'], data=myobj)
 
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '', as_document: bool = True):
-        if self.configs['debugging']:
-            time.sleep(5)
         file_content = base64.b64decode(base64_encoded_image)
 
         f = tempfile.TemporaryFile()

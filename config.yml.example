@@ -13,3 +13,4 @@ telegram_setting:
   bot_token: <telegram_token>
   chat_ids: [ <chat_id_0>, <chat_id_1> ]  # Comma separated list of telegram chat ids
 timezone: US/Mountain
+debugging: False

@@ -6,6 +6,7 @@ from statistics import mean, stdev
 import matplotlib.pyplot as plt
 from sequence_stat import ExposureInfo, SequenceStat
 from telegram import TelegramBot
+from html_telegram_bot import HTMLTelegramBot
 
 filter_meta = {
     'Ha': {'marker': '+', 'color': '#E53935'},
@@ -20,11 +21,15 @@ filter_meta = {
 
 class VoyagerClient:
     def __init__(self, configs):
-        self.telegram_bot = TelegramBot(configs=configs['telegram_setting'])
+        if 'debugging' in configs and configs['debugging']:
+            self.telegram_bot = HTMLTelegramBot()
+        else:
+            self.telegram_bot = TelegramBot(configs=configs['telegram_setting'])
         self.configs = configs
 
         # interval vars
         self.running_seq = ''
+        self.running_dragscript = ''
         self.img_fn = ''
         self.guiding_idx = -1
         self.guided = False
@@ -114,12 +119,26 @@ class VoyagerClient:
             # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
             #                                               is_tracking, is_slewing, guide_x, guide_y))
 
-        if running_dragscript == '':
-            # clear data if there's no drag script running.
+        if running_dragscript != self.running_dragscript:
             self.sequence_map = {}
+            if running_dragscript == '':
+                self.send_text_message('Just finished DragScript %s' % self.running_dragscript)
+            elif self.running_dragscript == '':
+                self.send_text_message('Starting DragScript %s' % running_dragscript)
+            else:
+                self.send_text_message(
+                    'Switching DragScript from %s to %s' % (running_dragscript, self.running_dragscript))
+            self.running_dragscript = running_dragscript
 
         if running_seq != self.running_seq:
             self.report_stats_for_current_sequence()
+            if running_seq == '':
+                self.send_text_message('Just finished Sequence %s' % self.running_seq)
+            elif self.running_seq == '':
+                self.send_text_message('Starting Sequence %s' % running_seq)
+            else:
+                self.send_text_message(
+                    'Switching Sequence from %s to %s' % (running_seq, self.running_seq))
             self.running_seq = running_seq
 
     def handle_focus_result(self, message):
@@ -168,7 +187,7 @@ class VoyagerClient:
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
             sequence_target, expo, filter_name, HFD, star_index)
 
-        if expo >= self.configs['exposure_limit'] and self.configs['send_image_msgs']:
+        if expo >= self.configs['exposure_limit']:
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
             self.send_image_message(base64_photo, new_filename, telegram_message)
@@ -213,15 +232,15 @@ class VoyagerClient:
             ax.set_facecolor('#212121')
 
             ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
-            ax.plot(img_ids, hfd_values, color='#0D47A1', linewidth=10)
-            ax.tick_params(axis='y', labelcolor='#64B5F6')
-            ax.set_ylabel('HFD', color='#64B5F6')
+            ax.plot(img_ids, hfd_values, color='#FF9800', linewidth=10)
+            ax.tick_params(axis='y', labelcolor='#FFB74D')
+            ax.set_ylabel('HFD', color='#FFB74D')
 
             secondary_ax = ax.twinx()
             secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500)
-            secondary_ax.plot(img_ids, star_indices, color='#388E3C', linewidth=10)
-            secondary_ax.tick_params(axis='y', labelcolor='#81C784')
-            secondary_ax.set_ylabel('Star Index', color='#81C784')
+            secondary_ax.plot(img_ids, star_indices, color='#9C27B0', linewidth=10)
+            secondary_ax.tick_params(axis='y', labelcolor='#BA68C8')
+            secondary_ax.set_ylabel('Star Index', color='#BA68C8')
 
             ax.set_xlabel('Image Index')
             ax.xaxis.label.set_color('#F5F5F5')
