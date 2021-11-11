@@ -215,18 +215,18 @@ class VoyagerClient:
 
             ax = axs[fig_idx, 0]
 
-            ax.scatter(img_ids, hfd_values, c=dot_colors)
-            ax.plot(img_ids, hfd_values, color='purple')
-            ax.tick_params(axis='y', labelcolor='purple')
-            ax.set_ylabel('HFD', color='purple')
+            ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
+            ax.plot(img_ids, hfd_values, color='#0D47A1', linewidth=10)
+            ax.tick_params(axis='y', labelcolor='#0D47A1')
+            ax.set_ylabel('HFD', color='#0D47A1')
 
             secondary_ax = ax.twinx()
-            secondary_ax.scatter(img_ids, star_indices, c=dot_colors)
-            secondary_ax.plot(img_ids, star_indices, color='orange')
-            secondary_ax.tick_params(axis='y', labelcolor='orange')
-            secondary_ax.set_ylabel('star index', color='orange')
+            secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500)
+            secondary_ax.plot(img_ids, star_indices, color='#388E3C', linewidth=10)
+            secondary_ax.tick_params(axis='y', labelcolor='#388E3C')
+            secondary_ax.set_ylabel('Star Index', color='#388E3C')
 
-            ax.set_xlabel('image id')
+            ax.set_xlabel('Image Index')
             ax.set_title('HFD and StarIndex Plot ({target})'.format(target=self.running_seq))
 
             fig_idx += 1
@@ -252,8 +252,8 @@ class VoyagerClient:
             if len(sequence_stat.guide_x_error_list) < 3:
                 print('not possible to calculate mean')
             ax = axs[fig_idx, 0]
-            ax.plot(sequence_stat.guide_x_error_list)
-            ax.plot(sequence_stat.guide_y_error_list)
+            ax.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
+            ax.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
 
             ax.set_title(
                 'Guiding Plot ({target})\n'
