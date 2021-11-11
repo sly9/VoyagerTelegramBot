@@ -245,6 +245,7 @@ class VoyagerClient:
             ax.bar_label(rectangles, label_type='center', fontsize=48)
 
             ax.set_ylabel('Exposure Time(s)')
+            ax.yaxis.label.set_color('#F5F5F5')
             ax.set_title('Cumulative Exposure Time by Filter ({target})'.format(target=self.running_seq))
 
             figure_index += 1
@@ -260,16 +261,16 @@ class VoyagerClient:
             abs_x_list = [abs(number) for number in sequence_stat.guide_x_error_list]
             abs_y_list = [abs(number) for number in sequence_stat.guide_y_error_list]
             ax.set_title(
-                'Guiding Plot ({target})(avg/min/max/std)\n'
+                'Guiding Plot ({target})(avg(abs)/min/max/std)\n'
                 'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
                 'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
                     target=self.running_seq,
-                    x_mean=mean(abs_x_list), x_min=min(abs_x_list),
-                    x_max=max(abs_x_list),
-                    x_std=stdev(abs_x_list),
-                    y_mean=mean(abs_y_list), y_min=min(abs_y_list),
-                    y_max=max(abs_y_list),
-                    y_std=stdev(abs_y_list),
+                    x_mean=mean(abs_x_list), x_min=min(sequence_stat.guide_x_error_list),
+                    x_max=max(sequence_stat.guide_x_error_list),
+                    x_std=stdev(sequence_stat.guide_x_error_list),
+                    y_mean=mean(abs_y_list), y_min=min(sequence_stat.guide_y_error_list),
+                    y_max=max(sequence_stat.guide_y_error_list),
+                    y_std=stdev(sequence_stat.guide_y_error_list),
                 ))
             figure_index += 1
         fig.tight_layout()
