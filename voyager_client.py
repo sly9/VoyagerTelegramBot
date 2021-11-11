@@ -19,26 +19,6 @@ filter_meta = {
     'B': {'marker': '+', 'color': 'blue'},
 }
 
-filter_mapping = {
-    'H': 'Ha',
-    'HA': 'Ha',
-    'S': 'SII',
-    'S2': 'SII',
-    'SII': 'SII',
-    'O': 'OIII',
-    'O3': 'OIII',
-    'OIII': 'OIII',
-    'LUM': 'L',
-    'L': 'L',
-    'R': 'R',
-    'G': 'G',
-    'B': 'B',
-    'RED': 'R',
-    'GREEN': 'G',
-    'BLUE': 'B',
-
-}
-
 
 class VoyagerClient:
     def __init__(self, configs):
@@ -52,13 +32,6 @@ class VoyagerClient:
         self.guided = False
 
         self.ignored_counter = 0
-
-        # old stats
-        self.total_exposures_deprecated = defaultdict(float)
-        self.hfd_list_deprecated = list()
-        self.star_idx_deprecated = list()
-        self.guide_x_deprecated = list()
-        self.guide_y_deprecated = list()
 
         # new stats
         self.sequence_map = dict()
@@ -140,10 +113,6 @@ class VoyagerClient:
 
         if self.guided:
             self.guided = False
-            # old stat code
-            self.guide_x_deprecated.append(guide_x)
-            self.guide_y_deprecated.append(guide_y)
-            # new stat code
             self.add_guide_error_stat(guide_x, guide_y)
             # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
             #                                               is_tracking, is_slewing, guide_x, guide_y))
@@ -152,15 +121,9 @@ class VoyagerClient:
             # clear data if there's no drag script running.
             self.sequence_map = {}
 
-        if running_seq != '' and running_seq != self.running_seq:
+        if running_seq != self.running_seq:
             self.good_night_stats()
-            # reset old statistics
-            self.total_exposures_deprecated = defaultdict(float)
-            self.hfd_list_deprecated = list()
-            self.star_idx_deprecated = list()
-            self.guide_x_deprecated = list()
-            self.guide_y_deprecated = list()
-        self.running_seq = running_seq
+            self.running_seq = running_seq
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
@@ -204,11 +167,6 @@ class VoyagerClient:
         exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=HFD, star_index=star_index)
         self.add_exposure_stats(exposure)
 
-        # old stat code
-        self.total_exposures_deprecated[filter_name] += expo
-        self.hfd_list_deprecated.append((HFD, filter_name))
-        self.star_idx_deprecated.append((star_index, filter_name))
-
         base64_photo = message['Base64Data']
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
             sequence_target, expo, filter_name, HFD, star_index)
@@ -232,6 +190,9 @@ class VoyagerClient:
         self.send_text_message(telegram_message)
 
     def good_night_stats(self):
+        if self.current_sequence_stat().name == '':
+            # one-off shots doesn't need stats, we only care about sequences.
+            return
         n_figs = len(self.configs['good_night_stats'])
         fig, axs = plt.subplots(n_figs, figsize=(30, 10 * n_figs), squeeze=False)
         fig_idx = 0
@@ -245,9 +206,7 @@ class VoyagerClient:
             for idx, exposure_info in enumerate(sequence_stat.exposure_info_list):
                 hfd_values.append(exposure_info.hfd)
                 star_indices.append(exposure_info.star_index)
-                # TODO: move filter name normalization to ExposureInfo class
-                filter_normed = filter_mapping[exposure_info.filter_name]
-                dot_colors.append(filter_meta[filter_normed]['color'])
+                dot_colors.append(filter_meta[exposure_info.filter_name]['color'])
 
             ax = axs[fig_idx, 0]
 
@@ -270,10 +229,7 @@ class VoyagerClient:
         if 'ExposurePlot' in self.configs['good_night_stats']:
             ax = axs[fig_idx, 0]
             total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
-
-            normalized_filter_names = list(map(lambda x: filter_mapping[x], total_exposure_stat.keys()))
-            exposure_values = total_exposure_stat.values()
-            rect = ax.bar(normalized_filter_names, exposure_values, width=0.3)
+            rect = ax.bar(total_exposure_stat.keys(), total_exposure_stat.values(), width=0.3)
             ax.bar_label(rect, padding=3)
 
             ax.set_ylabel('Exposure Time(s)')

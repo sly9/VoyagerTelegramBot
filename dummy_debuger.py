@@ -26,7 +26,7 @@ class DummyDebugger:
 
 
 if __name__ == "__main__":
-    dd = DummyDebugger(interval=0)
+    dd = DummyDebugger(interval=5)
     dd.load_messages('log.txt')
     # dd.load_messages('guide.txt')
     dd.dummy_send()

@@ -11,6 +11,7 @@ from PIL import Image
 
 class TelegramBot:
     def __init__(self, configs: Dict = None):
+        self.configs = configs
         self.token = configs['bot_token']
         self.chat_ids = configs['chat_ids']
         # print('telegram bot init.')
@@ -24,7 +25,10 @@ class TelegramBot:
     def send_text_message(self, message):
         for chat_id in self.chat_ids:
             myobj = {'chat_id': chat_id, 'text': message, 'parse_mode': 'html'}
-            requests.post(self.urls['text'], data=myobj)
+            if self.configs['debugging']:
+                print(message)
+            else:
+                requests.post(self.urls['text'], data=myobj)
 
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '', as_document: bool = True):
         file_content = base64.b64decode(base64_encoded_image)
