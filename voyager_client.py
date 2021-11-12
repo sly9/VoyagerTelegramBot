@@ -9,16 +9,6 @@ from telegram import TelegramBot
 from html_telegram_bot import HTMLTelegramBot
 from configs import ConfigBuilder
 
-filter_meta = {
-    'Ha': {'marker': '+', 'color': '#E53935'},
-    'SII': {'marker': 'v', 'color': '#B71C1C'},
-    'OIII': {'marker': 'o', 'color': '#3F51B5'},
-    'L': {'marker': '+', 'color': '#9E9E9E'},
-    'R': {'marker': '+', 'color': '#F44336'},
-    'G': {'marker': '+', 'color': '#4CAF50'},
-    'B': {'marker': '+', 'color': '#2196F3'},
-}
-
 
 class VoyagerClient:
     def __init__(self, config_builder: ConfigBuilder):
@@ -27,7 +17,6 @@ class VoyagerClient:
             self.telegram_bot = HTMLTelegramBot()
         else:
             self.telegram_bot = TelegramBot(config_builder=config_builder)
-
 
         # interval vars
         self.running_seq = ''
@@ -228,7 +217,8 @@ class VoyagerClient:
             for exposure_info in sequence_stat.exposure_info_list:
                 hfd_values.append(exposure_info.hfd)
                 star_indices.append(exposure_info.star_index)
-                dot_colors.append(filter_meta[exposure_info.filter_name]['color'])
+                color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
+                dot_colors.append(color)
 
             ax = axes[figure_index, 0]
             ax.set_facecolor('#212121')
@@ -259,7 +249,7 @@ class VoyagerClient:
             rectangles = ax.bar(keys, values)
             for i in range(len(keys)):
                 color_name = keys[i]
-                color = filter_meta[color_name]['color']
+                color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
                 rect = rectangles[i]
                 rect.set_color(color)
 

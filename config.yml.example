@@ -1,7 +1,30 @@
 version: 0.2
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
 ignored_events: [ ControlData, ShotRunning, Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
-sequence_stats_config: [ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart types of stats
+sequence_stats_config:
+  types:[ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart types of stats
+  filter_styles:
+    Ha:
+        marker: +
+        color: #E53935
+    SII:
+        marker: v
+        color: #B71C1C
+    OIII:
+        marker: o
+        color: #3F51B5
+    L:
+        marker: +
+        color: #9E9E9E
+    R:
+        marker: +
+        color: #F44336
+    G:
+        marker: +
+        color: #4CAF50
+    B:
+        marker: +
+        color: #2196F3
 send_image_msgs: 1  # Send jpeg images to chats
 should_dump_log: True  # [Optional] If exists, all received JSON messages will be stored in specific file.
 voyager_setting:
