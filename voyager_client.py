@@ -269,9 +269,7 @@ class VoyagerClient:
 
             figure_index += 1
 
-        if 'GuidePlot' in self.configs['sequence_stats_config']:
-            if len(sequence_stat.guide_x_error_list) < 3:
-                print('not possible to calculate mean')
+        if 'GuidePlot' in self.configs['sequence_stats_config'] and len(sequence_stat.guide_x_error_list) > 0:
             ax = axes[figure_index, 0]
             ax.set_facecolor('#212121')
             ax.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)

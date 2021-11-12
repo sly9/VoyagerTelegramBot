@@ -81,18 +81,17 @@ class VoyagerConnectionManager:
         print("### {error} ###".format(error=error))
 
     def on_close(self, ws, close_status_code, close_msg):
-        #self.log_writer.maybe_flush()
-
         print("### [{code}] {msg} ###".format(code=close_status_code, msg=close_msg))
         # try to reconnect with an exponentially increasing delay
-        time.sleep(self.reconnect_delay_sec)
-        if self.reconnect_delay_sec < 512:
-            # doubles the reconnect delay so that we don't DOS server.
-            self.reconnect_delay_sec = self.reconnect_delay_sec * 2
-        # reset keep alive thread
-        self.should_exit_keep_alive_thread = True
-        self.keep_alive_thread = None
-        self.run_forever()
+        if 'allow_auto_reconnect' in self.configs and self.configs['allow_auto_reconnect']:
+            time.sleep(self.reconnect_delay_sec)
+            if self.reconnect_delay_sec < 512:
+                # doubles the reconnect delay so that we don't DOS server.
+                self.reconnect_delay_sec = self.reconnect_delay_sec * 2
+            # reset keep alive thread
+            self.should_exit_keep_alive_thread = True
+            self.keep_alive_thread = None
+            self.run_forever()
 
     def on_open(self, ws):
         # Reset the reconnection delay to 1 sec
