@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sequence_stat import ExposureInfo, SequenceStat
 from telegram import TelegramBot
 from html_telegram_bot import HTMLTelegramBot
+from configs import ConfigBuilder
 
 filter_meta = {
     'Ha': {'marker': '+', 'color': '#E53935'},
@@ -20,12 +21,13 @@ filter_meta = {
 
 
 class VoyagerClient:
-    def __init__(self, configs):
-        if 'debugging' in configs and configs['debugging']:
+    def __init__(self, config_builder: ConfigBuilder):
+        self.config = config_builder.build()
+        if self.config.debugging:
             self.telegram_bot = HTMLTelegramBot()
         else:
-            self.telegram_bot = TelegramBot(configs=configs['telegram_setting'])
-        self.configs = configs
+            self.telegram_bot = TelegramBot(config_builder=config_builder)
+
 
         # interval vars
         self.running_seq = ''
@@ -65,7 +67,7 @@ class VoyagerClient:
         elif event == 'ControlData':
             self.ignored_counter = 0
             self.handle_control_data(message)
-        elif event in self.configs['ignored_events']:
+        elif event in self.config.ignored_events:
             # do nothing
             message.pop('Event', None)
             message.pop('Host', None)
@@ -85,7 +87,7 @@ class VoyagerClient:
     def handle_version(self, message):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
             host_name=message['Host'],
-            url=self.configs['voyager_setting']['domain'],
+            url=self.config.voyager_setting.domain,
             version=message['VOYVersion'])
 
         self.send_text_message(telegram_message)
@@ -187,7 +189,7 @@ class VoyagerClient:
         telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
             sequence_target, expo, filter_name, HFD, star_index)
 
-        if expo >= self.configs['exposure_limit']:
+        if expo >= self.config.exposure_limit:
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
             self.send_image_message(base64_photo, new_filename, telegram_message)
@@ -215,10 +217,10 @@ class VoyagerClient:
                              'axes.edgecolor': '#F5F5F5', 'xtick.color': '#F5F5F5', 'ytick.color': '#F5F5F5',
                              'figure.facecolor': '#212121'})
 
-        figure_count = len(self.configs['sequence_stats_config'])
+        figure_count = len(self.config.sequence_stats_config)
         fig, axes = plt.subplots(figure_count, figsize=(30, 10 * figure_count), squeeze=False)
         figure_index = 0
-        if 'HFDPlot' in self.configs['sequence_stats_config']:
+        if 'HFDPlot' in self.config.sequence_stats_config:
             img_ids = range(sequence_stat.exposure_count())
             hfd_values = list()
             dot_colors = list()
@@ -248,7 +250,7 @@ class VoyagerClient:
 
             figure_index += 1
 
-        if 'ExposurePlot' in self.configs['sequence_stats_config']:
+        if 'ExposurePlot' in self.config.sequence_stats_config:
             ax = axes[figure_index, 0]
             ax.set_facecolor('#212121')
             total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
@@ -269,7 +271,7 @@ class VoyagerClient:
 
             figure_index += 1
 
-        if 'GuidePlot' in self.configs['sequence_stats_config'] and len(sequence_stat.guide_x_error_list) > 0:
+        if 'GuidePlot' in self.config.sequence_stats_config and len(sequence_stat.guide_x_error_list) > 0:
             ax = axes[figure_index, 0]
             ax.set_facecolor('#212121')
             ax.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)

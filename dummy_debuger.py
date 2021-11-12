@@ -1,17 +1,18 @@
 import time
 
 from bot import VoyagerConnectionManager
-from configs import Configs
+from configs import ConfigBuilder
 
 
 class DummyDebugger:
     def __init__(self, interval: int = 5):
         self.interval = interval
         self.messages = None
-        configs = Configs().configs
-        configs['debugging'] = True
-        configs.pop('should_dump_log')
-        self.connection_manager = VoyagerConnectionManager(configs)
+        config_builder = ConfigBuilder()
+        config = config_builder.build()
+        config.debugging = True
+        config.should_dump_log = False
+        self.connection_manager = VoyagerConnectionManager(config_builder=config_builder)
 
     def load_messages(self, msg_fn: str = None):
         with open(msg_fn, 'r') as msg_f:

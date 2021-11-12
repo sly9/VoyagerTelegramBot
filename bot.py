@@ -9,27 +9,27 @@ from datetime import datetime
 
 import websocket
 
-from configs import Configs
+from configs import ConfigBuilder
 from voyager_client import VoyagerClient
 from log_writer import LogWriter
 
 
 class VoyagerConnectionManager:
-    def __init__(self, configs=None):
-        if configs is None:
-            configs = Configs().configs
-        self.configs = configs
-        self.voyager_domain = self.configs['voyager_setting']['domain']
-        self.voyager_port = self.configs['voyager_setting']['port']
+    def __init__(self, config_builder=None):
+        if config_builder is None:
+            config_builder = ConfigBuilder()
+        self.config = config_builder.build()
+        self.voyager_domain = self.config.voyager_setting.domain
+        self.voyager_port = self.config.voyager_setting.port
 
         self.ws = None
         self.keep_alive_thread = None
-        self.voyager_client = VoyagerClient(configs=self.configs)
+        self.voyager_client = VoyagerClient(config_builder=config_builder)
         self.command_queue = deque([])
         self.ongoing_command = None
         self.next_id = 1
 
-        self.log_writer = LogWriter(configs=configs)
+        self.log_writer = LogWriter(config_builder=config_builder)
 
         self.reconnect_delay_sec = 1
         self.should_exit_keep_alive_thread = False
@@ -83,7 +83,7 @@ class VoyagerConnectionManager:
     def on_close(self, ws, close_status_code, close_msg):
         print("### [{code}] {msg} ###".format(code=close_status_code, msg=close_msg))
         # try to reconnect with an exponentially increasing delay
-        if 'allow_auto_reconnect' in self.configs and self.configs['allow_auto_reconnect']:
+        if 'allow_auto_reconnect' in self.config and self.config['allow_auto_reconnect']:
             time.sleep(self.reconnect_delay_sec)
             if self.reconnect_delay_sec < 512:
                 # doubles the reconnect delay so that we don't DOS server.

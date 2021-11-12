@@ -1,5 +1,5 @@
 #!/bin/env python3
-from configs import Configs
+from configs import ConfigBuilder
 from datetime import timedelta
 from datetime import datetime
 import pytz
@@ -7,16 +7,16 @@ import os
 
 
 class LogWriter:
-    def __init__(self, configs: Configs):
-        self.configs = configs
+    def __init__(self, config_builder: ConfigBuilder):
+        self.config = config_builder.build()
         self._log_file = None
-        self.should_dump_log = 'should_dump_log' in self.configs and self.configs['should_dump_log']
+        self.should_dump_log = self.config.should_dump_log
 
     def __current_log_file_created_time(self):
         if not self._log_file:
             return None
         timestamp = os.stat(self._log_file.name).st_ctime
-        timezone = pytz.timezone(self.configs['timezone'])
+        timezone = pytz.timezone(self.config.timezone)
         return datetime.fromtimestamp(timestamp, tz=timezone)
 
     def write_line(self, message):
@@ -43,7 +43,7 @@ class LogWriter:
     def __should_create_new_log_file(self):
         if not self._log_file or self._log_file.closed:
             return True
-        timezone = pytz.timezone(self.configs['timezone'])
+        timezone = pytz.timezone(self.config.timezone)
         log_file_created_time = self.__current_log_file_created_time()
         old = log_file_created_time - timedelta(hours=12)
         now = datetime.now(timezone)

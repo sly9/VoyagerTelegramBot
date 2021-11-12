@@ -3,6 +3,7 @@
 import base64
 import io
 import tempfile
+from configs import ConfigBuilder
 from typing import Dict
 
 import requests
@@ -11,10 +12,10 @@ import time
 
 
 class TelegramBot:
-    def __init__(self, configs: Dict = None):
-        self.configs = configs
-        self.token = configs['bot_token']
-        self.chat_ids = configs['chat_ids']
+    def __init__(self, config_builder: ConfigBuilder = None):
+        self.config = config_builder.build()
+        self.token = self.config.bot_token
+        self.chat_ids = self.config.chat_ids
         # print('telegram bot init.')
         # print('\ttoken: {token}\n\tchats: {chat_ids}'.format(token=self.token, chat_ids=self.chat_ids))
         self.urls = {
