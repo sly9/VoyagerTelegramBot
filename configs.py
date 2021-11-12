@@ -3,11 +3,12 @@ import yaml
 
 class ConfigBuilder:
     def __init__(self):
-        with open('config.yml', 'r') as yaml_f:
+        with open('config.yml.example', 'r') as template_file, open('config.yml', 'r') as yaml_f:
             try:
-                self.config_yaml = yaml.safe_load(yaml_f)
+                self.config_yaml = yaml.safe_load(template_file)
+                self.config_yaml.update(yaml.safe_load(yaml_f))
             except yaml.YAMLError as exc:
-                self.config_yaml = None
+                self.config_yaml = {}
                 print(exc)
         print('Configs are loaded: \n', self.config_yaml)
 
