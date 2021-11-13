@@ -83,7 +83,7 @@ class VoyagerConnectionManager:
     def on_close(self, ws, close_status_code, close_msg):
         print("### [{code}] {msg} ###".format(code=close_status_code, msg=close_msg))
         # try to reconnect with an exponentially increasing delay
-        if 'allow_auto_reconnect' in self.config and self.config['allow_auto_reconnect']:
+        if self.config.allow_auto_reconnect:
             time.sleep(self.reconnect_delay_sec)
             if self.reconnect_delay_sec < 512:
                 # doubles the reconnect delay so that we don't DOS server.
@@ -117,6 +117,7 @@ class VoyagerConnectionManager:
         while not self.should_exit_keep_alive_thread:
             self.ws.send('{"Event":"Polling","Timestamp":%d,"Inst":1}\r\n' % time.time())
             time.sleep(5)
+
 
 if __name__ == "__main__":
     connection_manager = VoyagerConnectionManager()
