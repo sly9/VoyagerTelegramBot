@@ -8,6 +8,7 @@ sequence_stats_config:
   types: [ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart types of stats
   hfd_plot_max_shots_count: -1 # The max number of data points on HFD plot. Old images will be discarded when there's more exposure than this limit. -1 means no limit
   guiding_error_max_shots_count: -1 # The max number of data points on Guiding error plot. Old error data will be discarded when there's more exposure than this limit. -1 means no limit
+  guiding_error_unit: PIXEL # Valid values are PIXEL, ARCSEC
   filter_styles:
     Ha:
       marker: +
