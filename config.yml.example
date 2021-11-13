@@ -2,7 +2,7 @@
 # 'config.yml', then modify the values there
 version: 0.2
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
-ignored_events: [ ControlData, ShotRunning, Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
+ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
 sequence_stats_config:
   types: [ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart types of stats
   filter_styles:
@@ -37,6 +37,6 @@ voyager_setting:
 telegram_setting:
   bot_token: <telegram_token>
   chat_ids: [ <chat_id_0>, <chat_id_1> ]  # Comma separated list of telegram chat ids
-timezone: US/Mountain
+timezone: America/Denver
 debugging: False
 allow_auto_reconnect: True
