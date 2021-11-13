@@ -52,14 +52,14 @@ class TelegramBot:
         thumb_f.seek(0)
 
         if as_document:
-            payload = {'chat_id': chat_id, 'thumb': 'attach://preview_' + filename,
+            payload = {'chat_id': self.chat_id, 'thumb': 'attach://preview_' + filename,
                        'caption': caption}
             files = {'document': (filename, f, 'image/jpeg'),
                      'thumb': ('preview_' + filename, thumb_f, 'image/jpeg')}
 
             send_image_response = requests.post(self.urls['doc'], data=payload, files=files)
         else:
-            payload = {'chat_id': chat_id, 'caption': caption}
+            payload = {'chat_id': self.chat_id, 'caption': caption}
             files = {'photo': (filename, f, 'image/jpeg')}
             send_image_response = requests.post(self.urls['pic'], data=payload, files=files)
 
