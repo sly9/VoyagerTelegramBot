@@ -49,7 +49,7 @@ Currently, we only provide a general installation steps which may require some *
    pip install -r requirements.txt
    ```
 3. Duplicate "config.yml.example" and rename it to "config.xml".
-For more information, please refer to [Configuration] session;
+For more information, please refer to [Configuration](https://github.com/sly9/VoyagerTelegramBot#configurations) session;
 4. Launch the bot
 
    ```Shell
