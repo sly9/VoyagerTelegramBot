@@ -1,6 +1,7 @@
 #!/bin/env python3
 import base64
 import io
+import json
 from datetime import datetime
 from statistics import mean, stdev
 import matplotlib.pyplot as plt
@@ -9,6 +10,16 @@ from telegram import TelegramBot
 from html_telegram_bot import HTMLTelegramBot
 from configs import ConfigBuilder
 
+# This was removed last time, but terribly tested and was broken. Adding it back for now until it's fixed.
+filter_meta = {
+    'Ha': {'marker': '+', 'color': '#E53935'},
+    'SII': {'marker': 'v', 'color': '#B71C1C'},
+    'OIII': {'marker': 'o', 'color': '#3F51B5'},
+    'L': {'marker': '+', 'color': '#9E9E9E'},
+    'R': {'marker': '+', 'color': '#F44336'},
+    'G': {'marker': '+', 'color': '#4CAF50'},
+    'B': {'marker': '+', 'color': '#2196F3'},
+}
 
 class VoyagerClient:
     def __init__(self, config_builder: ConfigBuilder):
@@ -28,6 +39,10 @@ class VoyagerClient:
         self.ignored_counter = 0
 
         self.sequence_map = dict()
+        # Note this violates the assumption that there could be more chat ids we should send message to...
+        # but let's bear with it for now
+        self.current_sequence_stat_chat_id = None
+        self.current_sequence_stat_message_id = None
 
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
@@ -35,7 +50,8 @@ class VoyagerClient:
 
     def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '', as_doc: bool = True):
         if self.telegram_bot:
-            self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
+            return self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
+        return None, None
 
     def parse_message(self, event, message):
         if event == 'Version':
@@ -122,7 +138,7 @@ class VoyagerClient:
             self.running_dragscript = running_dragscript
 
         if running_seq != self.running_seq:
-            self.report_stats_for_current_sequence()
+            # self.report_stats_for_current_sequence()
             if running_seq == '':
                 self.send_text_message('Just finished Sequence %s' % self.running_seq)
             elif self.running_seq == '':
@@ -184,6 +200,8 @@ class VoyagerClient:
             self.send_image_message(base64_photo, new_filename, telegram_message)
         else:
             self.send_text_message(telegram_message)
+        # with PINNING and UNPINNING implemented, we can safely report stats for all images
+        self.report_stats_for_current_sequence()
 
     def handle_log(self, message):
         type_dict = {1: 'DEBUG', 2: 'INFO', 3: 'WARNING', 4: 'CRITICAL', 5: 'ACTION', 6: 'SUBTITLE', 7: 'EVENT',
@@ -206,10 +224,10 @@ class VoyagerClient:
                              'axes.edgecolor': '#F5F5F5', 'xtick.color': '#F5F5F5', 'ytick.color': '#F5F5F5',
                              'figure.facecolor': '#212121'})
 
-        figure_count = len(self.config.sequence_stats_config)
+        figure_count = len(self.config.sequence_stats_config.types)
         fig, axes = plt.subplots(figure_count, figsize=(30, 10 * figure_count), squeeze=False)
         figure_index = 0
-        if 'HFDPlot' in self.config.sequence_stats_config:
+        if 'HFDPlot' in self.config.sequence_stats_config.types:
             img_ids = range(sequence_stat.exposure_count())
             hfd_values = list()
             dot_colors = list()
@@ -217,7 +235,8 @@ class VoyagerClient:
             for exposure_info in sequence_stat.exposure_info_list:
                 hfd_values.append(exposure_info.hfd)
                 star_indices.append(exposure_info.star_index)
-                color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
+                #color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
+                color = filter_meta[exposure_info.filter_name]['color']
                 dot_colors.append(color)
 
             ax = axes[figure_index, 0]
@@ -240,7 +259,7 @@ class VoyagerClient:
 
             figure_index += 1
 
-        if 'ExposurePlot' in self.config.sequence_stats_config:
+        if 'ExposurePlot' in self.config.sequence_stats_config.types:
             ax = axes[figure_index, 0]
             ax.set_facecolor('#212121')
             total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
@@ -249,7 +268,8 @@ class VoyagerClient:
             rectangles = ax.bar(keys, values)
             for i in range(len(keys)):
                 color_name = keys[i]
-                color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
+                #color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
+                color = filter_meta[color_name]['color']
                 rect = rectangles[i]
                 rect.set_color(color)
 
@@ -261,7 +281,7 @@ class VoyagerClient:
 
             figure_index += 1
 
-        if 'GuidePlot' in self.config.sequence_stats_config and len(sequence_stat.guide_x_error_list) > 0:
+        if 'GuidePlot' in self.config.sequence_stats_config.types and len(sequence_stat.guide_x_error_list) > 0:
             ax = axes[figure_index, 0]
             ax.set_facecolor('#212121')
             ax.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
@@ -288,6 +308,17 @@ class VoyagerClient:
         plt.savefig(img_bytes, format='jpg')
         img_bytes.seek(0)
         base64_img = base64.b64encode(img_bytes.read())
-        self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
-                                msg_text='Statistics for {target}'.format(target=self.running_seq),
-                                as_doc=False)
+        if not self.current_sequence_stat_chat_id and not self.current_sequence_stat_message_id:
+            chat_id, message_id = self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
+                                                          msg_text='Statistics for {target}'.format(
+                                                              target=self.running_seq),
+                                                          as_doc=False)
+            self.current_sequence_stat_chat_id = chat_id
+            self.current_sequence_stat_message_id = message_id
+            self.telegram_bot.unpin_all_messages(chat_id=chat_id)
+            self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
+        else:
+            self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
+                                                 message_id=self.current_sequence_stat_message_id,
+                                                 base64_encoded_image=base64_img,
+                                                 filename=self.running_seq + '_stat.jpg')

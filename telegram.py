@@ -16,7 +16,7 @@ class TelegramBot:
     def __init__(self, config_builder: ConfigBuilder = None):
         self.config = config_builder.build()
         self.token = self.config.telegram_setting.bot_token
-        self.chat_ids = self.config.telegram_setting.chat_ids
+        self.chat_id = self.config.telegram_setting.chat_ids[0]
         # print('telegram bot init.')
         # print('\ttoken: {token}\n\tchats: {chat_ids}'.format(token=self.token, chat_ids=self.chat_ids))
         self.urls = {
@@ -30,15 +30,15 @@ class TelegramBot:
         }
 
     def send_text_message(self, message):
-        responses = []
-        for chat_id in self.chat_ids:
-            payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'html'}
-            send_text_response = requests.post(self.urls['text'], data=payload)
-            responses.append(send_text_response)
-        return responses
+        payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
+        send_text_response = requests.post(self.urls['text'], data=payload)
+        send_image_response_json = json.loads(send_text_response.text)
+        chat_id = send_image_response_json['result']['chat']['id']
+        message_id = send_image_response_json['result']['message_id']
+
+        return chat_id, message_id
 
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '', as_document: bool = True):
-        responses = []
         file_content = base64.b64decode(base64_encoded_image)
 
         f = tempfile.TemporaryFile()
@@ -51,23 +51,25 @@ class TelegramBot:
         img.save(thumb_f, "JPEG")
         thumb_f.seek(0)
 
-        for chat_id in self.chat_ids:
-            if as_document:
-                payload = {'chat_id': chat_id, 'thumb': 'attach://preview_' + filename,
-                           'caption': caption}
-                files = {'document': (filename, f, 'image/jpeg'),
-                         'thumb': ('preview_' + filename, thumb_f, 'image/jpeg')}
+        if as_document:
+            payload = {'chat_id': chat_id, 'thumb': 'attach://preview_' + filename,
+                       'caption': caption}
+            files = {'document': (filename, f, 'image/jpeg'),
+                     'thumb': ('preview_' + filename, thumb_f, 'image/jpeg')}
 
-                send_image_response = requests.post(self.urls['doc'], data=payload, files=files)
-            else:
-                payload = {'chat_id': chat_id, 'caption': caption}
-                files = {'photo': (filename, f, 'image/jpeg')}
-                send_image_response = requests.post(self.urls['pic'], data=payload, files=files)
-            responses.append(send_image_response)
+            send_image_response = requests.post(self.urls['doc'], data=payload, files=files)
+        else:
+            payload = {'chat_id': chat_id, 'caption': caption}
+            files = {'photo': (filename, f, 'image/jpeg')}
+            send_image_response = requests.post(self.urls['pic'], data=payload, files=files)
+
+        send_image_response_json = json.loads(send_image_response.text)
+        image_chat_id = send_image_response_json['result']['chat']['id']
+        image_message_id = send_image_response_json['result']['message_id']
 
         f.close()
         thumb_f.close()
-        return responses
+        return image_chat_id, image_message_id
 
     def edit_image_message(self, chat_id: str, message_id: str, base64_encoded_image, filename: str = ''):
         file_content = base64.b64decode(base64_encoded_image)
@@ -78,10 +80,12 @@ class TelegramBot:
         payload = {'chat_id': chat_id, 'message_id': message_id,
                    'media': json.dumps({'type': 'photo', 'media': 'attach://media'})}
         files = {'media': (filename, f, 'image/jpeg')}
-        send_image_response = requests.post(self.urls['edit_message_media'], data=payload, files=files)
-
+        edit_image_response = requests.post(self.urls['edit_message_media'], data=payload, files=files)
         f.close()
-        return send_image_response
+        edit_image_response_json = json.loads(edit_image_response.text)
+        image_chat_id = edit_image_response_json['result']['chat']['id']
+        image_message_id = edit_image_response_json['result']['message_id']
+        return image_chat_id, image_message_id
 
     def pin_message(self, chat_id: str, message_id: str) -> bool:
         payload = {'chat_id': chat_id, 'message_id': message_id, 'disable_notification': True}
@@ -108,14 +112,11 @@ if __name__ == '__main__':
     t.send_text_message(message='hello world')
     with open("tests/ic5070.jpg", "rb") as image_file, open("tests/m42.jpg", "rb") as second_image_file:
         encoded_string = base64.b64encode(image_file.read())
-        response = t.send_image_message(encoded_string, 'ic5070.jpg')[0]
-        response_json = json.loads(response.text)
-        print(json.dumps(response_json, indent=4, sort_keys=True))
-        chat_id = response_json['result']['chat']['id']
-        message_id = response_json['result']['message_id']
-        t.pin_message(chat_id=chat_id, message_id=message_id)
+        the_chat_id, the_message_id = t.send_image_message(encoded_string, 'ic5070.jpg')
+        t.pin_message(chat_id=the_chat_id, message_id=the_message_id)
         encoded_string = base64.b64encode(second_image_file.read())
-        response = t.edit_image_message(chat_id=chat_id, message_id=message_id, base64_encoded_image=encoded_string,
+        response = t.edit_image_message(chat_id=the_chat_id, message_id=the_message_id,
+                                        base64_encoded_image=encoded_string,
                                         filename='m42.jpg')
         print(response.text)
-        t.unpin_message(chat_id=chat_id, message_id=message_id)
+        t.unpin_message(chat_id=the_chat_id, message_id=the_message_id)
