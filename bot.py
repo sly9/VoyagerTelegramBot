@@ -97,8 +97,8 @@ class VoyagerConnectionManager:
         # Reset the reconnection delay to 1 sec
         self.reconnect_delay_sec = 1
         if hasattr(self.voyager_settings, 'username'):
-            auth_token = base64.b64encode('%s:%s' % (self.voyager_settings.username, self.voyager_settings.password))
-            self.send_command('AuthenticateUserBase', {'Base': auth_token})
+            auth_token = '%s:%s' % (self.voyager_settings.username, self.voyager_settings.password)
+            self.send_command('AuthenticateUserBase', {'Base': base64.b64encode(auth_token.encode('utf-8'))})
 
         self.send_command('RemoteSetDashboardMode', {'IsOn': True})
         self.send_command('RemoteSetLogEvent', {'IsOn': True, 'Level': 0})
