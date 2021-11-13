@@ -32,7 +32,7 @@ text_message_config:
   send_image_msgs: 1  # Send jpeg images to chats
   # Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
   allowed_log_types: [ WARNING, CRITICAL, TITLE, EMERGENCY ]
-send_image_msgs: 1  # Send jpeg images to chats
+send_image_msgs: 1  # Send jpeg images to chats, will be deprecated soon, and moved to 'text_message_config' section.
 should_dump_log: True  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
 voyager_setting:
   domain: <voyager_url>  # Domain or IP for remote Voyager Server
