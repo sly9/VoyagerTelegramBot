@@ -31,7 +31,7 @@ For the computer running Voyager application
 For the computer running **VoyagerTelegramBot**
 - python 3.7 or higher environments
 - Able to connect to your Voyager Application Server
-- Able to use Telegram
+- Can be and can be not the same computer running Voyager application.
 
 Currently, we only provide a general installation steps which may require some *geek* skills.
 1. Prepare your stuffs
@@ -40,7 +40,7 @@ Currently, we only provide a general installation steps which may require some *
    3. Create a new Telegram bot and chat with your Telegram account;
    
       We are trying to write a guide, but before it's done, a quick guide can be found
-      [here]((https://wiki.starkeeper.it/index.php/DragScript_Elements#Signals)),
+      [here](https://forum.starkeeper.it/t/send-free-custom-telephone-notifications-to-your-telegram-from-voyager/1889),
       under `Send Telegram` part.
       > **KEEP YOUR BOT TOKEN SECURE**
 2. Install package dependence for **VoyagerTelegramBot**;

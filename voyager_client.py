@@ -145,11 +145,13 @@ class VoyagerClient:
                 self.send_text_message('Starting Sequence %s' % running_seq)
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
+                self.report_stats_for_current_sequence()
             else:
                 self.send_text_message(
                     'Switching Sequence from %s to %s' % (running_seq, self.running_seq))
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
+                self.report_stats_for_current_sequence()
             self.running_seq = running_seq
 
     def handle_focus_result(self, message):
