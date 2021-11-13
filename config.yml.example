@@ -27,6 +27,11 @@ sequence_stats_config:
     B:
       marker: +
       color: #2196F3
+# A new config section for text message related features. This section is not being read by our bot yet.
+text_message_config:
+  send_image_msgs: 1  # Send jpeg images to chats
+  # Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
+  allowed_log_types: [ WARNING, CRITICAL, TITLE, EMERGENCY ]
 send_image_msgs: 1  # Send jpeg images to chats
 should_dump_log: True  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
 voyager_setting:

@@ -2,6 +2,7 @@
 
 import _thread
 import json
+import base64
 import time
 import uuid
 from collections import deque
@@ -19,8 +20,7 @@ class VoyagerConnectionManager:
         if config_builder is None:
             config_builder = ConfigBuilder()
         self.config = config_builder.build()
-        self.voyager_domain = self.config.voyager_setting.domain
-        self.voyager_port = self.config.voyager_setting.port
+        self.voyager_settings = self.config.voyager_setting
 
         self.ws = None
         self.keep_alive_thread = None
@@ -96,6 +96,9 @@ class VoyagerConnectionManager:
     def on_open(self, ws):
         # Reset the reconnection delay to 1 sec
         self.reconnect_delay_sec = 1
+        if hasattr(self.voyager_settings, 'username'):
+            auth_token = base64.b64encode('%s:%s' % (self.voyager_settings.username, self.voyager_settings.password))
+            self.send_command('AuthenticateUserBase', {'Base': auth_token})
 
         self.send_command('RemoteSetDashboardMode', {'IsOn': True})
         self.send_command('RemoteSetLogEvent', {'IsOn': True, 'Level': 0})
@@ -105,7 +108,8 @@ class VoyagerConnectionManager:
 
     def run_forever(self):
         self.ws = websocket.WebSocketApp(
-            'ws://{server_url}:{port}/'.format(server_url=self.voyager_domain, port=self.voyager_port),
+            'ws://{server_url}:{port}/'.format(server_url=self.voyager_settings.domain,
+                                               port=self.voyager_settings.port),
             on_open=self.on_open,
             on_message=self.on_message,
             on_error=self.on_error,
