@@ -43,6 +43,22 @@ Currently, we only provide a general installation steps which may require some *
       [here](https://forum.starkeeper.it/t/send-free-custom-telephone-notifications-to-your-telegram-from-voyager/1889),
       under `Send Telegram` part.
       > **KEEP YOUR BOT TOKEN SECURE**
+   
+   4. Please make your bot an administrator of the group(after adding it to the group), so that it can pin message and update graph. 
+      1. Instructions for telegram desktop app: 
+         1. Goto your group chat in telegram, click '...'
+         2. click 'view group info'
+         3. click '...' of the group info pop-up
+         4. click 'Manage Group'
+         5. click 'Administrators'
+         6. search for your bot, and add and save
+      2. Instructions for telegram on iPhone (Android should have similar exp?)
+         1. Goto your group chat in telegram, and tap the group name on the top
+         2. Tap 'Edit' on top right
+         3. Tap Administrators
+         4. Tap 'Add Admin'
+         5. Choose your bot
+         6. save and exit
 2. Install package dependence for **VoyagerTelegramBot**;
    
    ```Shell

@@ -1,5 +1,6 @@
 # Note this file is a template, and also the place for default values. So keep it here, and make a copy of this file as
-# 'config.yml', then modify the values there
+# 'config.yml', then modify the values there. If a field is skipped in the config.yml, the default value defined in this
+# file will be used instead.
 version: 0.2
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
 ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
