@@ -11,8 +11,11 @@ __pycache__/
 
 # config file with token
 config.yml
+
+# Other ignored files
 *.txt
 *.bak
+tests/
 
 # Distribution / packaging
 .Python
