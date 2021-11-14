@@ -12,25 +12,25 @@ sequence_stats_config:
   filter_styles:
     Ha:
       marker: +
-      color: #E53935
+      color: '#E53935'
     SII:
       marker: v
-      color: #B71C1C
+      color: '#B71C1C'
     OIII:
       marker: o
-      color: #3F51B5
+      color: '#3F51B5'
     L:
       marker: +
-      color: #9E9E9E
+      color: '#9E9E9E'
     R:
       marker: +
-      color: #F44336
+      color: '#F44336'
     G:
       marker: +
-      color: #4CAF50
+      color: '#4CAF50'
     B:
       marker: +
-      color: #2196F3
+      color: '#2196F3'
 # A new config section for text message related features. This section is not being read by our bot yet.
 text_message_config:
   send_image_msgs: 1  # Send jpeg images to chats

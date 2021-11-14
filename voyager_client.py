@@ -6,17 +6,6 @@ from html_telegram_bot import HTMLTelegramBot
 from sequence_stat import ExposureInfo, SequenceStat, StatPlotter
 from telegram import TelegramBot
 
-# This was removed last time, but terribly tested and was broken. Adding it back for now until it's fixed.
-filter_meta = {
-    'Ha': {'marker': '+', 'color': '#E53935'},
-    'SII': {'marker': 'v', 'color': '#B71C1C'},
-    'OIII': {'marker': 'o', 'color': '#3F51B5'},
-    'L': {'marker': '+', 'color': '#9E9E9E'},
-    'R': {'marker': '+', 'color': '#F44336'},
-    'G': {'marker': '+', 'color': '#4CAF50'},
-    'B': {'marker': '+', 'color': '#2196F3'},
-}
-
 
 class VoyagerClient:
     def __init__(self, config_builder: ConfigBuilder):
