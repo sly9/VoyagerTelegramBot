@@ -224,11 +224,14 @@ class StatPlotter:
             self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=seq_stat, target_name=target_name)
             figure_index += 1
 
-        fig.tight_layout()
+        # fig.tight_layout()
 
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='jpg')
         img_bytes.seek(0)
         base64_img = base64.b64encode(img_bytes.read())
+
+        # Prevent RuntimeWarning 'More than 20 figures have been opened' from matplotlib
+        plt.close('all')
 
         return base64_img
