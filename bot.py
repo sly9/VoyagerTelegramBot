@@ -119,7 +119,7 @@ class VoyagerConnectionManager:
 
     def keep_alive_routine(self):
         while not self.should_exit_keep_alive_thread:
-            self.ws.send(f'{"Event":"Polling","Timestamp":{time.time()},"Inst":1}\r\n')
+            self.ws.send('{"Event":"Polling","Timestamp":%d,"Inst":1}\r\n' % time.time())
             time.sleep(5)
 
 

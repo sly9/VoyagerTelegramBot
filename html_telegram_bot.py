@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 import base64
 import webbrowser
+import io
+
+from PIL import Image
 
 
 class HTMLTelegramBot:
@@ -55,13 +58,22 @@ class HTMLTelegramBot:
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
         f.close()
+
+        stream = io.BytesIO(file_content)
+        img = Image.open(stream).resize((300, 200))
+
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='JPEG')
+        img_byte_arr = img_byte_arr.getvalue()
+        base64_encoded_thumbnails = base64.b64encode(img_byte_arr).decode('ascii')
         self.html_file.write(
             f'''<tr><td>{self.event_sequence}</td><td>Edit Image</td>
             <td>
             A previously posted image [{message_id}] was updated, new image is:
             <br>
             <a href="images/image_{self.image_count}.jpg">
-            <img style="width:300px;height:200px" src="images/image_{self.image_count}.jpg" /></a></td></tr>\n''')
+            <img style="width:300px;height:200px" src="data:image/jpeg;base64, {base64_encoded_thumbnails}" />
+            </a></td></tr>\n''')
         self.event_sequence += 1
         self.image_count += 1
 
@@ -86,10 +98,19 @@ class HTMLTelegramBot:
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
         f.close()
+
+        stream = io.BytesIO(file_content)
+        img = Image.open(stream).resize((300, 200))
+
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='JPEG')
+        img_byte_arr = img_byte_arr.getvalue()
+        base64_encoded_thumbnails = base64.b64encode(img_byte_arr).decode('ascii')
         self.html_file.write(
             f'''<tr><td>{self.event_sequence}</td><td>Send Image</td>
             <td><a href="images/image_{self.image_count}.jpg">
-            <img style="width:300px;height:200px" src="images/image_{self.image_count}.jpg" /></a></td></tr>\n''')
+            <img style="width:300px;height:200px" src="data:image/jpeg;base64, {base64_encoded_thumbnails}" />
+            </a></td></tr>\n''')
         self.image_count += 1
         self.event_sequence += 1
 
