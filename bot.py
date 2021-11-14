@@ -56,7 +56,6 @@ class VoyagerConnectionManager:
 
         command = self.command_queue.popleft()
         self.ongoing_command = command
-        # print('sending command .. %s' % json.dumps(command))
         self.ws.send(json.dumps(command) + '\r\n')
 
     def on_message(self, ws, message_string):
@@ -97,7 +96,7 @@ class VoyagerConnectionManager:
         # Reset the reconnection delay to 1 sec
         self.reconnect_delay_sec = 1
         if hasattr(self.voyager_settings, 'username'):
-            auth_token = '%s:%s' % (self.voyager_settings.username, self.voyager_settings.password)
+            auth_token = f'{self.voyager_settings.username}:{self.voyager_settings.password}'
             encoded_token = base64.urlsafe_b64encode(auth_token.encode('ascii'))
             self.send_command('AuthenticateUserBase', {'Base': encoded_token.decode('ascii')})
 
@@ -120,7 +119,7 @@ class VoyagerConnectionManager:
 
     def keep_alive_routine(self):
         while not self.should_exit_keep_alive_thread:
-            self.ws.send('{"Event":"Polling","Timestamp":%d,"Inst":1}\r\n' % time.time())
+            self.ws.send(f'{"Event":"Polling","Timestamp":{time.time()},"Inst":1}\r\n')
             time.sleep(5)
 
 

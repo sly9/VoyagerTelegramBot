@@ -51,7 +51,7 @@ class HTMLTelegramBot:
         self.event_sequence += 1
 
     def edit_image_message(self, chat_id: str, message_id: str, base64_encoded_image, filename: str = ''):
-        f = open('replay/images/image_%d.jpg' % self.image_count, 'wb')
+        f = open(f'replay/images/image_{self.image_count}.jpg' , 'wb')
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
         f.close()
@@ -66,23 +66,23 @@ class HTMLTelegramBot:
         self.image_count += 1
 
     def pin_message(self, chat_id: str, message_id: str) -> bool:
-        message = 'Pinning messages for room [%s], message id: [%s]' % (chat_id, message_id)
+        message = f'Pinning messages for room [{chat_id}], message id: [{message_id}]'
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Pin Message</td><td>{message}</td></tr>\n')
         self.event_sequence += 1
 
     def unpin_message(self, chat_id: str, message_id: str) -> bool:
-        message = 'Unpinning messages for room [%s], message id: [%s]' % (chat_id, message_id)
-        self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin Message</td><td>%s</td></tr>\n')
+        message = f'Unpinning messages for room [{chat_id}], message id: [{message_id}]'
+        self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin Message</td><td>{chat_id}</td></tr>\n')
         self.event_sequence += 1
 
     def unpin_all_messages(self, chat_id: str) -> bool:
-        message = 'Unpinning all messages for room [%s]' % chat_id
-        self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin all Messages</td><td>%s</td></tr>\n')
+        message = f'Unpinning all messages for room [{chat_id}]'
+        self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin all Messages</td><td>N/A</td></tr>\n')
         self.event_sequence += 1
 
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '',
                            as_document: bool = True):
-        f = open('replay/images/image_%d.jpg' % self.image_count, 'wb')
+        f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
         f.close()

@@ -21,6 +21,7 @@ filter_meta = {
     'B': {'marker': '+', 'color': '#2196F3'},
 }
 
+
 class VoyagerClient:
     def __init__(self, config_builder: ConfigBuilder):
         self.config = config_builder.build()
@@ -87,7 +88,7 @@ class VoyagerClient:
             self.ignored_counter = 0
             timestamp = message['Timestamp']
             message.pop('Timestamp', None)
-            print('[%s][%s]: %s' % (datetime.fromtimestamp(timestamp), event, message))
+            print(f'[{datetime.fromtimestamp(timestamp)}][{event}]: {message}')
 
     def handle_version(self, message):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
@@ -129,26 +130,26 @@ class VoyagerClient:
         if running_dragscript != self.running_dragscript:
             self.sequence_map = {}
             if running_dragscript == '':
-                self.send_text_message('Just finished DragScript %s' % self.running_dragscript)
+                self.send_text_message(f'Just finished DragScript {self.running_dragscript}')
             elif self.running_dragscript == '':
-                self.send_text_message('Starting DragScript %s' % running_dragscript)
+                self.send_text_message(f'Starting DragScript {running_dragscript}')
             else:
                 self.send_text_message(
-                    'Switching DragScript from %s to %s' % (running_dragscript, self.running_dragscript))
+                    f'Switching DragScript from {running_dragscript} to {self.running_dragscript}')
             self.running_dragscript = running_dragscript
 
         if running_seq != self.running_seq:
             # self.report_stats_for_current_sequence()
             if running_seq == '':
-                self.send_text_message('Just finished Sequence %s' % self.running_seq)
+                self.send_text_message(f'Just finished Sequence {self.running_seq}')
             elif self.running_seq == '':
-                self.send_text_message('Starting Sequence %s' % running_seq)
+                self.send_text_message(f'Starting Sequence {running_seq}')
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
             else:
                 self.send_text_message(
-                    'Switching Sequence from %s to %s' % (running_seq, self.running_seq))
+                    f'Switching Sequence from {running_seq} to {self.running_seq}')
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
@@ -162,7 +163,7 @@ class VoyagerClient:
         done = message['Done']
         last_error = message['LastError']
         if not done:
-            self.send_text_message('Auto focusing failed with reason: %s' % last_error)
+            self.send_text_message(f'Auto focusing failed with reason: {last_error}')
             return
 
         filter_index = message['FilterIndex']
@@ -171,8 +172,7 @@ class VoyagerClient:
         star_index = message['StarIndex']
         focus_temp = message['FocusTemp']
         position = message['Position']
-        telegram_message = 'AutoFocusing for filter %d is done with position %d, HFD: %f' % (
-            filter_index, position, HFD)
+        telegram_message = f'AutoFocusing for filter {filter_index} is done with position {position}, HFD: {HFD}'
         self.send_text_message(telegram_message)
 
     def current_sequence_stat(self) -> SequenceStat:
@@ -197,8 +197,8 @@ class VoyagerClient:
         self.add_exposure_stats(exposure)
 
         base64_photo = message['Base64Data']
-        telegram_message = 'Exposure of %s for %dsec using %s filter. HFD: %.2f, StarIndex: %.2f' % (
-            sequence_target, expo, filter_name, HFD, star_index)
+        telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
+                           + f'HFD: {HFD}, StarIndex: {star_index}'
 
         if expo >= self.config.exposure_limit:
             fit_filename = message['File']
@@ -213,8 +213,8 @@ class VoyagerClient:
         type_dict = {1: 'DEBUG', 2: 'INFO', 3: 'WARNING', 4: 'CRITICAL', 5: 'ACTION', 6: 'SUBTITLE', 7: 'EVENT',
                      8: 'REQUEST', 9: 'EMERGENCY'}
         type_name = type_dict[message['Type']]
-        content = '[%s]%s' % (type_name, message['Text'])
-        telegram_message = '<b><pre>%s</pre></b>' % content
+        content = f'[{type_name}]{message["Text"]}'
+        telegram_message = f'<b><pre>{content}</pre></b>'
         print(content)
         if message['Type'] != 3 and message['Type'] != 4 and message['Type'] != 5 and message['Type'] != 9:
             return
@@ -241,7 +241,7 @@ class VoyagerClient:
             for exposure_info in sequence_stat.exposure_info_list:
                 hfd_values.append(exposure_info.hfd)
                 star_indices.append(exposure_info.star_index)
-                #color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
+                # color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
                 color = filter_meta[exposure_info.filter_name]['color']
                 dot_colors.append(color)
 
@@ -274,7 +274,7 @@ class VoyagerClient:
             rectangles = ax.bar(keys, values)
             for i in range(len(keys)):
                 color_name = keys[i]
-                #color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
+                # color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
                 color = filter_meta[color_name]['color']
                 rect = rectangles[i]
                 rect.set_color(color)

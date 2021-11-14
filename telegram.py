@@ -20,13 +20,13 @@ class TelegramBot:
         # print('telegram bot init.')
         # print('\ttoken: {token}\n\tchats: {chat_ids}'.format(token=self.token, chat_ids=self.chat_ids))
         self.urls = {
-            'text': 'https://api.telegram.org/bot{token}/sendMessage'.format(token=self.token),
-            'doc': 'https://api.telegram.org/bot{token}/sendDocument'.format(token=self.token),
-            'edit_message_media': 'https://api.telegram.org/bot{token}/editMessageMedia'.format(token=self.token),
-            'pic': 'https://api.telegram.org/bot{token}/sendPhoto'.format(token=self.token),
-            'pin_message': 'https://api.telegram.org/bot{token}/pinChatMessage'.format(token=self.token),
-            'unpin_message': 'https://api.telegram.org/bot{token}/unpinChatMessage'.format(token=self.token),
-            'unpin_all_messages': 'https://api.telegram.org/bot{token}/unpinAllChatMessages'.format(token=self.token),
+            'text': f'https://api.telegram.org/bot{self.token}/sendMessage',
+            'doc': f'https://api.telegram.org/bot{self.token}/sendDocument',
+            'edit_message_media': f'https://api.telegram.org/bot{self.token}/editMessageMedia',
+            'pic': f'https://api.telegram.org/bot{self.token}/sendPhoto',
+            'pin_message': f'https://api.telegram.org/bot{self.token}/pinChatMessage',
+            'unpin_message': f'https://api.telegram.org/bot{self.token}/unpinChatMessage',
+            'unpin_all_messages': f'https://api.telegram.org/bot{self.token}/unpinAllChatMessages',
         }
 
     def send_text_message(self, message):
