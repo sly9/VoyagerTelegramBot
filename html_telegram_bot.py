@@ -80,4 +80,4 @@ class HTMLTelegramBot:
             <img style="width:300px;height:200px" src="images/image_%d.jpg" /></a></td></tr>\n''' % (
                 self.image_count, self.image_count))
         self.image_count = self.image_count + 1
-        return 'dummy_chat_id','dummy_message_id'
+        return 'dummy_chat_id', 'dummy_message_id'

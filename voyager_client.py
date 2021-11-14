@@ -1,14 +1,15 @@
 #!/bin/env python3
 import base64
 import io
-import json
 from datetime import datetime
 from statistics import mean, stdev
+
 import matplotlib.pyplot as plt
+
+from configs import ConfigBuilder
+from html_telegram_bot import HTMLTelegramBot
 from sequence_stat import ExposureInfo, SequenceStat
 from telegram import TelegramBot
-from html_telegram_bot import HTMLTelegramBot
-from configs import ConfigBuilder
 
 # This was removed last time, but terribly tested and was broken. Adding it back for now until it's fixed.
 filter_meta = {
@@ -20,6 +21,7 @@ filter_meta = {
     'G': {'marker': '+', 'color': '#4CAF50'},
     'B': {'marker': '+', 'color': '#2196F3'},
 }
+
 
 class VoyagerClient:
     def __init__(self, config_builder: ConfigBuilder):
@@ -226,12 +228,21 @@ class VoyagerClient:
             return
         sequence_stat = self.current_sequence_stat()
 
+        plt.ioff()
         plt.rcParams.update({'text.color': '#F5F5F5', 'font.size': 40, 'font.weight': 'bold',
-                             'axes.edgecolor': '#F5F5F5', 'xtick.color': '#F5F5F5', 'ytick.color': '#F5F5F5',
-                             'figure.facecolor': '#212121'})
+                             'axes.edgecolor': '#F5F5F5', 'figure.facecolor': '#212121',
+                             'xtick.color': '#F5F5F5', 'ytick.color': '#F5F5F5'})
 
         figure_count = len(self.config.sequence_stats_config.types)
-        fig, axes = plt.subplots(figure_count, figsize=(30, 10 * figure_count), squeeze=False)
+        fig = plt.figure(figsize=(30, 10 * figure_count), constrained_layout=True)
+
+        if 'GuidePlot' in self.config.sequence_stats_config.types:
+            gridspec = fig.add_gridspec(nrows=figure_count, ncols=2,
+                                        height_ratios=[1] * figure_count, width_ratios=[0.68, 0.32])
+        else:
+            gridspec = fig.add_gridspec(nrows=figure_count, ncols=1,
+                                        height_ratios=[1] * figure_count, width_ratios=[1])
+
         figure_index = 0
         if 'HFDPlot' in self.config.sequence_stats_config.types:
             img_ids = range(sequence_stat.exposure_count())
@@ -241,11 +252,11 @@ class VoyagerClient:
             for exposure_info in sequence_stat.exposure_info_list:
                 hfd_values.append(exposure_info.hfd)
                 star_indices.append(exposure_info.star_index)
-                #color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
+                # color = getattr(self.config.sequence_stats_config.filter_styles, exposure_info.filter_name).color
                 color = filter_meta[exposure_info.filter_name]['color']
                 dot_colors.append(color)
 
-            ax = axes[figure_index, 0]
+            ax = fig.add_subplot(gridspec[figure_index, :])
             ax.set_facecolor('#212121')
 
             ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
@@ -266,7 +277,7 @@ class VoyagerClient:
             figure_index += 1
 
         if 'ExposurePlot' in self.config.sequence_stats_config.types:
-            ax = axes[figure_index, 0]
+            ax = fig.add_subplot(gridspec[figure_index, :])
             ax.set_facecolor('#212121')
             total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
             keys = list(total_exposure_stat.keys())
@@ -274,7 +285,7 @@ class VoyagerClient:
             rectangles = ax.bar(keys, values)
             for i in range(len(keys)):
                 color_name = keys[i]
-                #color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
+                # color = getattr(self.config.sequence_stats_config.filter_styles, color_name).color
                 color = filter_meta[color_name]['color']
                 rect = rectangles[i]
                 rect.set_color(color)
@@ -288,26 +299,37 @@ class VoyagerClient:
             figure_index += 1
 
         if 'GuidePlot' in self.config.sequence_stats_config.types and len(sequence_stat.guide_x_error_list) > 0:
-            ax = axes[figure_index, 0]
-            ax.set_facecolor('#212121')
-            ax.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
-            ax.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
+            # Guide Plot
+            ax_main = fig.add_subplot(gridspec[figure_index:figure_index + 2, 0])
+            ax_main.set_facecolor('#212121')
+            ax_main.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
+            ax_main.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
 
             abs_x_list = [abs(number) for number in sequence_stat.guide_x_error_list]
             abs_y_list = [abs(number) for number in sequence_stat.guide_y_error_list]
-            ax.set_title(
+            ax_main.set_title(
                 'Guiding Plot ({target})(avg(abs)/min/max/std)\n'
                 'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
                 'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
                     target=self.running_seq,
                     x_mean=mean(abs_x_list), x_min=min(sequence_stat.guide_x_error_list),
                     x_max=max(sequence_stat.guide_x_error_list),
-                    x_std=stdev(sequence_stat.guide_x_error_list),
+                    x_std=stdev(sequence_stat.guide_x_error_list) if len(
+                        sequence_stat.guide_x_error_list) >= 2 else 0.0,
                     y_mean=mean(abs_y_list), y_min=min(sequence_stat.guide_y_error_list),
                     y_max=max(sequence_stat.guide_y_error_list),
-                    y_std=stdev(sequence_stat.guide_y_error_list),
+                    y_std=stdev(sequence_stat.guide_y_error_list) if len(
+                        sequence_stat.guide_y_error_list) >= 2 else 0.0,
                 ))
+
+            ax_scatter = fig.add_subplot(gridspec[figure_index, 1])
+            ax_scatter.set_facecolor('#212121')
+            ax_scatter.tick_params(axis="x", labelbottom=False)
+            ax_scatter.tick_params(axis="y", labelleft=False)
+            ax_scatter.scatter(sequence_stat.guide_x_error_list, sequence_stat.guide_y_error_list)
+
             figure_index += 1
+
         fig.tight_layout()
 
         img_bytes = io.BytesIO()
