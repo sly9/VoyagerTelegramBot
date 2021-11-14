@@ -3,7 +3,9 @@ import base64
 import io
 from collections import defaultdict
 from statistics import mean, stdev
+from typing import Tuple
 
+import numpy as np
 from matplotlib import axes
 from matplotlib import pyplot as plt
 
@@ -92,6 +94,13 @@ class StatPlotter:
 
         self.filter_meta = self.plotter_configs.filter_styles
 
+    def circle(self, ax: axes.Axes = None, origin: Tuple[float, float] = (0, 0), radius: float = 1.0, **kwargs):
+        angle = np.linspace(0, 2 * np.pi, 150)
+        x = radius * np.cos(angle) + origin[0]
+        y = radius * np.sin(angle) + origin[1]
+
+        ax.plot(x, y, **kwargs)
+
     def hfd_plot(self, ax: axes.Axes = None, sequence_stat: SequenceStat = None, target_name: str = ''):
         img_ids = range(sequence_stat.exposure_count())
         hfd_values = list()
@@ -144,8 +153,15 @@ class StatPlotter:
         ax_main.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
         ax_main.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
 
-        abs_x_list = [abs(number) for number in sequence_stat.guide_x_error_list]
-        abs_y_list = [abs(number) for number in sequence_stat.guide_y_error_list]
+        abs_x_list = list()
+        abs_y_list = list()
+        distance_list = list()
+        for idx, x_error in enumerate(sequence_stat.guide_x_error_list):
+            y_error = sequence_stat.guide_y_error_list[idx]
+            abs_x_list.append(abs(x_error))
+            abs_y_list.append(abs(y_error))
+            distance_list.append(np.sqrt(x_error ** 2 + y_error ** 2))
+
         ax_main.set_title(
             'Guiding Plot ({target})(avg(abs)/min/max/std)\n'
             'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
@@ -164,6 +180,17 @@ class StatPlotter:
         ax_scatter.set_facecolor('#212121')
         ax_scatter.tick_params(axis="x", labelbottom=False)
         ax_scatter.tick_params(axis="y", labelleft=False)
+        ax_scatter.set_xlim([-2.5, 2.5])
+        ax_scatter.set_ylim([-2.5, 2.5])
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#F44336', linewidth=2)
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#F44336', linewidth=2)
+
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#2196F3',
+                    linewidth=4)
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
+                    color='#2196F3',
+                    linewidth=4)
+
         ax_scatter.scatter(sequence_stat.guide_x_error_list, sequence_stat.guide_y_error_list)
 
     def plotter(self, seq_stat: SequenceStat = None, target_name: str = ''):
