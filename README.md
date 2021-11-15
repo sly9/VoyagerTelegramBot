@@ -62,7 +62,7 @@ Currently, we only provide a general installation steps which may require some *
 2. Install package dependence for **VoyagerTelegramBot**;
    
    ```Shell
-   pip install -r requirements.txt
+   pip3 install -r requirements.txt
    ```
 3. Duplicate "config.yml.example" and rename it to "config.xml".
 For more information, please refer to [Configuration](https://github.com/sly9/VoyagerTelegramBot#configurations) session;
