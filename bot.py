@@ -16,6 +16,12 @@ from log_writer import LogWriter
 
 
 class VoyagerConnectionManager:
+    """
+    Low level class that maintains a live connection with voyager application server.
+    It allows command sending, keep-alive, reconnect, etc.
+    Logic to understand the content of each packet lives in 'VoyagerClient'.
+    TODO: Consider reverse the order of creation. Maybe let voyager client create an instance of connection manager.
+    """
     def __init__(self, config_builder=None):
         if config_builder is None:
             config_builder = ConfigBuilder()
