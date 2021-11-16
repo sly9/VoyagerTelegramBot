@@ -149,6 +149,7 @@ class StatPlotter:
 
     def guiding_plot(self, ax_main: axes.Axes = None, ax_scatter: axes.Axes = None, sequence_stat: SequenceStat = None,
                      target_name: str = ''):
+
         ax_main.set_facecolor('#212121')
         ax_main.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
         ax_main.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
@@ -178,20 +179,23 @@ class StatPlotter:
             ))
 
         ax_scatter.set_facecolor('#212121')
-        ax_scatter.tick_params(axis="x", labelbottom=False)
-        ax_scatter.tick_params(axis="y", labelleft=False)
-        ax_scatter.set_xlim([-2.5, 2.5])
-        ax_scatter.set_ylim([-2.5, 2.5])
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#F44336', linewidth=2)
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#F44336', linewidth=2)
+        ax_scatter.set_aspect('equal', 'datalim')
 
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#2196F3',
+        ax_scatter.tick_params(axis="x", labelbottom=False, labeltop=True, width=5)
+        ax_scatter.tick_params(axis="y", labelleft=True, width=5)
+        #ax_scatter.set_xlim([-2.5, 2.5])
+        #ax_scatter.set_ylim([-2.5, 2.5])
+        # https://material.io/archive/guidelines/style/color.html#color-color-palette
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)
+
+        self.circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#B2EBF2',
                     linewidth=4)
         self.circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
-                    color='#2196F3',
+                    color='#B2EBF2',
                     linewidth=4)
 
-        ax_scatter.scatter(sequence_stat.guide_x_error_list, sequence_stat.guide_y_error_list)
+        ax_scatter.scatter(x=sequence_stat.guide_x_error_list, y=sequence_stat.guide_y_error_list, color='#26C6DA')
 
     def plotter(self, seq_stat: SequenceStat = None, target_name: str = ''):
         if seq_stat is None:
