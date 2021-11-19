@@ -172,6 +172,9 @@ class StatPlotter:
             rect = rectangles[i]
             rect.set_color(color)
 
+        x_bound_lower, x_bound_higher = ax.get_xbound()
+        ax.set_xbound(x_bound_lower - 0.3, x_bound_higher + 0.3)
+
         ax.bar_label(rectangles, label_type='center', fontsize=48)
 
         ax.set_ylabel('Exposure Time(s)')
