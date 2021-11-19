@@ -202,10 +202,9 @@ class VoyagerClient:
         type_name = type_dict[message['Type']]
         content = f'[{type_name}]{message["Text"]}'
         telegram_message = f'<b><pre>{content}</pre></b>'
-        print(content)
-        if message['Type'] != 3 and message['Type'] != 4 and message['Type'] != 5 and message['Type'] != 9:
-            return
-        self.send_text_message(telegram_message)
+        allowed_log_type_names = self.config.text_message_config.allowed_log_types
+        if type_name in allowed_log_type_names:
+            self.send_text_message(telegram_message)
 
     def report_stats_for_current_sequence(self):
         if self.current_sequence_stat().name == '':

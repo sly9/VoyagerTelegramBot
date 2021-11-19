@@ -1,5 +1,9 @@
+#!/bin/env python3
+# -*- coding: utf-8 -*-
+
 import json
 from pathlib import Path
+import codecs
 import base64
 import webbrowser
 import io
@@ -10,7 +14,7 @@ from PIL import Image
 class HTMLTelegramBot:
     def __init__(self):
         Path("./replay/images").mkdir(parents=True, exist_ok=True)
-        self.html_file = open('./replay/index.html', 'w')
+        self.html_file = codecs.open('./replay/index.html', 'w', encoding='utf-8')
         self.write_header()
         self.image_count = 0
         self.event_sequence = 0
@@ -54,7 +58,7 @@ class HTMLTelegramBot:
         self.event_sequence += 1
 
     def edit_image_message(self, chat_id: str, message_id: str, base64_encoded_image, filename: str = ''):
-        f = open(f'replay/images/image_{self.image_count}.jpg' , 'wb')
+        f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
         f.close()
