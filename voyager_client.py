@@ -160,7 +160,8 @@ class VoyagerClient:
         position = message['Position']
         timestamp = message['Timestamp']
 
-        focus_result = FocusResult(filter_name=str(filter_index), hfd=hfd, timestamp=timestamp, temperature=focus_temp)
+        focus_result = FocusResult(filter_name=str(filter_index), filter_color=filter_color, hfd=hfd,
+                                   timestamp=timestamp, temperature=focus_temp)
         self.add_focus_result(focus_result)
 
         telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {hfd:.2f}'
@@ -171,7 +172,7 @@ class VoyagerClient:
         return self.sequence_map[self.running_seq]
 
     def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
-        self.sequence_map[sequence_name].add_exposure(exposure)
+        self.current_sequence_stat().add_exposure(exposure)
 
     def add_guide_error_stat(self, error_x: float, error_y: float):
         self.current_sequence_stat().add_guide_error((error_x, error_y))
@@ -182,19 +183,19 @@ class VoyagerClient:
     def handle_jpg_ready(self, message):
         expo = message['Expo']
         filter_name = message['Filter']
-        HFD = message['HFD']
+        hfd = message['HFD']
         star_index = message['StarIndex']
         sequence_target = message['SequenceTarget']
         timestamp = message['TimeInfo']
 
         # new stat code
-        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=HFD, star_index=star_index,
+        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
                                 timestamp=timestamp)
         self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
 
         base64_photo = message['Base64Data']
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
-                           + f'HFD: {HFD}, StarIndex: {star_index}'
+                           + f'HFD: {hfd}, StarIndex: {star_index}'
 
         if expo >= self.config.exposure_limit:
             fit_filename = message['File']
@@ -221,7 +222,7 @@ class VoyagerClient:
             return
         sequence_stat = self.current_sequence_stat()
 
-        base64_img = self.stat_plotter.plotter(seq_stat=sequence_stat, target_name=self.running_seq)
+        base64_img = self.stat_plotter.plot(sequence_stat=sequence_stat)
 
         if not self.current_sequence_stat_chat_id and not self.current_sequence_stat_message_id:
             chat_id, message_id = self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',

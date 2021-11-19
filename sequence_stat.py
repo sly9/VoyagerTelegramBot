@@ -55,11 +55,14 @@ class ExposureInfo:
 
 
 class FocusResult:
-    def __init__(self, filter_name: str = '', hfd: float = 0, timestamp: float = 0, temperature: float = 0):
+    def __init__(self, filter_name: str = '', filter_color: str = '#ddd', hfd: float = 0, timestamp: float = 0,
+                 temperature: float = 0):
         self.filter_name = filter_name
+        self.filter_color = filter_color
         self.hfd = hfd
         self.timestamp = timestamp
         self.temperature = temperature
+        self.recommended_index = 0
 
 
 class SequenceStat:
@@ -76,6 +79,7 @@ class SequenceStat:
             self.exposure_info_list.append(exposure)
 
     def add_focus_result(self, focus_result: FocusResult):
+        focus_result.recommended_index = self.exposure_count() - 0.5
         self.focus_result_list.append(focus_result)
 
     def add_guide_error(self, guide_error: tuple):
@@ -109,7 +113,7 @@ class StatPlotter:
 
         self.filter_meta = self.plotter_configs.filter_styles
 
-    def circle(self, ax: axes.Axes = None, origin: Tuple[float, float] = (0, 0), radius: float = 1.0, **kwargs):
+    def _circle(self, ax: axes.Axes = None, origin: Tuple[float, float] = (0, 0), radius: float = 1.0, **kwargs):
         angle = np.linspace(0, 2 * np.pi, 150)
         x = radius * np.cos(angle) + origin[0]
         y = radius * np.sin(angle) + origin[1]
@@ -129,6 +133,18 @@ class StatPlotter:
 
         ax.set_facecolor('#212121')
 
+        # focus results:
+        if len(sequence_stat.focus_result_list):
+            focus_index = list()
+            focus_hfd_value = list()
+            focus_colors = list()
+            for focus_result in sequence_stat.focus_result_list:
+                focus_hfd_value.append(focus_result.hfd)
+                focus_colors.append(focus_result.filter_color)
+                focus_index.append(focus_result.recommended_index)
+            ax.scatter(focus_index, focus_hfd_value, c=focus_colors, s=1000)
+
+        # hfd and star index
         ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
         ax.plot(img_ids, hfd_values, color='#FF9800', linewidth=10)
         ax.tick_params(axis='y', labelcolor='#FFB74D')
@@ -212,19 +228,19 @@ class StatPlotter:
         # ax_scatter.set_xlim([-2.5, 2.5])
         # ax_scatter.set_ylim([-2.5, 2.5])
         # https://material.io/archive/guidelines/style/color.html#color-color-palette
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)
 
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#B2EBF2',
-                    linewidth=4)
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
-                    color='#B2EBF2',
-                    linewidth=4)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#B2EBF2',
+                     linewidth=4)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
+                     color='#B2EBF2',
+                     linewidth=4)
 
         ax_scatter.scatter(x=sequence_stat.guide_x_error_list, y=sequence_stat.guide_y_error_list, color='#26C6DA')
 
-    def plotter(self, seq_stat: SequenceStat = None, target_name: str = ''):
-        if seq_stat is None:
+    def plot(self, sequence_stat: SequenceStat = None):
+        if sequence_stat is None:
             return
 
         fig = plt.figure(figsize=(30, 10 * self.figure_count), constrained_layout=True)
@@ -239,19 +255,20 @@ class StatPlotter:
         figure_index = 0
         if 'HFDPlot' in self.plotter_configs.types:
             ax = fig.add_subplot(gridspec[figure_index, :])
-            self.hfd_plot(ax=ax, sequence_stat=seq_stat, target_name=target_name)
+            self.hfd_plot(ax=ax, sequence_stat=sequence_stat, target_name=sequence_stat.name)
             figure_index += 1
 
         if 'ExposurePlot' in self.plotter_configs.types:
             ax = fig.add_subplot(gridspec[figure_index, :])
-            self.exposure_plot(ax=ax, sequence_stat=seq_stat, target_name=target_name)
+            self.exposure_plot(ax=ax, sequence_stat=sequence_stat, target_name=sequence_stat.name)
             figure_index += 1
 
-        if 'GuidingPlot' in self.plotter_configs.types and len(seq_stat.guide_x_error_list) > 0:
+        if 'GuidingPlot' in self.plotter_configs.types and len(sequence_stat.guide_x_error_list) > 0:
             ax_main = fig.add_subplot(gridspec[figure_index:figure_index + 2, 0])
             ax_scatter = fig.add_subplot(gridspec[figure_index, 1])
 
-            self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=seq_stat, target_name=target_name)
+            self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=sequence_stat,
+                              target_name=sequence_stat.name)
             figure_index += 1
 
         # fig.tight_layout()
