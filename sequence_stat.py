@@ -149,7 +149,7 @@ class StatPlotter:
 
     def guiding_plot(self, ax_main: axes.Axes = None, ax_scatter: axes.Axes = None, sequence_stat: SequenceStat = None,
                      target_name: str = ''):
-
+        config = self.plotter_configs.guiding_error_plot
         ax_main.set_facecolor('#212121')
         ax_main.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
         ax_main.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
@@ -163,28 +163,39 @@ class StatPlotter:
             abs_y_list.append(abs(y_error))
             distance_list.append(np.sqrt(x_error ** 2 + y_error ** 2))
 
-        ax_main.set_title(
-            'Guiding Plot ({target})(avg(abs)/min/max/std)\n'
-            'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
-            'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
-                target=target_name,
-                x_mean=mean(abs_x_list), x_min=min(sequence_stat.guide_x_error_list),
-                x_max=max(sequence_stat.guide_x_error_list),
-                x_std=stdev(sequence_stat.guide_x_error_list) if len(
-                    sequence_stat.guide_x_error_list) >= 2 else 0.0,
-                y_mean=mean(abs_y_list), y_min=min(sequence_stat.guide_y_error_list),
-                y_max=max(sequence_stat.guide_y_error_list),
-                y_std=stdev(sequence_stat.guide_y_error_list) if len(
-                    sequence_stat.guide_y_error_list) >= 2 else 0.0,
-            ))
+        unit = 'Pixel' if config['unit'] == 'PIXEL' else 'Arcsec'
+        scale = 1.0 if config['unit'] == 'PIXEL' else float(config['scale'])
+
+        title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
+                         'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n' \
+                         'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'
+
+        if config['unit'] == 'ARCSEC':
+            title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
+                             'X={x_mean:.03f}"/{x_min:.03f}"/{x_max:.03f}"/{x_std:.03f}"\n' \
+                             'Y={y_mean:.03f}"/{y_min:.03f}"/{y_max:.03f}"/{y_std:.03f}"'
+
+        ax_main.set_title(title_template.format(
+            unit=unit,
+            x_mean=mean(abs_x_list),
+            x_min=min(sequence_stat.guide_x_error_list) * scale,
+            x_max=max(sequence_stat.guide_x_error_list) * scale,
+            x_std=stdev(sequence_stat.guide_x_error_list) * scale if len(
+                sequence_stat.guide_x_error_list) >= 2 else 0.0,
+            y_mean=mean(abs_y_list) * scale,
+            y_min=min(sequence_stat.guide_y_error_list) * scale,
+            y_max=max(sequence_stat.guide_y_error_list) * scale,
+            y_std=stdev(sequence_stat.guide_y_error_list) * scale if len(
+                sequence_stat.guide_y_error_list) >= 2 else 0.0,
+        ))
 
         ax_scatter.set_facecolor('#212121')
         ax_scatter.set_aspect('equal', 'datalim')
 
         ax_scatter.tick_params(axis="x", labelbottom=False, labeltop=True, width=5)
         ax_scatter.tick_params(axis="y", labelleft=True, width=5)
-        #ax_scatter.set_xlim([-2.5, 2.5])
-        #ax_scatter.set_ylim([-2.5, 2.5])
+        # ax_scatter.set_xlim([-2.5, 2.5])
+        # ax_scatter.set_ylim([-2.5, 2.5])
         # https://material.io/archive/guidelines/style/color.html#color-color-palette
         self.circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
         self.circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)
