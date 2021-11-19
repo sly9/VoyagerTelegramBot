@@ -11,13 +11,16 @@ from matplotlib import pyplot as plt
 
 
 class ExposureInfo:
-    def __init__(self, filter_name: str = '', exposure_time: int = 0, hfd: float = 0, star_index: float = 0):
+    def __init__(self, filter_name: str = '', exposure_time: int = 0, hfd: float = 0, star_index: float = 0,
+                 timestamp: float = 0, sequence_name: str = ''):
         self._filter_name = None
         self.filter_name = filter_name
         # exposure time in seconds
         self.exposure_time = exposure_time
         self.hfd = hfd
         self.star_index = star_index
+        self.timestamp = timestamp
+        self.sequence_name = sequence_name
 
     @property
     def filter_name(self) -> str:
@@ -51,17 +54,29 @@ class ExposureInfo:
         del self._filter_name
 
 
+class FocusResult:
+    def __init__(self, filter_name: str = '', hfd: float = 0, timestamp: float = 0, temperature: float = 0):
+        self.filter_name = filter_name
+        self.hfd = hfd
+        self.timestamp = timestamp
+        self.temperature = temperature
+
+
 class SequenceStat:
     def __init__(self, name: str = ''):
         # target name, like 'M31', or 'NGC 6992'
         self.name = name
         self.exposure_info_list = list()
+        self.focus_result_list = list()
         self.guide_x_error_list = list()  # list of guide error on x axis in pixel
         self.guide_y_error_list = list()  # list of guide error on y axis in pixel
 
     def add_exposure(self, exposure: ExposureInfo):
         if exposure.exposure_time > 30:
             self.exposure_info_list.append(exposure)
+
+    def add_focus_result(self, focus_result: FocusResult):
+        self.focus_result_list.append(focus_result)
 
     def add_guide_error(self, guide_error: tuple):
         self.guide_x_error_list.append(guide_error[0])

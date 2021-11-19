@@ -3,7 +3,7 @@ from datetime import datetime
 
 from configs import ConfigBuilder
 from html_telegram_bot import HTMLTelegramBot
-from sequence_stat import ExposureInfo, SequenceStat, StatPlotter
+from sequence_stat import ExposureInfo, SequenceStat, StatPlotter, FocusResult
 from telegram import TelegramBot
 
 
@@ -155,21 +155,29 @@ class VoyagerClient:
 
         filter_index = message['FilterIndex']
         filter_color = message['FilterColor']
-        HFD = message['HFD']
+        hfd = message['HFD']
         focus_temp = message['FocusTemp']
         position = message['Position']
-        telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {HFD:.2f}'
+        timestamp = message['Timestamp']
+
+        focus_result = FocusResult(filter_name=str(filter_index), hfd=hfd, timestamp=timestamp, temperature=focus_temp)
+        self.add_focus_result(focus_result)
+
+        telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {hfd:.2f}'
         self.send_text_message(telegram_message)
 
     def current_sequence_stat(self) -> SequenceStat:
         self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
         return self.sequence_map[self.running_seq]
 
-    def add_exposure_stats(self, exposure: ExposureInfo):
-        self.current_sequence_stat().add_exposure(exposure)
+    def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
+        self.sequence_map[sequence_name].add_exposure(exposure)
 
     def add_guide_error_stat(self, error_x: float, error_y: float):
         self.current_sequence_stat().add_guide_error((error_x, error_y))
+
+    def add_focus_result(self, focus_result: FocusResult):
+        self.current_sequence_stat().add_focus_result(focus_result)
 
     def handle_jpg_ready(self, message):
         expo = message['Expo']
@@ -177,10 +185,12 @@ class VoyagerClient:
         HFD = message['HFD']
         star_index = message['StarIndex']
         sequence_target = message['SequenceTarget']
+        timestamp = message['TimeInfo']
 
         # new stat code
-        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=HFD, star_index=star_index)
-        self.add_exposure_stats(exposure)
+        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=HFD, star_index=star_index,
+                                timestamp=timestamp)
+        self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
 
         base64_photo = message['Base64Data']
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
