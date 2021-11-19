@@ -144,7 +144,7 @@ class VoyagerClient:
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
-        if is_empty:
+        if is_empty == "true":
             return
 
         done = message['Done']
@@ -156,10 +156,9 @@ class VoyagerClient:
         filter_index = message['FilterIndex']
         filter_color = message['FilterColor']
         HFD = message['HFD']
-        star_index = message['StarIndex']
         focus_temp = message['FocusTemp']
         position = message['Position']
-        telegram_message = f'AutoFocusing for filter {filter_index} is done with position {position}, HFD: {HFD}'
+        telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {HFD:.2f}'
         self.send_text_message(telegram_message)
 
     def current_sequence_stat(self) -> SequenceStat:
