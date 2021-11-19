@@ -83,6 +83,9 @@ class SequenceStat:
         self.focus_result_list.append(focus_result)
 
     def add_guide_error(self, guide_error: tuple):
+        if len(self.guide_x_error_list) > 0 and self.guide_x_error_list[-1] == guide_error[0] and \
+                self.guide_y_error_list[-1] == guide_error[1]:
+            return
         self.guide_x_error_list.append(guide_error[0])
         self.guide_y_error_list.append(guide_error[1])
 
