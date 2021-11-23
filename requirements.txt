@@ -6,3 +6,4 @@ matplotlib~=3.4.3
 pytz~=2021.3
 yaml~=0.2.5
 numpy~=1.20.1
+psutil~=5.8.0

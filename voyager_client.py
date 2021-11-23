@@ -1,6 +1,8 @@
 #!/bin/env python3
 from datetime import datetime
 
+import psutil
+
 from configs import ConfigBuilder
 from html_telegram_bot import HTMLTelegramBot
 from sequence_stat import ExposureInfo, SequenceStat, StatPlotter
@@ -42,6 +44,20 @@ class VoyagerClient:
         return None, None
 
     def parse_message(self, event, message):
+        battery_msg = ''
+        if self.config.monitor_battery:
+            battery = psutil.sensors_battery()
+            if battery.power_plugged:
+                battery_msg = '🔋: 🔌'
+            elif battery.percent >= 80:
+                battery_msg = '🔋: 🆗'
+            elif battery.percent >= 20:
+                battery_msg = '🔋: ❗'
+            else:
+                battery_msg = '🔋: ‼️'
+
+        message['battery'] = battery_msg
+
         if event == 'Version':
             self.ignored_counter = 0
             self.handle_version(message)
@@ -184,8 +200,12 @@ class VoyagerClient:
         self.add_exposure_stats(exposure)
 
         base64_photo = message['Base64Data']
+
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
                            + f'HFD: {HFD}, StarIndex: {star_index}'
+
+        if self.config.monitor_battery:
+            telegram_message = message['battery'] + ' ' + telegram_message
 
         if expo >= self.config.exposure_limit:
             fit_filename = message['File']
