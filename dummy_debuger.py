@@ -5,8 +5,7 @@ from configs import ConfigBuilder
 
 
 class DummyDebugger:
-    def __init__(self, interval: int = 5):
-        self.interval = interval
+    def __init__(self):
         self.messages = None
         config_builder = ConfigBuilder()
         config = config_builder.build()
@@ -26,9 +25,8 @@ class DummyDebugger:
         self.connection_manager.voyager_client.telegram_bot.write_footer()
 
 
-
 if __name__ == "__main__":
-    dd = DummyDebugger(interval=0)
-    dd.load_messages('log.txt')
+    dd = DummyDebugger()
+    dd.load_messages('2021_11_13__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()

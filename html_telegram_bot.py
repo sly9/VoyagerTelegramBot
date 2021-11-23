@@ -1,5 +1,9 @@
+#!/bin/env python3
+# -*- coding: utf-8 -*-
+
 import json
 from pathlib import Path
+import codecs
 import base64
 import webbrowser
 import io
@@ -10,7 +14,7 @@ from PIL import Image
 class HTMLTelegramBot:
     def __init__(self):
         Path("./replay/images").mkdir(parents=True, exist_ok=True)
-        self.html_file = open('./replay/index.html', 'w')
+        self.html_file = codecs.open('./replay/index.html', 'w', encoding='utf-8')
         self.write_header()
         self.image_count = 0
         self.event_sequence = 0
@@ -54,13 +58,18 @@ class HTMLTelegramBot:
         self.event_sequence += 1
 
     def edit_image_message(self, chat_id: str, message_id: str, base64_encoded_image, filename: str = ''):
-        f = open(f'replay/images/image_{self.image_count}.jpg' , 'wb')
+        f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
         f.close()
 
         stream = io.BytesIO(file_content)
-        img = Image.open(stream).resize((300, 200))
+        img = Image.open(stream)
+        basewidth = 300
+        wpercent = (basewidth / float(img.size[0]))
+        hsize = int((float(img.size[1]) * float(wpercent)))
+
+        img.thumbnail((basewidth, hsize))
 
         img_byte_arr = io.BytesIO()
         img.save(img_byte_arr, format='JPEG')
@@ -72,7 +81,7 @@ class HTMLTelegramBot:
             A previously posted image [{message_id}] was updated, new image is:
             <br>
             <a href="images/image_{self.image_count}.jpg">
-            <img style="width:300px;height:200px" src="data:image/jpeg;base64, {base64_encoded_thumbnails}" />
+            <img src="data:image/jpeg;base64, {base64_encoded_thumbnails}" />
             </a></td></tr>\n''')
         self.event_sequence += 1
         self.image_count += 1
@@ -100,7 +109,12 @@ class HTMLTelegramBot:
         f.close()
 
         stream = io.BytesIO(file_content)
-        img = Image.open(stream).resize((300, 200))
+        img = Image.open(stream)
+        basewidth = 300
+        wpercent = (basewidth / float(img.size[0]))
+        hsize = int((float(img.size[1]) * float(wpercent)))
+
+        img.thumbnail((basewidth, hsize))
 
         img_byte_arr = io.BytesIO()
         img.save(img_byte_arr, format='JPEG')
@@ -109,7 +123,7 @@ class HTMLTelegramBot:
         self.html_file.write(
             f'''<tr><td>{self.event_sequence}</td><td>Send Image</td>
             <td><a href="images/image_{self.image_count}.jpg">
-            <img style="width:300px;height:200px" src="data:image/jpeg;base64, {base64_encoded_thumbnails}" />
+            <img src="data:image/jpeg;base64, {base64_encoded_thumbnails}" />
             </a></td></tr>\n''')
         self.image_count += 1
         self.event_sequence += 1

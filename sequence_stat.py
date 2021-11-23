@@ -11,13 +11,16 @@ from matplotlib import pyplot as plt
 
 
 class ExposureInfo:
-    def __init__(self, filter_name: str = '', exposure_time: int = 0, hfd: float = 0, star_index: float = 0):
+    def __init__(self, filter_name: str = '', exposure_time: int = 0, hfd: float = 0, star_index: float = 0,
+                 timestamp: float = 0, sequence_name: str = ''):
         self._filter_name = None
         self.filter_name = filter_name
         # exposure time in seconds
         self.exposure_time = exposure_time
         self.hfd = hfd
         self.star_index = star_index
+        self.timestamp = timestamp
+        self.sequence_name = sequence_name
 
     @property
     def filter_name(self) -> str:
@@ -51,11 +54,23 @@ class ExposureInfo:
         del self._filter_name
 
 
+class FocusResult:
+    def __init__(self, filter_name: str = '', filter_color: str = '#ddd', hfd: float = 0, timestamp: float = 0,
+                 temperature: float = 0):
+        self.filter_name = filter_name
+        self.filter_color = filter_color
+        self.hfd = hfd
+        self.timestamp = timestamp
+        self.temperature = temperature
+        self.recommended_index = 0
+
+
 class SequenceStat:
     def __init__(self, name: str = ''):
         # target name, like 'M31', or 'NGC 6992'
         self.name = name
         self.exposure_info_list = list()
+        self.focus_result_list = list()
         self.guide_x_error_list = list()  # list of guide error on x axis in pixel
         self.guide_y_error_list = list()  # list of guide error on y axis in pixel
 
@@ -63,7 +78,14 @@ class SequenceStat:
         if exposure.exposure_time > 30:
             self.exposure_info_list.append(exposure)
 
+    def add_focus_result(self, focus_result: FocusResult):
+        focus_result.recommended_index = self.exposure_count() - 0.5
+        self.focus_result_list.append(focus_result)
+
     def add_guide_error(self, guide_error: tuple):
+        if len(self.guide_x_error_list) > 0 and self.guide_x_error_list[-1] == guide_error[0] and \
+                self.guide_y_error_list[-1] == guide_error[1]:
+            return
         self.guide_x_error_list.append(guide_error[0])
         self.guide_y_error_list.append(guide_error[1])
 
@@ -94,7 +116,7 @@ class StatPlotter:
 
         self.filter_meta = self.plotter_configs.filter_styles
 
-    def circle(self, ax: axes.Axes = None, origin: Tuple[float, float] = (0, 0), radius: float = 1.0, **kwargs):
+    def _circle(self, ax: axes.Axes = None, origin: Tuple[float, float] = (0, 0), radius: float = 1.0, **kwargs):
         angle = np.linspace(0, 2 * np.pi, 150)
         x = radius * np.cos(angle) + origin[0]
         y = radius * np.sin(angle) + origin[1]
@@ -114,6 +136,18 @@ class StatPlotter:
 
         ax.set_facecolor('#212121')
 
+        # focus results:
+        if len(sequence_stat.focus_result_list):
+            focus_index = list()
+            focus_hfd_value = list()
+            focus_colors = list()
+            for focus_result in sequence_stat.focus_result_list:
+                focus_hfd_value.append(focus_result.hfd)
+                focus_colors.append(focus_result.filter_color)
+                focus_index.append(focus_result.recommended_index)
+            ax.scatter(focus_index, focus_hfd_value, c=focus_colors, s=1000)
+
+        # hfd and star index
         ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
         ax.plot(img_ids, hfd_values, color='#FF9800', linewidth=10)
         ax.tick_params(axis='y', labelcolor='#FFB74D')
@@ -141,6 +175,9 @@ class StatPlotter:
             rect = rectangles[i]
             rect.set_color(color)
 
+        x_bound_lower, x_bound_higher = ax.get_xbound()
+        ax.set_xbound(x_bound_lower - 0.3, x_bound_higher + 0.3)
+
         ax.bar_label(rectangles, label_type='center', fontsize=48)
 
         ax.set_ylabel('Exposure Time(s)')
@@ -149,6 +186,7 @@ class StatPlotter:
 
     def guiding_plot(self, ax_main: axes.Axes = None, ax_scatter: axes.Axes = None, sequence_stat: SequenceStat = None,
                      target_name: str = ''):
+        config = self.plotter_configs.guiding_error_plot
         ax_main.set_facecolor('#212121')
         ax_main.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
         ax_main.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
@@ -162,39 +200,53 @@ class StatPlotter:
             abs_y_list.append(abs(y_error))
             distance_list.append(np.sqrt(x_error ** 2 + y_error ** 2))
 
-        ax_main.set_title(
-            'Guiding Plot ({target})(avg(abs)/min/max/std)\n'
-            'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n'
-            'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'.format(
-                target=target_name,
-                x_mean=mean(abs_x_list), x_min=min(sequence_stat.guide_x_error_list),
-                x_max=max(sequence_stat.guide_x_error_list),
-                x_std=stdev(sequence_stat.guide_x_error_list) if len(
-                    sequence_stat.guide_x_error_list) >= 2 else 0.0,
-                y_mean=mean(abs_y_list), y_min=min(sequence_stat.guide_y_error_list),
-                y_max=max(sequence_stat.guide_y_error_list),
-                y_std=stdev(sequence_stat.guide_y_error_list) if len(
-                    sequence_stat.guide_y_error_list) >= 2 else 0.0,
-            ))
+        unit = 'Pixel' if config['unit'] == 'PIXEL' else 'Arcsec'
+        scale = 1.0 if config['unit'] == 'PIXEL' else float(config['scale'])
+
+        title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
+                         'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n' \
+                         'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'
+
+        if config['unit'] == 'ARCSEC':
+            title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
+                             'X={x_mean:.03f}"/{x_min:.03f}"/{x_max:.03f}"/{x_std:.03f}"\n' \
+                             'Y={y_mean:.03f}"/{y_min:.03f}"/{y_max:.03f}"/{y_std:.03f}"'
+
+        ax_main.set_title(title_template.format(
+            unit=unit,
+            x_mean=mean(abs_x_list),
+            x_min=min(sequence_stat.guide_x_error_list) * scale,
+            x_max=max(sequence_stat.guide_x_error_list) * scale,
+            x_std=stdev(sequence_stat.guide_x_error_list) * scale if len(
+                sequence_stat.guide_x_error_list) >= 2 else 0.0,
+            y_mean=mean(abs_y_list) * scale,
+            y_min=min(sequence_stat.guide_y_error_list) * scale,
+            y_max=max(sequence_stat.guide_y_error_list) * scale,
+            y_std=stdev(sequence_stat.guide_y_error_list) * scale if len(
+                sequence_stat.guide_y_error_list) >= 2 else 0.0,
+        ))
 
         ax_scatter.set_facecolor('#212121')
-        ax_scatter.tick_params(axis="x", labelbottom=False)
-        ax_scatter.tick_params(axis="y", labelleft=False)
-        ax_scatter.set_xlim([-2.5, 2.5])
-        ax_scatter.set_ylim([-2.5, 2.5])
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#F44336', linewidth=2)
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#F44336', linewidth=2)
+        ax_scatter.set_aspect('equal', 'datalim')
 
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#2196F3',
-                    linewidth=4)
-        self.circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
-                    color='#2196F3',
-                    linewidth=4)
+        ax_scatter.tick_params(axis="x", labelbottom=False, labeltop=True, width=5)
+        ax_scatter.tick_params(axis="y", labelleft=True, width=5)
+        # ax_scatter.set_xlim([-2.5, 2.5])
+        # ax_scatter.set_ylim([-2.5, 2.5])
+        # https://material.io/archive/guidelines/style/color.html#color-color-palette
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)
 
-        ax_scatter.scatter(sequence_stat.guide_x_error_list, sequence_stat.guide_y_error_list)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#B2EBF2',
+                     linewidth=4)
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
+                     color='#B2EBF2',
+                     linewidth=4)
 
-    def plotter(self, seq_stat: SequenceStat = None, target_name: str = ''):
-        if seq_stat is None:
+        ax_scatter.scatter(x=sequence_stat.guide_x_error_list, y=sequence_stat.guide_y_error_list, color='#26C6DA')
+
+    def plot(self, sequence_stat: SequenceStat = None):
+        if sequence_stat is None:
             return
 
         fig = plt.figure(figsize=(30, 10 * self.figure_count), constrained_layout=True)
@@ -209,19 +261,20 @@ class StatPlotter:
         figure_index = 0
         if 'HFDPlot' in self.plotter_configs.types:
             ax = fig.add_subplot(gridspec[figure_index, :])
-            self.hfd_plot(ax=ax, sequence_stat=seq_stat, target_name=target_name)
+            self.hfd_plot(ax=ax, sequence_stat=sequence_stat, target_name=sequence_stat.name)
             figure_index += 1
 
         if 'ExposurePlot' in self.plotter_configs.types:
             ax = fig.add_subplot(gridspec[figure_index, :])
-            self.exposure_plot(ax=ax, sequence_stat=seq_stat, target_name=target_name)
+            self.exposure_plot(ax=ax, sequence_stat=sequence_stat, target_name=sequence_stat.name)
             figure_index += 1
 
-        if 'GuidingPlot' in self.plotter_configs.types and len(seq_stat.guide_x_error_list) > 0:
+        if 'GuidingPlot' in self.plotter_configs.types and len(sequence_stat.guide_x_error_list) > 0:
             ax_main = fig.add_subplot(gridspec[figure_index:figure_index + 2, 0])
             ax_scatter = fig.add_subplot(gridspec[figure_index, 1])
 
-            self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=seq_stat, target_name=target_name)
+            self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=sequence_stat,
+                              target_name=sequence_stat.name)
             figure_index += 1
 
         # fig.tight_layout()

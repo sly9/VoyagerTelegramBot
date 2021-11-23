@@ -5,7 +5,7 @@ import psutil
 
 from configs import ConfigBuilder
 from html_telegram_bot import HTMLTelegramBot
-from sequence_stat import ExposureInfo, SequenceStat, StatPlotter
+from sequence_stat import ExposureInfo, SequenceStat, StatPlotter, FocusResult
 from telegram import TelegramBot
 
 
@@ -23,8 +23,9 @@ class VoyagerClient:
         self.running_seq = ''
         self.running_dragscript = ''
         self.img_fn = ''
-        self.guiding_idx = -1
-        self.guided = False
+        self.shot_running = False # whether the camera is exposing, inferred from 'ShotRunning' event
+        self.guiding_status = 0 # same definition as GUIDESTAT, {0: STOPPED, 1: WAITING_SETTLE, 2: RUNNING, 3: TIMEOUT_SETTLE}
+        self.dithering_status = 0 # same definition as GUIDESTAT, {0: STOPPED, 1: RUNNING, 2: WAITING_SETTLE, 3: TIMEOUT_SETTLE}
 
         self.ignored_counter = 0
 
@@ -106,12 +107,14 @@ class VoyagerClient:
         main_shot_elapsed = message['Elapsed']
         guiding_shot_idx = message['ElapsedPerc']
         img_fn = message['File']
+        status = message['Status']
         if img_fn != self.img_fn or guiding_shot_idx != self.guiding_idx:
             # new image or new guiding image
             self.img_fn = img_fn
             self.guiding_idx = guiding_shot_idx
             self.guided = True
             # print('!!!{} G{}-D{}'.format(timestamp, main_shot_elapsed, guiding_shot_idx))
+        self.shot_running = status == 1 # 1 means running, all other things are 'not running'
 
     def handle_control_data(self, message):
         timestamp = message['Timestamp']
@@ -124,8 +127,7 @@ class VoyagerClient:
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
 
-        if self.guided:
-            self.guided = False
+        if self.shot_running and guide_stat == 2 and dither_stat == 0:
             self.add_guide_error_stat(guide_x, guide_y)
             # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
             #                                               is_tracking, is_slewing, guide_x, guide_y))
@@ -160,7 +162,7 @@ class VoyagerClient:
 
     def handle_focus_result(self, message):
         is_empty = message['IsEmpty']
-        if is_empty:
+        if is_empty == "true":
             return
 
         done = message['Done']
@@ -171,38 +173,48 @@ class VoyagerClient:
 
         filter_index = message['FilterIndex']
         filter_color = message['FilterColor']
-        HFD = message['HFD']
-        star_index = message['StarIndex']
+        hfd = message['HFD']
         focus_temp = message['FocusTemp']
         position = message['Position']
-        telegram_message = f'AutoFocusing for filter {filter_index} is done with position {position}, HFD: {HFD}'
+        timestamp = message['Timestamp']
+
+        focus_result = FocusResult(filter_name=str(filter_index), filter_color=filter_color, hfd=hfd,
+                                   timestamp=timestamp, temperature=focus_temp)
+        self.add_focus_result(focus_result)
+
+        telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {hfd:.2f}'
         self.send_text_message(telegram_message)
 
     def current_sequence_stat(self) -> SequenceStat:
         self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
         return self.sequence_map[self.running_seq]
 
-    def add_exposure_stats(self, exposure: ExposureInfo):
+    def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
         self.current_sequence_stat().add_exposure(exposure)
 
     def add_guide_error_stat(self, error_x: float, error_y: float):
         self.current_sequence_stat().add_guide_error((error_x, error_y))
 
+    def add_focus_result(self, focus_result: FocusResult):
+        self.current_sequence_stat().add_focus_result(focus_result)
+
     def handle_jpg_ready(self, message):
         expo = message['Expo']
         filter_name = message['Filter']
-        HFD = message['HFD']
+        hfd = message['HFD']
         star_index = message['StarIndex']
         sequence_target = message['SequenceTarget']
+        timestamp = message['TimeInfo']
 
         # new stat code
-        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=HFD, star_index=star_index)
-        self.add_exposure_stats(exposure)
+        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
+                                timestamp=timestamp)
+        self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
 
         base64_photo = message['Base64Data']
 
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
-                           + f'HFD: {HFD}, StarIndex: {star_index}'
+                           + f'HFD: {hfd}, StarIndex: {star_index}'
 
         if self.config.monitor_battery:
             telegram_message = message['battery'] + ' ' + telegram_message
@@ -222,10 +234,9 @@ class VoyagerClient:
         type_name = type_dict[message['Type']]
         content = f'[{type_name}]{message["Text"]}'
         telegram_message = f'<b><pre>{content}</pre></b>'
-        print(content)
-        if message['Type'] != 3 and message['Type'] != 4 and message['Type'] != 5 and message['Type'] != 9:
-            return
-        self.send_text_message(telegram_message)
+        allowed_log_type_names = self.config.text_message_config.allowed_log_types
+        if type_name in allowed_log_type_names:
+            self.send_text_message(telegram_message)
 
     def report_stats_for_current_sequence(self):
         if self.current_sequence_stat().name == '':
@@ -233,7 +244,7 @@ class VoyagerClient:
             return
         sequence_stat = self.current_sequence_stat()
 
-        base64_img = self.stat_plotter.plotter(seq_stat=sequence_stat, target_name=self.running_seq)
+        base64_img = self.stat_plotter.plot(sequence_stat=sequence_stat)
 
         if not self.current_sequence_stat_chat_id and not self.current_sequence_stat_message_id:
             chat_id, message_id = self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
