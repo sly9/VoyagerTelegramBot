@@ -52,4 +52,4 @@ telegram_setting:
 timezone: America/Denver
 debugging: False
 allow_auto_reconnect: True
-monitor_battery: True
+monitor_battery: False
