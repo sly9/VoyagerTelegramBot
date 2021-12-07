@@ -19,6 +19,8 @@ class VoyagerClient:
         else:
             telegram_bot = TelegramBot(config_builder=config_builder)
 
+        self.telegram_bot = telegram_bot
+
         self.handler_dict = defaultdict(set)
 
         self.giant_handler = GiantEventHandler(config_builder=config_builder, telegram_bot=telegram_bot)
