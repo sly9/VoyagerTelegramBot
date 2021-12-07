@@ -18,13 +18,12 @@ class GiantEventHandler(VoyagerEventHandler):
         # interval vars
         self.running_seq = ''
         self.running_dragscript = ''
-        self.img_fn = ''
+
         self.shot_running = False  # whether the camera is exposing, inferred from 'ShotRunning' event
-        self.guiding_status = 0  # same definition as GUIDESTAT, {0: STOPPED, 1: WAITING_SETTLE, 2: RUNNING, 3: TIMEOUT_SETTLE}
-        self.dithering_status = 0  # same definition as GUIDESTAT, {0: STOPPED, 1: RUNNING, 2: WAITING_SETTLE, 3: TIMEOUT_SETTLE}
 
         self.ignored_counter = 0
 
+        # A dictionary of 'sequence name' => 'sequence stats'
         self.sequence_map = dict()
         # Note this violates the assumption that there could be more chat ids we should send message to...
         # but let's bear with it for now
@@ -61,9 +60,6 @@ class GiantEventHandler(VoyagerEventHandler):
             self.handle_control_data(message)
         elif event_name in self.config.ignored_events:
             # do nothing
-            message.pop('Event', None)
-            message.pop('Host', None)
-            message.pop('Inst', None)
             self.ignored_counter += 1
             if self.ignored_counter >= 30:
                 print('.', end='\n', flush=True)
@@ -90,18 +86,12 @@ class GiantEventHandler(VoyagerEventHandler):
         guiding_shot_idx = message['ElapsedPerc']
         img_fn = message['File']
         status = message['Status']
-        if img_fn != self.img_fn or guiding_shot_idx != self.guiding_idx:
-            # new image or new guiding image
-            self.img_fn = img_fn
-            self.guiding_idx = guiding_shot_idx
-            self.guided = True
-            # print('!!!{} G{}-D{}'.format(timestamp, main_shot_elapsed, guiding_shot_idx))
         self.shot_running = status == 1  # 1 means running, all other things are 'not running'
 
     def handle_control_data(self, message):
         timestamp = message['Timestamp']
-        guide_stat = message['GUIDESTAT']
-        dither_stat = message['DITHSTAT']
+        guide_status = message['GUIDESTAT']
+        dither_status = message['DITHSTAT']
         is_tracking = message['MNTTRACK']
         is_slewing = message['MNTSLEW']
         guide_x = message['GUIDEX']
@@ -109,10 +99,10 @@ class GiantEventHandler(VoyagerEventHandler):
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
 
-        if self.shot_running and guide_stat == 2 and dither_stat == 0:
+        # definition for GUIDESTAT, {0: STOPPED, 1: WAITING_SETTLE, 2: RUNNING, 3: TIMEOUT_SETTLE}
+        # definition for DITHSTAT, {0: STOPPED, 1: RUNNING, 2: WAITING_SETTLE, 3: TIMEOUT_SETTLE}
+        if self.shot_running and guide_status == 2 and dither_status == 0:
             self.add_guide_error_stat(guide_x, guide_y)
-            # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
-            #                                               is_tracking, is_slewing, guide_x, guide_y))
 
         if running_dragscript != self.running_dragscript:
             self.sequence_map = {}
