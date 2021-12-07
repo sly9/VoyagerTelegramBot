@@ -188,9 +188,6 @@ class GiantEventHandler(VoyagerEventHandler):
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
                            + f'HFD: {hfd}, StarIndex: {star_index}'
 
-        if self.config.monitor_battery:
-            telegram_message = message['battery'] + ' ' + telegram_message
-
         if expo >= self.config.exposure_limit:
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'

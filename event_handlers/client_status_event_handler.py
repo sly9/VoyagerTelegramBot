@@ -32,5 +32,6 @@ class ClientStatusEventHandler(VoyagerEventHandler):
             else:
                 battery_msg = f'!!Critical battery ({battery.percent}%)!!'
 
-        telegram_message = f'<b><pre>{battery_msg}</pre></b>'
-        self.telegram_bot.send_text_message(telegram_message)
+        if not self.battery_disabled:
+            telegram_message = f'<b><pre>{battery_msg}</pre></b>'
+            self.telegram_bot.send_text_message(telegram_message)
