@@ -42,21 +42,6 @@ class GiantEventHandler(VoyagerEventHandler):
         return None, None
 
     def handle_event(self, event_name: str, message: Dict):
-        # remove this battery block, merge into dedicated handler
-        battery_msg = ''
-        if self.config.monitor_battery:
-            battery = psutil.sensors_battery()
-            if battery.power_plugged:
-                battery_msg = '🔋: 🔌'
-            elif battery.percent >= 80:
-                battery_msg = '🔋: 🆗'
-            elif battery.percent >= 20:
-                battery_msg = '🔋: ❗'
-            else:
-                battery_msg = '🔋: ‼️'
-
-        message['battery'] = battery_msg
-
         if event_name == 'Version':
             self.ignored_counter = 0
             self.handle_version(message)

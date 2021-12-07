@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import Dict
 
 from configs import ConfigBuilder
+from event_handlers.client_status_event_handler import ClientStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
@@ -26,6 +27,10 @@ class VoyagerClient:
 
         log_event_handler = LogEventHandler(config_builder=config_builder, telegram_bot=self.telegram_bot)
         self.register_event_handler(log_event_handler)
+
+        client_status_event_handler = ClientStatusEventHandler(config_builder=config_builder,
+                                                               telegram_bot=self.telegram_bot)
+        self.register_event_handler(client_status_event_handler)
 
     def parse_message(self, event_name: str, message: Dict):
         if event_name in self.handler_dict:
