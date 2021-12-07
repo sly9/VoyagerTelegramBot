@@ -10,6 +10,7 @@ from datetime import datetime
 
 import websocket
 
+import event_handlers.log_event_handler
 from configs import ConfigBuilder
 from voyager_client import VoyagerClient
 from log_writer import LogWriter
@@ -39,6 +40,7 @@ class VoyagerConnectionManager:
 
         self.reconnect_delay_sec = 1
         self.should_exit_keep_alive_thread = False
+
 
     def send_command(self, command_name, params):
         params['UID'] = str(uuid.uuid1())

@@ -1,11 +1,13 @@
 #!/bin/env python3
+from collections import defaultdict
 from datetime import datetime
-
-import psutil
+from typing import Dict, List
 
 from configs import ConfigBuilder
+from event_handlers.log_event_handler import LogEventHandler
+from event_handlers.giant_event_handler import GiantEventHandler
+from event_handlers.voyager_event_handler import VoyagerEventHandler
 from html_telegram_bot import HTMLTelegramBot
-from sequence_stat import ExposureInfo, SequenceStat, StatPlotter, FocusResult
 from telegram import TelegramBot
 
 
@@ -13,250 +15,36 @@ class VoyagerClient:
     def __init__(self, config_builder: ConfigBuilder):
         self.config = config_builder.build()
         if self.config.debugging:
-            self.telegram_bot = HTMLTelegramBot()
+            telegram_bot = HTMLTelegramBot()
         else:
-            self.telegram_bot = TelegramBot(config_builder=config_builder)
+            telegram_bot = TelegramBot(config_builder=config_builder)
 
-        self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
+        self.handler_dict = defaultdict(set)
 
-        # interval vars
-        self.running_seq = ''
-        self.running_dragscript = ''
-        self.img_fn = ''
-        self.shot_running = False # whether the camera is exposing, inferred from 'ShotRunning' event
-        self.guiding_status = 0 # same definition as GUIDESTAT, {0: STOPPED, 1: WAITING_SETTLE, 2: RUNNING, 3: TIMEOUT_SETTLE}
-        self.dithering_status = 0 # same definition as GUIDESTAT, {0: STOPPED, 1: RUNNING, 2: WAITING_SETTLE, 3: TIMEOUT_SETTLE}
+        self.giant_handler = GiantEventHandler(config_builder=config_builder, telegram_bot=telegram_bot)
 
-        self.ignored_counter = 0
+        log_event_handler = LogEventHandler(config_builder=config_builder, telegram_bot=telegram_bot)
+        self.register_event_handler(log_event_handler)
 
-        self.sequence_map = dict()
-        # Note this violates the assumption that there could be more chat ids we should send message to...
-        # but let's bear with it for now
-        self.current_sequence_stat_chat_id = None
-        self.current_sequence_stat_message_id = None
+    def parse_message(self, event_name: str, message: Dict):
+        if event_name in self.handler_dict:
+            for handler in self.handler_dict[event_name]:
+                try:
+                    handler.handle_event(event_name, message)
+                except Exception as exception:
+                    print(f'Exception occurred while handling {event_name}, raw message: {message}, exception details:',
+                          exception)
 
-    def send_text_message(self, msg_text: str = ''):
-        if self.telegram_bot:
-            self.telegram_bot.send_text_message(msg_text)
+        # always let giant handler do the work
+        try:
+            self.giant_handler.handle_event(event_name, message)
+        except Exception as exception:
+            print(f'Exception occurred while handling {event_name}, raw message: {message}, exception details:',
+                  exception)
 
-    def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '', as_doc: bool = True):
-        if self.telegram_bot:
-            return self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
-        return None, None
-
-    def parse_message(self, event, message):
-        battery_msg = ''
-        if self.config.monitor_battery:
-            battery = psutil.sensors_battery()
-            if battery.power_plugged:
-                battery_msg = '🔋: 🔌'
-            elif battery.percent >= 80:
-                battery_msg = '🔋: 🆗'
-            elif battery.percent >= 20:
-                battery_msg = '🔋: ❗'
-            else:
-                battery_msg = '🔋: ‼️'
-
-        message['battery'] = battery_msg
-
-        if event == 'Version':
-            self.ignored_counter = 0
-            self.handle_version(message)
-        elif event == 'NewJPGReady':
-            self.ignored_counter = 0
-            self.handle_jpg_ready(message)
-        elif event == 'AutoFocusResult':
-            self.ignored_counter = 0
-            self.handle_focus_result(message)
-        elif event == 'LogEvent':
-            self.ignored_counter = 0
-            self.handle_log(message)
-        elif event == 'ShotRunning':
-            self.ignored_counter = 0
-            self.handle_shot_running(message)
-        elif event == 'ControlData':
-            self.ignored_counter = 0
-            self.handle_control_data(message)
-        elif event in self.config.ignored_events:
-            # do nothing
-            message.pop('Event', None)
-            message.pop('Host', None)
-            message.pop('Inst', None)
-            self.ignored_counter += 1
-            if self.ignored_counter >= 30:
-                print('.', end='\n', flush=True)
-                self.ignored_counter = 0
-            else:
-                print('.', end='', flush=True)
-        else:
-            self.ignored_counter = 0
-            timestamp = message['Timestamp']
-            message.pop('Timestamp', None)
-            print(f'[{datetime.fromtimestamp(timestamp)}][{event}]: {message}')
-
-    def handle_version(self, message):
-        telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
-            host_name=message['Host'],
-            url=self.config.voyager_setting.domain,
-            version=message['VOYVersion'])
-
-        self.send_text_message(telegram_message)
-
-    def handle_shot_running(self, message):
-        timestamp = message['Timestamp']
-        main_shot_elapsed = message['Elapsed']
-        guiding_shot_idx = message['ElapsedPerc']
-        img_fn = message['File']
-        status = message['Status']
-        if img_fn != self.img_fn or guiding_shot_idx != self.guiding_idx:
-            # new image or new guiding image
-            self.img_fn = img_fn
-            self.guiding_idx = guiding_shot_idx
-            self.guided = True
-            # print('!!!{} G{}-D{}'.format(timestamp, main_shot_elapsed, guiding_shot_idx))
-        self.shot_running = status == 1 # 1 means running, all other things are 'not running'
-
-    def handle_control_data(self, message):
-        timestamp = message['Timestamp']
-        guide_stat = message['GUIDESTAT']
-        dither_stat = message['DITHSTAT']
-        is_tracking = message['MNTTRACK']
-        is_slewing = message['MNTSLEW']
-        guide_x = message['GUIDEX']
-        guide_y = message['GUIDEY']
-        running_seq = message['RUNSEQ']
-        running_dragscript = message['RUNDS']
-
-        if self.shot_running and guide_stat == 2 and dither_stat == 0:
-            self.add_guide_error_stat(guide_x, guide_y)
-            # print('{} G{}-D{} | T{}-S{} | X{} Y{}'.format(timestamp, guide_stat, dither_stat,
-            #                                               is_tracking, is_slewing, guide_x, guide_y))
-
-        if running_dragscript != self.running_dragscript:
-            self.sequence_map = {}
-            if running_dragscript == '':
-                self.send_text_message(f'Just finished DragScript {self.running_dragscript}')
-            elif self.running_dragscript == '':
-                self.send_text_message(f'Starting DragScript {running_dragscript}')
-            else:
-                self.send_text_message(
-                    f'Switching DragScript from {running_dragscript} to {self.running_dragscript}')
-            self.running_dragscript = running_dragscript
-
-        if running_seq != self.running_seq:
-            # self.report_stats_for_current_sequence()
-            if running_seq == '':
-                self.send_text_message(f'Just finished Sequence {self.running_seq}')
-            elif self.running_seq == '':
-                self.send_text_message(f'Starting Sequence {running_seq}')
-                self.current_sequence_stat_chat_id = None
-                self.current_sequence_stat_message_id = None
-                self.report_stats_for_current_sequence()
-            else:
-                self.send_text_message(
-                    f'Switching Sequence from {running_seq} to {self.running_seq}')
-                self.current_sequence_stat_chat_id = None
-                self.current_sequence_stat_message_id = None
-                self.report_stats_for_current_sequence()
-            self.running_seq = running_seq
-
-    def handle_focus_result(self, message):
-        is_empty = message['IsEmpty']
-        if is_empty == "true":
-            return
-
-        done = message['Done']
-        last_error = message['LastError']
-        if not done:
-            self.send_text_message(f'Auto focusing failed with reason: {last_error}')
-            return
-
-        filter_index = message['FilterIndex']
-        filter_color = message['FilterColor']
-        hfd = message['HFD']
-        focus_temp = message['FocusTemp']
-        position = message['Position']
-        timestamp = message['Timestamp']
-
-        focus_result = FocusResult(filter_name=str(filter_index), filter_color=filter_color, hfd=hfd,
-                                   timestamp=timestamp, temperature=focus_temp)
-        self.add_focus_result(focus_result)
-
-        telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {hfd:.2f}'
-        self.send_text_message(telegram_message)
-
-    def current_sequence_stat(self) -> SequenceStat:
-        self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
-        return self.sequence_map[self.running_seq]
-
-    def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
-        self.current_sequence_stat().add_exposure(exposure)
-
-    def add_guide_error_stat(self, error_x: float, error_y: float):
-        self.current_sequence_stat().add_guide_error((error_x, error_y))
-
-    def add_focus_result(self, focus_result: FocusResult):
-        self.current_sequence_stat().add_focus_result(focus_result)
-
-    def handle_jpg_ready(self, message):
-        expo = message['Expo']
-        filter_name = message['Filter']
-        hfd = message['HFD']
-        star_index = message['StarIndex']
-        sequence_target = message['SequenceTarget']
-        timestamp = message['TimeInfo']
-
-        # new stat code
-        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
-                                timestamp=timestamp)
-        self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
-
-        base64_photo = message['Base64Data']
-
-        telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
-                           + f'HFD: {hfd}, StarIndex: {star_index}'
-
-        if self.config.monitor_battery:
-            telegram_message = message['battery'] + ' ' + telegram_message
-
-        if expo >= self.config.exposure_limit:
-            fit_filename = message['File']
-            new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
-            self.send_image_message(base64_photo, new_filename, telegram_message)
-        else:
-            self.send_text_message(telegram_message)
-        # with PINNING and UNPINNING implemented, we can safely report stats for all images
-        self.report_stats_for_current_sequence()
-
-    def handle_log(self, message):
-        type_dict = {1: 'DEBUG', 2: 'INFO', 3: 'WARNING', 4: 'CRITICAL', 5: 'ACTION', 6: 'SUBTITLE', 7: 'EVENT',
-                     8: 'REQUEST', 9: 'EMERGENCY'}
-        type_name = type_dict[message['Type']]
-        content = f'[{type_name}]{message["Text"]}'
-        telegram_message = f'<b><pre>{content}</pre></b>'
-        allowed_log_type_names = self.config.text_message_config.allowed_log_types
-        if type_name in allowed_log_type_names:
-            self.send_text_message(telegram_message)
-
-    def report_stats_for_current_sequence(self):
-        if self.current_sequence_stat().name == '':
-            # one-off shots doesn't need stats, we only care about sequences.
-            return
-        sequence_stat = self.current_sequence_stat()
-
-        base64_img = self.stat_plotter.plot(sequence_stat=sequence_stat)
-
-        if not self.current_sequence_stat_chat_id and not self.current_sequence_stat_message_id:
-            chat_id, message_id = self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
-                                                          msg_text='Statistics for {target}'.format(
-                                                              target=self.running_seq),
-                                                          as_doc=False)
-            self.current_sequence_stat_chat_id = chat_id
-            self.current_sequence_stat_message_id = message_id
-            self.telegram_bot.unpin_all_messages(chat_id=chat_id)
-            self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
-        else:
-            self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
-                                                 message_id=self.current_sequence_stat_message_id,
-                                                 base64_encoded_image=base64_img,
-                                                 filename=self.running_seq + '_stat.jpg')
+    def register_event_handler(self, event_handler: VoyagerEventHandler):
+        if event_handler.interested_event_name():
+            self.handler_dict[event_handler.interested_event_name()].add(event_handler)
+        if event_handler.interested_event_names():
+            for v in event_handler.interested_event_names():
+                self.handler_dict[v].add(event_handler)
