@@ -1,15 +1,14 @@
 from typing import Dict
 
+from configs import ConfigBuilder
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
-from configs import ConfigBuilder
 
 
 # This is just one of the event handlers which are interested in log events. You can write more
 class LogEventHandler(VoyagerEventHandler):
     def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
-        self.config = config_builder.build()
-        self.telegram_bot = telegram_bot
+        super().__init__(config_builder=config_builder, telegram_bot=telegram_bot, handler_name='LogEventHandler')
 
     @staticmethod
     def interested_event_name():

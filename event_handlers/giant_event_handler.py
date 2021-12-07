@@ -4,16 +4,14 @@ from typing import Dict
 import psutil
 
 from configs import ConfigBuilder
+from event_handlers.voyager_event_handler import VoyagerEventHandler
 from sequence_stat import StatPlotter, FocusResult, SequenceStat, ExposureInfo
 from telegram import TelegramBot
-from event_handlers.voyager_event_handler import VoyagerEventHandler
 
 
 class GiantEventHandler(VoyagerEventHandler):
     def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
-        self.config = config_builder.build()
-
-        self.telegram_bot = telegram_bot
+        super().__init__(config_builder=config_builder, telegram_bot=telegram_bot, handler_name='GiantEventHandler')
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
@@ -43,21 +41,6 @@ class GiantEventHandler(VoyagerEventHandler):
         return None, None
 
     def handle_event(self, event_name: str, message: Dict):
-        # remove this battery block, merge into dedicated handler
-        battery_msg = ''
-        if self.config.monitor_battery:
-            battery = psutil.sensors_battery()
-            if battery.power_plugged:
-                battery_msg = '🔋: 🔌'
-            elif battery.percent >= 80:
-                battery_msg = '🔋: 🆗'
-            elif battery.percent >= 20:
-                battery_msg = '🔋: ❗'
-            else:
-                battery_msg = '🔋: ‼️'
-
-        message['battery'] = battery_msg
-
         if event_name == 'Version':
             self.ignored_counter = 0
             self.handle_version(message)
