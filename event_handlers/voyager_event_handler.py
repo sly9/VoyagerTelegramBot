@@ -1,16 +1,20 @@
-from typing import List
 from typing import Dict
+
+from configs import ConfigBuilder
 from telegram import TelegramBot
 
 
 class VoyagerEventHandler:
-    """A base class for all event handlers to inherit from.
+    """
+    A base class for all event handlers to inherit from.
 
     To handle an incoming event from voyager application server, Most important method is the 'handle_event' method.
     """
 
-    def __init__(self, event_names: List[str], telegram_bot: TelegramBot):
-        print('init voyager event handler')
+    def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot, handler_name: str = 'DefaultHandler'):
+        self.name = handler_name
+        self.config = config_builder.build()
+        self.telegram_bot = telegram_bot
 
     @staticmethod
     def interested_event_names():
@@ -25,6 +29,12 @@ class VoyagerEventHandler:
         :return: An event name this event_handler wants to process.
         """
         return None
+
+    def get_name(self):
+        """
+        :return: The name of this event_handler
+        """
+        return self.name
 
     def handle_event(self, event_name: str, message: Dict):
         """

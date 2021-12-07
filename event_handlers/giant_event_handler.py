@@ -4,16 +4,14 @@ from typing import Dict
 import psutil
 
 from configs import ConfigBuilder
+from event_handlers.voyager_event_handler import VoyagerEventHandler
 from sequence_stat import StatPlotter, FocusResult, SequenceStat, ExposureInfo
 from telegram import TelegramBot
-from event_handlers.voyager_event_handler import VoyagerEventHandler
 
 
 class GiantEventHandler(VoyagerEventHandler):
     def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
-        self.config = config_builder.build()
-
-        self.telegram_bot = telegram_bot
+        super().__init__(config_builder=config_builder, telegram_bot=telegram_bot, handler_name='GiantEventHandler')
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
@@ -226,7 +224,6 @@ class GiantEventHandler(VoyagerEventHandler):
             self.send_text_message(telegram_message)
         # with PINNING and UNPINNING implemented, we can safely report stats for all images
         self.report_stats_for_current_sequence()
-
 
     def report_stats_for_current_sequence(self):
         if self.current_sequence_stat().name == '':
