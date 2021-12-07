@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 
 import _thread
-import json
 import base64
+import json
 import time
 import uuid
 from collections import deque
-from datetime import datetime
 
 import websocket
 
-import event_handlers.log_event_handler
 from configs import ConfigBuilder
-from voyager_client import VoyagerClient
 from log_writer import LogWriter
+from voyager_client import VoyagerClient
 
 
 class VoyagerConnectionManager:
@@ -23,6 +21,7 @@ class VoyagerConnectionManager:
     Logic to understand the content of each packet lives in 'VoyagerClient'.
     TODO: Consider reverse the order of creation. Maybe let voyager client create an instance of connection manager.
     """
+
     def __init__(self, config_builder=None):
         if config_builder is None:
             config_builder = ConfigBuilder()
@@ -40,7 +39,6 @@ class VoyagerConnectionManager:
 
         self.reconnect_delay_sec = 1
         self.should_exit_keep_alive_thread = False
-
 
     def send_command(self, command_name, params):
         params['UID'] = str(uuid.uuid1())
