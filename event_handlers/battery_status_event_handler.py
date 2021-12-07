@@ -7,10 +7,10 @@ from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
 
 
-class ClientStatusEventHandler(VoyagerEventHandler):
+class BatteryStatusEventHandler(VoyagerEventHandler):
     def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
         super().__init__(config_builder=config_builder, telegram_bot=telegram_bot,
-                         handler_name='ClientStatusEventHandler')
+                         handler_name='BatteryStatusEventHandler')
         self.battery_disabled = False
 
     @staticmethod
@@ -20,17 +20,20 @@ class ClientStatusEventHandler(VoyagerEventHandler):
     def handle_event(self, event_name: str, message: Dict):
         battery_msg = ''
         if self.config.monitor_battery and not self.battery_disabled:
-            battery = psutil.sensors_battery()
-            if battery is None:
-                #  If no battery is installed or metrics can’t be determined
-                battery_msg = 'Cannot detect battery info'
+            try:
+                battery = psutil.sensors_battery()
+                if battery is None:
+                    #  If no battery is installed or metrics can’t be determined
+                    battery_msg = 'Cannot detect battery info'
+                    self.battery_disabled = True
+                elif battery.power_plugged:
+                    battery_msg = 'AC power is connected.'
+                elif battery.percent > 30:
+                    battery_msg = f'Battery ({battery.percent}%)'
+                else:
+                    battery_msg = f'!!Critical battery ({battery.percent}%)!!'
+            except Exception as exception:
                 self.battery_disabled = True
-            elif battery.power_plugged:
-                battery_msg = 'AC power is connected.'
-            elif battery.percent > 30:
-                battery_msg = f'Battery ({battery.percent}%)'
-            else:
-                battery_msg = f'!!Critical battery ({battery.percent}%)!!'
 
         if not self.battery_disabled:
             telegram_message = f'<b><pre>{battery_msg}</pre></b>'
