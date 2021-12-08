@@ -8,33 +8,43 @@ from telegram import TelegramBot
 
 
 class BatteryStatusEventHandler(VoyagerEventHandler):
+    """
+    An event handler which is interested in local -- the bot's local, not voyager application's local, battery status.
+    """
+
     def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
         super().__init__(config_builder=config_builder, telegram_bot=telegram_bot,
                          handler_name='BatteryStatusEventHandler')
-        self.battery_disabled = False
+        self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
 
     @staticmethod
     def interested_event_names():
-        return ['LogEvent', 'ShotRunning', 'ControlData']
+        try:
+            battery = psutil.sensors_battery()
+            if battery is None:
+                return []
+            return ['LogEvent', 'ShotRunning', 'ControlData']
+        except Exception:
+            return []
 
     def handle_event(self, event_name: str, message: Dict):
         battery_msg = ''
-        if self.config.monitor_battery and not self.battery_disabled:
-            try:
-                battery = psutil.sensors_battery()
-                if battery is None:
-                    #  If no battery is installed or metrics can’t be determined
-                    battery_msg = 'Cannot detect battery info'
-                    self.battery_disabled = True
-                elif battery.power_plugged:
-                    battery_msg = 'AC power is connected.'
-                elif battery.percent > 30:
-                    battery_msg = f'Battery ({battery.percent}%)'
-                else:
-                    battery_msg = f'!!Critical battery ({battery.percent}%)!!'
-            except Exception as exception:
-                self.battery_disabled = True
+        if not self.config.monitor_battery:
+            return
+        battery = psutil.sensors_battery()
+        if battery.power_plugged:
+            battery_msg = 'AC power is connected.'
+        elif battery.percent > 30:
+            battery_msg = f'Battery ({battery.percent}%)'
+        else:
+            battery_msg = f'!!Critical battery ({battery.percent}%)!!'
 
-        if not self.battery_disabled:
-            telegram_message = f'<b><pre>{battery_msg}</pre></b>'
-            self.telegram_bot.send_text_message(telegram_message)
+        telegram_message = f'<b><pre>{battery_msg}</pre></b>'
+        self.send_text_message(telegram_message)
+
+    def send_text_message(self, message: str):
+        if self.throttle_count < 30:
+            self.throttle_count += 1
+        else:
+            self.telegram_bot.send_text_message(message)
+            self.throttle_count = 0
