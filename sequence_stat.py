@@ -209,7 +209,7 @@ class StatPlotter:
 
         title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
                          'X={x_mean:.03f}{unit_short}/{x_min:.03f}{unit_short}/{x_max:.03f}{unit_short}/{x_std:.03f}{unit_short}\n' \
-                         'Y={x_mean:.03f}{unit_short}/{x_min:.03f}{unit_short}/{x_max:.03f}{unit_short}/{x_std:.03f}{unit_short}\n' \
+                         'Y={y_mean:.03f}{unit_short}/{y_min:.03f}{unit_short}/{y_max:.03f}{unit_short}/{y_std:.03f}{unit_short}\n' \
                          'Total RMS: mean={t_mean:.03f}{unit_short}/95P={t_95:.03f}{unit_short}/STD={t_std:.03f}{unit_short}'
 
         ax_main.set_title(title_template.format(
