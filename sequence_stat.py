@@ -214,6 +214,7 @@ class StatPlotter:
 
         ax_main.set_title(title_template.format(
             unit=unit,
+            unit_short=unit_short,
             x_mean=mean(abs_x_list),
             x_min=min(sequence_stat.guide_x_error_list) * scale,
             x_max=max(sequence_stat.guide_x_error_list) * scale,
