@@ -203,14 +203,14 @@ class StatPlotter:
         unit = 'Pixel' if config['unit'] == 'PIXEL' else 'Arcsec'
         scale = 1.0 if config['unit'] == 'PIXEL' else float(config['scale'])
 
-        title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
-                         'X={x_mean:.03f}/{x_min:.03f}/{x_max:.03f}/{x_std:.03f}\n' \
-                         'Y={y_mean:.03f}/{y_min:.03f}/{y_max:.03f}/{y_std:.03f}'
-
+        unit_short = 'px'
         if config['unit'] == 'ARCSEC':
-            title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
-                             'X={x_mean:.03f}"/{x_min:.03f}"/{x_max:.03f}"/{x_std:.03f}"\n' \
-                             'Y={y_mean:.03f}"/{y_min:.03f}"/{y_max:.03f}"/{y_std:.03f}"'
+            unit_short = '"'
+
+        title_template = 'Guiding Plot (avg(abs)/min/max/std), unit: {unit}\n' \
+                         'X={x_mean:.03f}{unit_short}/{x_min:.03f}{unit_short}/{x_max:.03f}{unit_short}/{x_std:.03f}{unit_short}\n' \
+                         'Y={x_mean:.03f}{unit_short}/{x_min:.03f}{unit_short}/{x_max:.03f}{unit_short}/{x_std:.03f}{unit_short}\n' \
+                         'Total: mean={t_mean:.03f}{unit_short}/95P={t_95:.03f}{unit_short}/{t_std:.03f}{unit_short}'
 
         ax_main.set_title(title_template.format(
             unit=unit,
@@ -224,6 +224,9 @@ class StatPlotter:
             y_max=max(sequence_stat.guide_y_error_list) * scale,
             y_std=stdev(sequence_stat.guide_y_error_list) * scale if len(
                 sequence_stat.guide_y_error_list) >= 2 else 0.0,
+            t_mean=mean(distance_list) * scale,
+            t_95=np.percentile(distance_list, 95) * scale,
+            t_std=stdev(distance_list) * scale if len(distance_list) >= 2 else 0.0,
         ))
 
         ax_scatter.set_facecolor('#212121')
@@ -237,13 +240,15 @@ class StatPlotter:
         self._circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
         self._circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)
 
-        self._circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list), linestyle='-', color='#B2EBF2',
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=mean(distance_list) * scale, linestyle='-', color='#B2EBF2',
                      linewidth=4)
-        self._circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95), linestyle='-',
+        self._circle(ax=ax_scatter, origin=(0, 0), radius=np.percentile(distance_list, 95) * scale, linestyle='-',
                      color='#B2EBF2',
                      linewidth=4)
+        guide_x_error_list = [element * scale for element in sequence_stat.guide_x_error_list]
+        guide_y_error_list = [element * scale for element in sequence_stat.guide_y_error_list]
 
-        ax_scatter.scatter(x=sequence_stat.guide_x_error_list, y=sequence_stat.guide_y_error_list, color='#26C6DA')
+        ax_scatter.scatter(x=guide_x_error_list, y=guide_y_error_list, color='#26C6DA')
 
     def plot(self, sequence_stat: SequenceStat = None):
         if sequence_stat is None:
