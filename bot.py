@@ -84,7 +84,8 @@ class VoyagerConnectionManager:
 
         event_name = message['Event']
         if event_name == 'RemoteActionResult':
-            command_name = self.command_uid_to_method_name_dict[message['UID']]
+            uid = message['UID']
+            command_name = self.command_uid_to_method_name_dict.get(uid, 'NOT_FOUND')
             message['MethodName'] = command_name
         self.voyager_client.parse_message(event_name, message)
 
