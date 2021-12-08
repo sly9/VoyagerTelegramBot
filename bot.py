@@ -40,13 +40,17 @@ class VoyagerConnectionManager:
         self.reconnect_delay_sec = 1
         self.should_exit_keep_alive_thread = False
 
+        self.command_uid_to_method_name_dict = {}
+
     def send_command(self, command_name, params):
-        params['UID'] = str(uuid.uuid1())
+        command_uuid = str(uuid.uuid1())
+        params['UID'] = command_uuid
         command = {
             'method': command_name,
             'params': params,
             'id': self.next_id
         }
+        self.command_uid_to_method_name_dict[command_uuid] = command_name
         self.next_id = self.next_id + 1
         self.command_queue.append(command)
         self.try_to_process_next_command()
@@ -78,8 +82,11 @@ class VoyagerConnectionManager:
             self.try_to_process_next_command()
             return
 
-        event = message['Event']
-        self.voyager_client.parse_message(event, message)
+        event_name = message['Event']
+        if event_name == 'RemoteActionResult':
+            command_name = self.command_uid_to_method_name_dict[message['UID']]
+            message['MethodName'] = command_name
+        self.voyager_client.parse_message(event_name, message)
 
     def on_error(self, ws, error):
         self.log_writer.maybe_flush()
@@ -108,6 +115,7 @@ class VoyagerConnectionManager:
 
         self.send_command('RemoteSetDashboardMode', {'IsOn': True})
         self.send_command('RemoteSetLogEvent', {'IsOn': True, 'Level': 0})
+        self.send_command('RemoteGetFilterConfiguration', {})
         if self.keep_alive_thread is None:
             self.should_exit_keep_alive_thread = False
             self.keep_alive_thread = _thread.start_new_thread(self.keep_alive_routine, ())

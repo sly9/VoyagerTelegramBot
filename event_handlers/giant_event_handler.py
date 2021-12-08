@@ -30,6 +30,8 @@ class GiantEventHandler(VoyagerEventHandler):
         self.current_sequence_stat_chat_id = None
         self.current_sequence_stat_message_id = None
 
+        self.filter_index_to_name_dict = dict()
+
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
             self.telegram_bot.send_text_message(msg_text)
@@ -58,6 +60,8 @@ class GiantEventHandler(VoyagerEventHandler):
         elif event_name == 'ControlData':
             self.ignored_counter = 0
             self.handle_control_data(message)
+        elif event_name == 'RemoteActionResult':
+            self.handle_remote_action_result(message)
         elif event_name in self.config.ignored_events:
             # do nothing
             self.ignored_counter += 1
@@ -72,7 +76,7 @@ class GiantEventHandler(VoyagerEventHandler):
             message.pop('Timestamp', None)
             print(f'[{datetime.fromtimestamp(timestamp)}][{event_name}]: {message}')
 
-    def handle_version(self, message):
+    def handle_version(self, message:Dict):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
             host_name=message['Host'],
             url=self.config.voyager_setting.domain,
@@ -80,7 +84,17 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.send_text_message(telegram_message)
 
-    def handle_shot_running(self, message):
+    def handle_remote_action_result(self, message:Dict):
+        method_name = message['MethodName']
+        if method_name == 'RemoteGetFilterConfiguration':
+            print(message)
+            params = message['ParamRet']
+            filter_count = params['FilterNum']
+            for i in range(1, filter_count+1):
+                self.filter_index_to_name_dict[i] = params[f'Filter{i}_Name']
+
+
+    def handle_shot_running(self, message:Dict):
         timestamp = message['Timestamp']
         main_shot_elapsed = message['Elapsed']
         guiding_shot_idx = message['ElapsedPerc']
@@ -88,7 +102,7 @@ class GiantEventHandler(VoyagerEventHandler):
         status = message['Status']
         self.shot_running = status == 1  # 1 means running, all other things are 'not running'
 
-    def handle_control_data(self, message):
+    def handle_control_data(self, message:Dict):
         timestamp = message['Timestamp']
         guide_status = message['GUIDESTAT']
         dither_status = message['DITHSTAT']
@@ -132,7 +146,7 @@ class GiantEventHandler(VoyagerEventHandler):
                 self.report_stats_for_current_sequence()
             self.running_seq = running_seq
 
-    def handle_focus_result(self, message):
+    def handle_focus_result(self, message:Dict):
         is_empty = message['IsEmpty']
         if is_empty == "true":
             return
@@ -154,7 +168,9 @@ class GiantEventHandler(VoyagerEventHandler):
                                    timestamp=timestamp, temperature=focus_temp)
         self.add_focus_result(focus_result)
 
-        telegram_message = f'AutoFocusing for filter at index:{filter_index} succeeded with position {position}, HFD: {hfd:.2f}'
+        filter_name = self.filter_index_to_name_dict[filter_index]
+
+        telegram_message = f'AutoFocusing for filter {filter_name} succeeded with position {position}, HFD: {hfd:.2f}'
         self.send_text_message(telegram_message)
 
     def current_sequence_stat(self) -> SequenceStat:
@@ -170,7 +186,7 @@ class GiantEventHandler(VoyagerEventHandler):
     def add_focus_result(self, focus_result: FocusResult):
         self.current_sequence_stat().add_focus_result(focus_result)
 
-    def handle_jpg_ready(self, message):
+    def handle_jpg_ready(self, message:Dict):
         expo = message['Expo']
         filter_name = message['Filter']
         hfd = message['HFD']
