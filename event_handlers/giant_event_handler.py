@@ -10,8 +10,8 @@ from telegram import TelegramBot
 
 
 class GiantEventHandler(VoyagerEventHandler):
-    def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
-        super().__init__(config_builder=config_builder, telegram_bot=telegram_bot, handler_name='GiantEventHandler')
+    def __init__(self, config, telegram_bot: TelegramBot):
+        super().__init__(config=config, telegram_bot=telegram_bot, handler_name='GiantEventHandler')
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 

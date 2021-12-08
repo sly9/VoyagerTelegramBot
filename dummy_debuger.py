@@ -9,7 +9,7 @@ class DummyDebugger:
         config = config_builder.build()
         config.debugging = True
         config.should_dump_log = False
-        self.connection_manager = VoyagerConnectionManager(config_builder=config_builder)
+        self.connection_manager = VoyagerConnectionManager(config=config)
 
     def load_messages(self, msg_fn: str = None):
         with open(msg_fn, 'r') as msg_f:

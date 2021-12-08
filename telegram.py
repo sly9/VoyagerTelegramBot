@@ -13,8 +13,8 @@ import time
 
 
 class TelegramBot:
-    def __init__(self, config_builder: ConfigBuilder = None):
-        self.config = config_builder.build()
+    def __init__(self, config = None):
+        self.config = config
         self.token = self.config.telegram_setting.bot_token
         self.chat_id = self.config.telegram_setting.chat_ids[0]
         # print('telegram bot init.')

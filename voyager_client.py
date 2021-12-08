@@ -12,23 +12,23 @@ from telegram import TelegramBot
 
 
 class VoyagerClient:
-    def __init__(self, config_builder: ConfigBuilder):
-        self.config = config_builder.build()
+    def __init__(self, config=None):
+        self.config = config
         self.telegram_bot = None
 
         if self.config.debugging:
             self.telegram_bot = HTMLTelegramBot()
         else:
-            self.telegram_bot = TelegramBot(config_builder=config_builder)
+            self.telegram_bot = TelegramBot(config=config)
 
         self.handler_dict = defaultdict(set)
 
-        self.giant_handler = GiantEventHandler(config_builder=config_builder, telegram_bot=self.telegram_bot)
+        self.giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot)
 
-        log_event_handler = LogEventHandler(config_builder=config_builder, telegram_bot=self.telegram_bot)
+        log_event_handler = LogEventHandler(config=config, telegram_bot=self.telegram_bot)
         self.register_event_handler(log_event_handler)
 
-        client_status_event_handler = BatteryStatusEventHandler(config_builder=config_builder,
+        client_status_event_handler = BatteryStatusEventHandler(config=config,
                                                                 telegram_bot=self.telegram_bot)
         self.register_event_handler(client_status_event_handler)
 

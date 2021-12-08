@@ -22,20 +22,18 @@ class VoyagerConnectionManager:
     TODO: Consider reverse the order of creation. Maybe let voyager client create an instance of connection manager.
     """
 
-    def __init__(self, config_builder=None):
-        if config_builder is None:
-            config_builder = ConfigBuilder()
-        self.config = config_builder.build()
+    def __init__(self, config=None):
+        self.config = config
         self.voyager_settings = self.config.voyager_setting
 
         self.ws = None
         self.keep_alive_thread = None
-        self.voyager_client = VoyagerClient(config_builder=config_builder)
+        self.voyager_client = VoyagerClient(config=config)
         self.command_queue = deque([])
         self.ongoing_command = None
         self.next_id = 1
 
-        self.log_writer = LogWriter(config_builder=config_builder)
+        self.log_writer = LogWriter(config=config)
 
         self.reconnect_delay_sec = 1
         self.should_exit_keep_alive_thread = False
@@ -139,5 +137,6 @@ class VoyagerConnectionManager:
 
 
 if __name__ == "__main__":
-    connection_manager = VoyagerConnectionManager()
+    config_builder = ConfigBuilder()
+    connection_manager = VoyagerConnectionManager(config=config_builder.build())
     connection_manager.run_forever()

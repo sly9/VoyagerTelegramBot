@@ -11,9 +11,9 @@ class VoyagerEventHandler:
     To handle an incoming event from voyager application server, Most important method is the 'handle_event' method.
     """
 
-    def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot, handler_name: str = 'DefaultHandler'):
+    def __init__(self, config, telegram_bot: TelegramBot, handler_name: str = 'DefaultHandler'):
         self.name = handler_name
-        self.config = config_builder.build()
+        self.config = config
         self.telegram_bot = telegram_bot
 
     @staticmethod

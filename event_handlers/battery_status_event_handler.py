@@ -12,8 +12,8 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
     An event handler which is interested in local -- the bot's local, not voyager application's local, battery status.
     """
 
-    def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
-        super().__init__(config_builder=config_builder, telegram_bot=telegram_bot,
+    def __init__(self, config, telegram_bot: TelegramBot):
+        super().__init__(config=config, telegram_bot=telegram_bot,
                          handler_name='BatteryStatusEventHandler')
         self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
 

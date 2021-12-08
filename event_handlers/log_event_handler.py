@@ -7,8 +7,8 @@ from telegram import TelegramBot
 
 # This is just one of the event handlers which are interested in log events. You can write more
 class LogEventHandler(VoyagerEventHandler):
-    def __init__(self, config_builder: ConfigBuilder, telegram_bot: TelegramBot):
-        super().__init__(config_builder=config_builder, telegram_bot=telegram_bot, handler_name='LogEventHandler')
+    def __init__(self, config, telegram_bot: TelegramBot):
+        super().__init__(config=config, telegram_bot=telegram_bot, handler_name='LogEventHandler')
 
     @staticmethod
     def interested_event_name():

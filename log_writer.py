@@ -7,8 +7,8 @@ import os
 
 
 class LogWriter:
-    def __init__(self, config_builder: ConfigBuilder):
-        self.config = config_builder.build()
+    def __init__(self, config):
+        self.config = config
         self._log_file = None
         self.should_dump_log = self.config.should_dump_log
 
