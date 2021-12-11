@@ -16,9 +16,8 @@ class TelegramBot:
     def __init__(self, config = None):
         self.config = config
         self.token = self.config.telegram_setting.bot_token
-        self.chat_id = self.config.telegram_setting.chat_ids[0]
-        # print('telegram bot init.')
-        # print('\ttoken: {token}\n\tchats: {chat_ids}'.format(token=self.token, chat_ids=self.chat_ids))
+        self.chat_id = self.config.telegram_setting.chat_id
+
         self.urls = {
             'text': f'https://api.telegram.org/bot{self.token}/sendMessage',
             'doc': f'https://api.telegram.org/bot{self.token}/sendDocument',

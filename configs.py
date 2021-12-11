@@ -70,5 +70,5 @@ def make_class(classname: str, **options):
 if __name__ == "__main__":
     c = ConfigBuilder()
     b = c.build()
-    print(b.telegram_setting.chat_ids[0])
+    print(b.telegram_setting.chat_id)
     print(b.voyager_setting.domain)
