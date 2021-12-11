@@ -12,7 +12,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
-        # interval vars
+        # internal vars
         self.running_seq = ''
         self.running_dragscript = ''
 
