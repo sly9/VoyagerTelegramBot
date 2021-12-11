@@ -1,9 +1,9 @@
 # Note this file is a template, and also the place for default values. So keep it here, and make a copy of this file as
 # 'config.yml', then modify the values there. If a field is skipped in the config.yml, the default value defined in this
 # file will be used instead.
-version: 0.2
-exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
-ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
+version: 0.5
+
+### Sequence Statistics
 sequence_stats_config:
   # Possible values are: HFDPlot, ExposurePlot, GuidingPlot, TemperaturePlot
   types: [ HFDPlot, ExposurePlot, GuidingPlot ]  # Select chart types of stats
@@ -34,13 +34,16 @@ sequence_stats_config:
     B:
       marker: +
       color: '#2196F3'
+
+### Messages
 # A new config section for text message related features. This section is not being read by our bot yet.
 text_message_config:
   send_image_msgs: 1  # Send jpeg images to chats
   # Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
   allowed_log_types: [ WARNING, CRITICAL, TITLE, EMERGENCY ]
 send_image_msgs: 1  # Send jpeg images to chats, will be deprecated soon, and moved to 'text_message_config' section.
-should_dump_log: True  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
+
+### Software
 voyager_setting:
   domain: <voyager_url>  # Domain or IP for remote Voyager Server
   port: <voyager_port>  # port of remote Voyager Server
@@ -48,8 +51,13 @@ voyager_setting:
   password: <password>
 telegram_setting:
   bot_token: <telegram_token>
-  chat_ids: [ <chat_id_0>, <chat_id_1> ]  # Comma separated list of telegram chat ids
-timezone: America/Denver
+  chat_id: <chat_id>
+
+### Miscellaneous
+exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
+ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
+timezone: America/Los_Angeles
+should_dump_log: True  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
+monitor_battery: False
 debugging: False
 allow_auto_reconnect: True
-monitor_battery: False

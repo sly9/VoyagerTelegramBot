@@ -1,7 +1,7 @@
 # VoyagerTelegramBot
 by Liuyi Sun ([AstroBin](https://www.astrobin.com/users/liuyisun/)) and Kun Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
-Last updates: 11/13/2021
+Last updates: 12/11/2021
 
 ## Introduction
 **VoyagerTelegramBot** is a lightweight client of Voyager Application Server.
@@ -65,7 +65,7 @@ Currently, we only provide a general installation steps which may require some *
    pip3 install -r requirements.txt
    ```
 3. Duplicate "config.yml.example" and rename it to "config.xml".
-For more information, please refer to [Configuration](https://github.com/sly9/VoyagerTelegramBot#configurations) session;
+For more information, please refer to [Configurations](https://github.com/sly9/VoyagerTelegramBot#configurations) session;
 4. Launch the bot
 
    ```Shell
@@ -77,45 +77,42 @@ In the future, we will also add other methods such as Docker, and py2exe.
 The default and personalized configuration file () are both plain text,
 you can open and edit it with any text editor (notepad, sublimetext, notepad++, just named a few).
 
-Details of each configuration items are explained below
+Details of each configuration items are explained below.
 ```YAML
-version: 0.2
+version: 0.5
 ```
 Just the version number of our **VoyagerTelegramBot**, no need to touch it.
-```YAML
-exposure_limit: 30
-```
-If the exposure time of an image is less than `exposure_limit`,
-the image and corresponding messages are ignored, we use it to eliminate images for focusing.
-```YAML
-ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]
-```
-Certain types of messages we received from Voyager application server are ignored.
+### Sequence Statistics
 ```YAML
 sequence_stats_config:
-  types: [ HFDPlot, ExposurePlot, GuidePlot ]  # Select chart types of stats
+  types: [ HFDPlot, ExposurePlot, GuidePlot ]
+  hfd_plot_max_shots_count: -1
+  guiding_error_plot:
+    max_shots_count: -1
+    unit: PIXEL
+    scale: 1.21
   filter_styles:
     Ha:
       marker: +
-      color: #E53935
+      color: '#E53935'
     SII:
       marker: v
-      color: #B71C1C
+      color: '#B71C1C'
     OIII:
       marker: o
-      color: #3F51B5
+      color: '#3F51B5'
     L:
       marker: +
-      color: #9E9E9E
+      color: '#9E9E9E'
     R:
       marker: +
-      color: #F44336
+      color: '#F44336'
     G:
       marker: +
-      color: #4CAF50
+      color: '#4CAF50'
     B:
       marker: +
-      color: #2196F3
+      color: '#2196F3'
 ```
 Current version supports 3 `types` of charts including
 - *HFDPlot* contains HFD and StarIndex values
@@ -125,15 +122,19 @@ Current version supports 3 `types` of charts including
 Remove any of them if you don't want to receive the results.
 
 The `filter_styles` defines the colors in chart for each type of filters, you could leave them as default.
+
+### Messages
+```YAML
+text_message_config:
+  send_image_msgs: 1  # Send jpeg images to chats
+  allowed_log_types: [ WARNING, CRITICAL, TITLE, EMERGENCY ]
+```
 ```YAML
 send_image_msgs: 1  # Send jpeg images to chats
 ```
 If `send_image_msgs` is set to `0`, previews of images will not be included in messages.
 But the charts will not be affected.
-```YAML
-should_dump_log: True
-```
-It's a setting for debug. If `True`, all messages received will be saved in a log file.
+### Software
 ```YAML
 voyager_setting:
   domain: <voyager_url>  # Domain or IP for remote Voyager Server
@@ -145,12 +146,32 @@ Information of the Voyager application server
 ```YAML
 telegram_setting:
   bot_token: <telegram_token>
-  chat_ids: [ <chat_id_0>, <chat_id_1> ]  # Comma separated list of telegram chat ids
+  chat_id: <chat_id>
 ```
-`bot_token` can be found when creating new bot, and `chat_ids` is a list of `chat_id` where the messages will be sent to.
+`bot_token` can be found when creating new bot, and `chat_id` indicates where the messages will be sent to.
+### Miscellaneous
 ```YAML
-timezone: America/Denver
+exposure_limit: 30
+```
+If the exposure time of an image is less than `exposure_limit`,
+the image and corresponding messages are ignored, we use it to eliminate images for focusing.
+```YAML
+ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]
+```
+Certain types of messages we received from Voyager application server are ignored.
+```YAML
+timezone: America/Los_Angeles
+```
+`timezone` is defined with location of your telescope. Eligible values are available [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+```YAML
+should_dump_log: True
+```
+It's a setting for debug. If `True`, all messages received will be saved in a log file.
+```YAML
+monitor_battery: False
+```
+If you are using our **VoyagerTelegramBot** on a laptop, and wish to monitoring if the AC is connected and the battery level. Set this opition to `True`. The battery info is acquired by [`psutil`](https://github.com/giampaolo/psutil).
+```YAML
 debugging: False
 allow_auto_reconnect: True
 ```
-`timezone` is defined with location of your telescope. Eligible values are available [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
