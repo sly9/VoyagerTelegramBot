@@ -51,7 +51,12 @@ After fixing that, try to open the exe file again.
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
             self.config_yaml['telegram_setting']['chat_id'] = self.config_yaml['telegram_setting']['chat_ids'][0]
 
+        self.already_built = False
+
     def build(self):
+        if self.already_built:
+            print('This is likely a bug -- building the configuration twice.')
+        self.already_built = True
         return class_from_dict('Configs', self.config_yaml.copy())()
 
 
