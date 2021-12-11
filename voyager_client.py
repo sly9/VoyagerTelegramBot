@@ -5,6 +5,7 @@ from typing import Dict
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
+from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from html_telegram_bot import HTMLTelegramBot
 from telegram import TelegramBot
@@ -22,13 +23,15 @@ class VoyagerClient:
 
         self.handler_dict = defaultdict(set)
 
-        self.giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot)
+        self.miscellaneous_event_handler = MiscellaneousEventHandler(config=config, telegram_bot=self.telegram_bot)
+
+        giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot)
+        self.register_event_handler(giant_handler)
 
         log_event_handler = LogEventHandler(config=config, telegram_bot=self.telegram_bot)
         self.register_event_handler(log_event_handler)
 
-        client_status_event_handler = BatteryStatusEventHandler(config=config,
-                                                                telegram_bot=self.telegram_bot)
+        client_status_event_handler = BatteryStatusEventHandler(config=config, telegram_bot=self.telegram_bot)
         self.register_event_handler(client_status_event_handler)
 
     def parse_message(self, event_name: str, message: Dict):
@@ -40,11 +43,11 @@ class VoyagerClient:
                     print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                           f'raw message: {message}, exception details:{exception}')
 
-        # always let giant handler do the work
+        # always let miscellaneous handler do the work
         try:
-            self.giant_handler.handle_event(event_name, message)
+            self.miscellaneous_event_handler.handle_event(event_name, message)
         except Exception as exception:
-            print(f'\n[{self.giant_handler.get_name()}] Exception occurred while handling {event_name}, '
+            print(f'\n[{self.miscellaneous_event_handler.get_name()}] Exception occurred while handling {event_name}, '
                   f'raw message: {message}, exception details:{exception}')
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):

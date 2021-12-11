@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Dict
 
 from event_handlers.voyager_event_handler import VoyagerEventHandler
@@ -29,6 +28,13 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
 
+    def interested_event_names(self):
+        return ['NewJPGReady',
+                'AutoFocusResult',
+                'ShotRunning',
+                'ControlData',
+                'RemoteActionResult']
+
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
             self.telegram_bot.send_text_message(msg_text)
@@ -40,38 +46,18 @@ class GiantEventHandler(VoyagerEventHandler):
         return None, None
 
     def handle_event(self, event_name: str, message: Dict):
-        if event_name == 'Version':
-            self.ignored_counter = 0
-            self.handle_version(message)
-        elif event_name == 'NewJPGReady':
-            self.ignored_counter = 0
+        if event_name == 'NewJPGReady':
             self.handle_jpg_ready(message)
         elif event_name == 'AutoFocusResult':
-            self.ignored_counter = 0
             self.handle_focus_result(message)
-        elif event_name == 'LogEvent':
-            self.ignored_counter = 0
         elif event_name == 'ShotRunning':
-            self.ignored_counter = 0
             self.handle_shot_running(message)
         elif event_name == 'ControlData':
-            self.ignored_counter = 0
             self.handle_control_data(message)
         elif event_name == 'RemoteActionResult':
             self.handle_remote_action_result(message)
-        elif event_name in self.config.ignored_events:
-            # do nothing
-            self.ignored_counter += 1
-            if self.ignored_counter >= 30:
-                print('.', end='\n', flush=True)
-                self.ignored_counter = 0
-            else:
-                print('.', end='', flush=True)
         else:
-            self.ignored_counter = 0
-            timestamp = message['Timestamp']
-            message.pop('Timestamp', None)
-            print(f'[{datetime.fromtimestamp(timestamp)}][{event_name}]: {message}')
+            return
 
     def handle_version(self, message: Dict):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
@@ -84,7 +70,7 @@ class GiantEventHandler(VoyagerEventHandler):
     def handle_remote_action_result(self, message: Dict):
         method_name = message['MethodName']
         if method_name == 'RemoteGetFilterConfiguration':
-            print(message)
+            # print(message)
             params = message['ParamRet']
             filter_count = params['FilterNum']
             for i in range(1, filter_count + 1):
