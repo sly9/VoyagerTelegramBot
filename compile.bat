@@ -1,3 +1,5 @@
+@echo off
+
 RMDIR /S /Q dist
 RMDIR /S /Q build
 
