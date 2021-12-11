@@ -1,6 +1,5 @@
 from typing import Dict
 
-from configs import ConfigBuilder
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
 

@@ -1,9 +1,6 @@
 from datetime import datetime
 from typing import Dict
 
-import psutil
-
-from configs import ConfigBuilder
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from sequence_stat import StatPlotter, FocusResult, SequenceStat, ExposureInfo
 from telegram import TelegramBot
@@ -76,7 +73,7 @@ class GiantEventHandler(VoyagerEventHandler):
             message.pop('Timestamp', None)
             print(f'[{datetime.fromtimestamp(timestamp)}][{event_name}]: {message}')
 
-    def handle_version(self, message:Dict):
+    def handle_version(self, message: Dict):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
             host_name=message['Host'],
             url=self.config.voyager_setting.domain,
@@ -84,17 +81,16 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.send_text_message(telegram_message)
 
-    def handle_remote_action_result(self, message:Dict):
+    def handle_remote_action_result(self, message: Dict):
         method_name = message['MethodName']
         if method_name == 'RemoteGetFilterConfiguration':
             print(message)
             params = message['ParamRet']
             filter_count = params['FilterNum']
-            for i in range(1, filter_count+1):
+            for i in range(1, filter_count + 1):
                 self.filter_index_to_name_dict[i] = params[f'Filter{i}_Name']
 
-
-    def handle_shot_running(self, message:Dict):
+    def handle_shot_running(self, message: Dict):
         timestamp = message['Timestamp']
         main_shot_elapsed = message['Elapsed']
         guiding_shot_idx = message['ElapsedPerc']
@@ -102,7 +98,7 @@ class GiantEventHandler(VoyagerEventHandler):
         status = message['Status']
         self.shot_running = status == 1  # 1 means running, all other things are 'not running'
 
-    def handle_control_data(self, message:Dict):
+    def handle_control_data(self, message: Dict):
         timestamp = message['Timestamp']
         guide_status = message['GUIDESTAT']
         dither_status = message['DITHSTAT']
@@ -146,7 +142,7 @@ class GiantEventHandler(VoyagerEventHandler):
                 self.report_stats_for_current_sequence()
             self.running_seq = running_seq
 
-    def handle_focus_result(self, message:Dict):
+    def handle_focus_result(self, message: Dict):
         is_empty = message['IsEmpty']
         if is_empty == "true":
             return
@@ -186,7 +182,7 @@ class GiantEventHandler(VoyagerEventHandler):
     def add_focus_result(self, focus_result: FocusResult):
         self.current_sequence_stat().add_focus_result(focus_result)
 
-    def handle_jpg_ready(self, message:Dict):
+    def handle_jpg_ready(self, message: Dict):
         expo = message['Expo']
         filter_name = message['Filter']
         hfd = message['HFD']

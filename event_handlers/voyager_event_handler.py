@@ -1,6 +1,5 @@
 from typing import Dict
 
-from configs import ConfigBuilder
 from telegram import TelegramBot
 
 
