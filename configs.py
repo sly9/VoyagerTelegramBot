@@ -1,9 +1,27 @@
+import os
+import sys
+
 import yaml
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 
 class ConfigBuilder:
     def __init__(self):
-        with open('config.yml.example', 'r') as template_file, open('config.yml', 'r') as yaml_f:
+        config_yml_path = resource_path('config.yml')
+        config_yml_example_path = resource_path('config.yml.example')
+        print('Trying to load these config files: ', config_yml_path, config_yml_example_path)
+        with open(config_yml_example_path, 'r') as template_file, open(config_yml_path, 'r') as yaml_f:
             try:
                 self.config_yaml = yaml.safe_load(template_file)
                 self.config_yaml.update(yaml.safe_load(yaml_f))
