@@ -1,3 +1,4 @@
+import platform
 from os.path import exists
 import os
 import sys
@@ -31,7 +32,10 @@ Please open it up with any text editors, and modify at least these sections:
   * voyager_setting
 After fixing that, try to open the exe file again. 
             ''')
-            input("Press any to exit...")
+            if platform.system() == 'Windows':
+                os.system('pause')
+            else:
+                input("Press Enter to exit...")
             sys.exit()
 
         print('Trying to load these config files: ', config_yml_path, config_yml_example_path)
