@@ -27,7 +27,7 @@ class GiantEventHandler(VoyagerEventHandler):
         self.current_sequence_stat_chat_id = None
         self.current_sequence_stat_message_id = None
 
-        self.filter_name_list = range(10)  # initial with 10 unnamed filters
+        self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
 
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
