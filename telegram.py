@@ -111,7 +111,7 @@ class TelegramBot:
 
 if __name__ == '__main__':
     c = ConfigBuilder()
-    t = TelegramBot(config_builder=c)
+    t = TelegramBot(config=c.build())
     t.send_text_message(message='hello world')
     with open("tests/ic5070.jpg", "rb") as image_file, open("tests/m42.jpg", "rb") as second_image_file:
         encoded_string = base64.b64encode(image_file.read())
@@ -121,5 +121,5 @@ if __name__ == '__main__':
         response = t.edit_image_message(chat_id=the_chat_id, message_id=the_message_id,
                                         base64_encoded_image=encoded_string,
                                         filename='m42.jpg')
-        print(response.text)
+        print(response)
         t.unpin_message(chat_id=the_chat_id, message_id=the_message_id)
