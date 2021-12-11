@@ -1,5 +1,7 @@
+from os.path import exists
 import os
 import sys
+from shutil import copyfile
 
 import yaml
 
@@ -15,12 +17,25 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-
 class ConfigBuilder:
     def __init__(self):
-        config_yml_path = resource_path('config.yml')
+        config_yml_path = os.path.abspath('config.yml')
         config_yml_example_path = resource_path('config.yml.example')
+        if not exists(config_yml_path):
+            print('!!!!!!!!!!!!!!!!!Config file not set up!!!!!!!!!!!!!!!')
+            copyfile(config_yml_example_path, config_yml_path)
+            print('''You need a valid configuration file for bot to run. 
+I just created a copy of configuration into the same directory as your excutable.
+Please open it up with any text editors, and modify at least these sections:
+  * telegram_setting
+  * voyager_setting
+After fixing that, try to open the exe file again. 
+            ''')
+            input("Press any to exit...")
+            sys.exit()
+
         print('Trying to load these config files: ', config_yml_path, config_yml_example_path)
+
         with open(config_yml_example_path, 'r') as template_file, open(config_yml_path, 'r') as yaml_f:
             try:
                 self.config_yaml = yaml.safe_load(template_file)
