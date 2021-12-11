@@ -12,7 +12,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
-        # interval vars
+        # internal vars
         self.running_seq = ''
         self.running_dragscript = ''
 
@@ -27,7 +27,7 @@ class GiantEventHandler(VoyagerEventHandler):
         self.current_sequence_stat_chat_id = None
         self.current_sequence_stat_message_id = None
 
-        self.filter_name_list = range(10)  # initial with 10 unnamed filters
+        self.filter_name_list_dict = dict()  # initial with 10 unnamed filters
 
     def send_text_message(self, msg_text: str = ''):
         if self.telegram_bot:
@@ -88,7 +88,7 @@ class GiantEventHandler(VoyagerEventHandler):
             params = message['ParamRet']
             filter_count = params['FilterNum']
             for i in range(1, filter_count + 1):
-                self.filter_name_list[i] = params[f'Filter{i}_Name']
+                self.filter_name_list_dict[i] = params[f'Filter{i}_Name']
 
     def handle_shot_running(self, message: Dict):
         timestamp = message['Timestamp']
@@ -164,7 +164,7 @@ class GiantEventHandler(VoyagerEventHandler):
                                    timestamp=timestamp, temperature=focus_temp)
         self.add_focus_result(focus_result)
 
-        filter_name = self.filter_name_list[filter_index]
+        filter_name = self.filter_name_list_dict[filter_index]
 
         telegram_message = f'AutoFocusing for filter {filter_name} succeeded with position {position}, HFD: {hfd:.2f}'
         self.send_text_message(telegram_message)
