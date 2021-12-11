@@ -2,7 +2,6 @@
 from collections import defaultdict
 from typing import Dict
 
-from configs import ConfigBuilder
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
@@ -38,16 +37,15 @@ class VoyagerClient:
                 try:
                     handler.handle_event(event_name, message)
                 except Exception as exception:
-                    print(
-                        f'[{handler}]Exception occurred while handling {event_name}, raw message: {message}, exception details:',
-                        exception)
+                    print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
+                          f'raw message: {message}, exception details:{exception}')
 
         # always let giant handler do the work
         try:
             self.giant_handler.handle_event(event_name, message)
         except Exception as exception:
-            print(f'Exception occurred while handling {event_name}, raw message: {message}, exception details:',
-                  exception)
+            print(f'\n[{self.giant_handler.get_name()}] Exception occurred while handling {event_name}, '
+                  f'raw message: {message}, exception details:{exception}')
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):
         if event_handler.interested_event_name():
