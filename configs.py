@@ -11,6 +11,8 @@ class ConfigBuilder:
                 self.config_yaml = {}
                 print(exc)
         print('Configs are loaded: \n', self.config_yaml)
+        if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
+            self.config_yaml['telegram_setting']['chat_id'] = self.config_yaml['telegram_setting']['chat_ids'][0]
 
     def build(self):
         return class_from_dict('Configs', self.config_yaml.copy())()
