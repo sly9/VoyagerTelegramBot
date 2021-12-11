@@ -73,18 +73,21 @@ class TelegramBot:
 
     def edit_image_message(self, chat_id: str, message_id: str, base64_encoded_image, filename: str = ''):
         file_content = base64.b64decode(base64_encoded_image)
-        f = tempfile.TemporaryFile()
-        f.write(file_content)
-        f.seek(0)
 
-        payload = {'chat_id': chat_id, 'message_id': message_id,
-                   'media': json.dumps({'type': 'photo', 'media': 'attach://media'})}
-        files = {'media': (filename, f, 'image/jpeg')}
-        edit_image_response = requests.post(self.urls['edit_message_media'], data=payload, files=files)
-        f.close()
-        edit_image_response_json = json.loads(edit_image_response.text)
-        image_chat_id = edit_image_response_json['result']['chat']['id']
-        image_message_id = edit_image_response_json['result']['message_id']
+        with tempfile.TemporaryFile() as f:
+            f.write(file_content)
+            f.seek(0)
+
+            payload = {'chat_id': chat_id, 'message_id': message_id,
+                       'media': json.dumps({'type': 'photo', 'media': 'attach://media'})}
+            files = {'media': (filename, f, 'image/jpeg')}
+
+            edit_image_response = requests.post(self.urls['edit_message_media'], data=payload, files=files)
+            edit_image_response_json = json.loads(edit_image_response.text)
+
+            image_chat_id = edit_image_response_json['result']['chat']['id']
+            image_message_id = edit_image_response_json['result']['message_id']
+
         return image_chat_id, image_message_id
 
     def pin_message(self, chat_id: str, message_id: str) -> bool:
