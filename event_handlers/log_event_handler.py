@@ -9,8 +9,7 @@ class LogEventHandler(VoyagerEventHandler):
     def __init__(self, config, telegram_bot: TelegramBot):
         super().__init__(config=config, telegram_bot=telegram_bot, handler_name='LogEventHandler')
 
-    @staticmethod
-    def interested_event_name():
+    def interested_event_name(self):
         return 'LogEvent'
 
     def handle_event(self, event_name: str, message: Dict):

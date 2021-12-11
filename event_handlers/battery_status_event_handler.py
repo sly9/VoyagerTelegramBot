@@ -16,15 +16,14 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
                          handler_name='BatteryStatusEventHandler')
         self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
 
-    @staticmethod
-    def interested_event_names():
+    def interested_event_names(self):
         try:
             battery = psutil.sensors_battery()
             if battery is None:
-                return []
+                return list()
             return ['LogEvent', 'ShotRunning', 'ControlData']
-        except Exception:
-            return []
+        except Exception as exception:
+            return list()
 
     def handle_event(self, event_name: str, message: Dict):
         battery_msg = ''

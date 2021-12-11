@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Dict
 
 from telegram import TelegramBot
@@ -15,15 +16,13 @@ class VoyagerEventHandler:
         self.config = config
         self.telegram_bot = telegram_bot
 
-    @staticmethod
-    def interested_event_names():
+    def interested_event_names(self):
         """
         :return: List of event names this event_handler wants to process.
         """
         return []
 
-    @staticmethod
-    def interested_event_name():
+    def interested_event_name(self):
         """
         :return: An event name this event_handler wants to process.
         """
@@ -35,6 +34,7 @@ class VoyagerEventHandler:
         """
         return self.name
 
+    @abstractmethod
     def handle_event(self, event_name: str, message: Dict):
         """
         Processes the incoming event + message. Note: a single message might be
