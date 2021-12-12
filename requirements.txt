@@ -6,3 +6,4 @@ pytz~=2021.3
 pyyaml~=6.0
 requests~=2.26.0
 websocket-client~=1.2.1
+pyaml~=21.10.1

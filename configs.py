@@ -1,9 +1,10 @@
-import platform
-from os.path import exists
 import os
+import platform
 import sys
+from os.path import exists
 from shutil import copyfile
 
+import pyaml
 import yaml
 
 
@@ -47,9 +48,18 @@ After fixing that, try to open the exe file again.
             except yaml.YAMLError as exc:
                 self.config_yaml = {}
                 print(exc)
-        print('Configs are loaded: \n', self.config_yaml)
+
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
             self.config_yaml['telegram_setting']['chat_id'] = self.config_yaml['telegram_setting']['chat_ids'][0]
+
+        config_for_printing = self.config_yaml.copy()
+        config_for_printing.pop('telegram_setting')
+        config_for_printing.pop('voyager_setting')
+
+        print('Loaded configuration:\n')
+        print('<== Credentials for telegram and Voyager are hidden ==>')
+        pyaml.p(config_for_printing)
+        print('<=====================================================>')
 
     def build(self):
         return class_from_dict('Configs', self.config_yaml.copy())()

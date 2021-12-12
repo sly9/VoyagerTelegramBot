@@ -1,7 +1,6 @@
 # Note this file is a template, and also the place for default values. So keep it here, and make a copy of this file as
 # 'config.yml', then modify the values there. If a field is skipped in the config.yml, the default value defined in this
 # file will be used instead.
-version: 0.5
 
 ### Sequence Statistics
 sequence_stats_config:
