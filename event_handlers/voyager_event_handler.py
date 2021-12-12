@@ -28,6 +28,12 @@ class VoyagerEventHandler:
         """
         return None
 
+    def interested_in_all_events(self):
+        """
+        :return: A boolean indicating whether this event handler wants to process all possible events.
+        """
+        return False
+
     def get_name(self):
         """
         :return: The name of this event_handler

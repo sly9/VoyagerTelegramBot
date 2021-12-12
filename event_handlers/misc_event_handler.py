@@ -7,8 +7,10 @@ from telegram import TelegramBot
 class MiscellaneousEventHandler(VoyagerEventHandler):
     def __init__(self, config, telegram_bot: TelegramBot):
         super().__init__(config=config, telegram_bot=telegram_bot, handler_name='MiscellaneousEventHandler')
-
         self.message_counter = 0
+
+    def interested_in_all_events(self):
+        return True
 
     def handle_event(self, event_name: str, message: Dict):
         self.message_counter += 1

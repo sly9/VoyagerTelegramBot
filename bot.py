@@ -80,14 +80,14 @@ class VoyagerConnectionManager:
             # some command finished, try to see if we have anything else.
             self.ongoing_command = None
             self.try_to_process_next_command()
-            return
-
-        event_name = message['Event']
-        if event_name == 'RemoteActionResult':
-            uid = message['UID']
-            command_name = self.command_uid_to_method_name_dict.get(uid, 'NOT_FOUND')
-            message['MethodName'] = command_name
-        self.voyager_client.parse_message(event_name, message)
+            self.voyager_client.parse_message('jsonrpc', message)
+        else:
+            event_name = message['Event']
+            if event_name == 'RemoteActionResult':
+                uid = message['UID']
+                command_name = self.command_uid_to_method_name_dict.get(uid, 'NOT_FOUND')
+                message['MethodName'] = command_name
+            self.voyager_client.parse_message(event_name, message)
 
     def on_error(self, ws, error):
         self.log_writer.maybe_flush()

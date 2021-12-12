@@ -22,8 +22,10 @@ class VoyagerClient:
             self.telegram_bot = TelegramBot(config=config)
 
         self.handler_dict = defaultdict(set)
+        self.greedy_handler_set = set()
 
-        self.miscellaneous_event_handler = MiscellaneousEventHandler(config=config, telegram_bot=self.telegram_bot)
+        miscellaneous_event_handler = MiscellaneousEventHandler(config=config, telegram_bot=self.telegram_bot)
+        self.register_event_handler(miscellaneous_event_handler)
 
         giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot)
         self.register_event_handler(giant_handler)
@@ -43,12 +45,12 @@ class VoyagerClient:
                     print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                           f'raw message: {message}, exception details:{exception}')
 
-        # always let miscellaneous handler do the work
-        try:
-            self.miscellaneous_event_handler.handle_event(event_name, message)
-        except Exception as exception:
-            print(f'\n[{self.miscellaneous_event_handler.get_name()}] Exception occurred while handling {event_name}, '
-                  f'raw message: {message}, exception details:{exception}')
+        for handler in self.greedy_handler_set:
+            try:
+                handler.handle_event(event_name, message)
+            except Exception as exception:
+                print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
+                      f'raw message: {message}, exception details:{exception}')
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):
         if event_handler.interested_event_name():
@@ -56,3 +58,5 @@ class VoyagerClient:
         if event_handler.interested_event_names():
             for v in event_handler.interested_event_names():
                 self.handler_dict[v].add(event_handler)
+        if event_handler.interested_in_all_events():
+            self.greedy_handler_set.add(event_handler)
