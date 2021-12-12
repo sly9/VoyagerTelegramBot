@@ -54,7 +54,7 @@ Before following this guide, please make sure the application server is enabled 
 4. Download the latest version of `VoyagerTelegramBot` from [release](https://github.com/sly9/VoyagerTelegramBot/releases).
 5. Double click the downloaded file, and follow the prompt.
 
-If everything goes well, you should the main window of `VoyagerTelegramBot`.
+If everything goes well, you should see the main window of `VoyagerTelegramBot`.
 ![VoyagerTelegramBot_Main_Window](images/main_window.png)
 
 
