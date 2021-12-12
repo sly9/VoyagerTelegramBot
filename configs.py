@@ -27,7 +27,7 @@ class ConfigBuilder:
             print('!!!!!!!!!!!!!!!!!Config file not set up!!!!!!!!!!!!!!!')
             copyfile(config_yml_example_path, config_yml_path)
             print('''You need a valid configuration file for bot to run. 
-I just created a copy of configuration into the same directory as your excutable.
+I just created a copy of configuration into the same directory as your executable.
 Please open it up with any text editors, and modify at least these sections:
   * telegram_setting
   * voyager_setting
@@ -61,7 +61,12 @@ After fixing that, try to open the exe file again.
         pyaml.p(config_for_printing)
         print('<=====================================================>')
 
+        self.already_built = False
+
     def build(self):
+        if self.already_built:
+            print('This is likely a bug -- building the configuration twice.')
+        self.already_built = True
         return class_from_dict('Configs', self.config_yaml.copy())()
 
 
