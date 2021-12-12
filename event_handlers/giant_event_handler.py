@@ -11,13 +11,10 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
-        # internal vars
         self.running_seq = ''
         self.running_dragscript = ''
 
         self.shot_running = False  # whether the camera is exposing, inferred from 'ShotRunning' event
-
-        self.ignored_counter = 0
 
         # A dictionary of 'sequence name' => 'sequence stats'
         self.sequence_map = dict()
@@ -41,6 +38,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
     def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '',
                            as_doc: bool = True):
+        # Send a message, and returns (chat_id, message_id)
         if self.telegram_bot:
             return self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
         return None, None
