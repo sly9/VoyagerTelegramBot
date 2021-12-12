@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import _thread
+import traceback
 import base64
 import json
 import os
@@ -14,6 +15,7 @@ import websocket
 from configs import ConfigBuilder
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
+from version import bot_version_string
 
 
 class VoyagerConnectionManager:
@@ -41,6 +43,8 @@ class VoyagerConnectionManager:
         self.should_exit_keep_alive_thread = False
 
         self.command_uid_to_method_name_dict = {}
+        self.print_version()
+
 
     def send_command(self, command_name, params):
         command_uuid = str(uuid.uuid1())
@@ -91,10 +95,11 @@ class VoyagerConnectionManager:
 
     def on_error(self, ws, error):
         self.log_writer.maybe_flush()
-        print("### {error} ###".format(error=error))
+        print(f'Error: {error} ###')
+        traceback.print_exc()
 
     def on_close(self, ws, close_status_code, close_msg):
-        print("### [{code}] {msg} ###".format(code=close_status_code, msg=close_msg))
+        print(f'Closing connection, Code={close_status_code}, description= {close_msg}')
         # try to reconnect with an exponentially increasing delay
         if self.config.allow_auto_reconnect:
             time.sleep(self.reconnect_delay_sec)
@@ -131,6 +136,10 @@ class VoyagerConnectionManager:
             on_close=self.on_close)
 
         self.ws.run_forever()
+
+    @staticmethod
+    def print_version():
+        print(f'VoyagerTelegramBot Version: {bot_version_string()}')
 
     def keep_alive_routine(self):
         while not self.should_exit_keep_alive_thread:

@@ -9,6 +9,7 @@ from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from html_telegram_bot import HTMLTelegramBot
 from telegram import TelegramBot
+import traceback
 
 
 class VoyagerClient:
@@ -44,6 +45,7 @@ class VoyagerClient:
                 except Exception as exception:
                     print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                           f'raw message: {message}, exception details:{exception}')
+                    traceback.print_exc()
 
         for handler in self.greedy_handler_set:
             try:
@@ -51,6 +53,7 @@ class VoyagerClient:
             except Exception as exception:
                 print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                       f'raw message: {message}, exception details:{exception}')
+                traceback.print_exc()
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):
         if event_handler.interested_event_name():
