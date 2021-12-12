@@ -76,8 +76,8 @@ For the computer running `VoyagerTelegramBot`
 
 Currently, we only provide a general installation steps which may require some *geek* skills.
 1. Prepare your stuffs
-   1. Install python 3.7 or later environments;
-   2. (*Optional*) Register for a Telegram account and install the app on your phone / tablet / computer ([check here](https://telegram.org/));
+   1. Install python 3.7 to 3.9 (Unfortunately 3.10 is not supported by numpy, one of our dependencies).
+   2. Register for a Telegram account and install the app on your phone / tablet / computer if you haven't done this before.([check here](https://telegram.org/));
    3. Create a new Telegram bot and chat with your Telegram account;
    
       We are trying to write a guide, but before it's done, a quick guide can be found
