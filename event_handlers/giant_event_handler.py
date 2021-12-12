@@ -73,8 +73,8 @@ class GiantEventHandler(VoyagerEventHandler):
             # print(message)
             params = message['ParamRet']
             filter_count = params['FilterNum']
-            for i in range(1, filter_count + 1):
-                self.filter_name_list[i] = params[f'Filter{i}_Name']
+            for i in range(0, filter_count):
+                self.filter_name_list[i] = params[f'Filter{i + 1}_Name']
 
     def handle_shot_running(self, message: Dict):
         timestamp = message['Timestamp']
