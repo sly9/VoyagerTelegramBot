@@ -1,5 +1,7 @@
 @echo off
 
+pip3 install -r requirements.txt
+
 RMDIR /S /Q dist
 RMDIR /S /Q build
 RMDIR /S /Q __pycache__
