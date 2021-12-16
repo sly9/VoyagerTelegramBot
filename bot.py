@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 import _thread
-import traceback
 import base64
 import json
-import os
-import sys
 import time
+import traceback
 import uuid
 from collections import deque
 
@@ -14,8 +12,8 @@ import websocket
 
 from configs import ConfigBuilder
 from log_writer import LogWriter
-from voyager_client import VoyagerClient
 from version import bot_version_string
+from voyager_client import VoyagerClient
 
 
 class VoyagerConnectionManager:
@@ -44,7 +42,6 @@ class VoyagerConnectionManager:
 
         self.command_uid_to_method_name_dict = {}
         self.print_version()
-
 
     def send_command(self, command_name, params):
         command_uuid = str(uuid.uuid1())
