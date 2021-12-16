@@ -38,11 +38,9 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
             battery_msg = f'!!Critical battery ({battery.percent}%)!!'
 
         telegram_message = f'<b><pre>{battery_msg}</pre></b>'
-        self.send_text_message(telegram_message)
 
-    def send_text_message(self, message: str):
         if self.throttle_count < 30:
             self.throttle_count += 1
         else:
-            self.telegram_bot.send_text_message(message)
+            self.send_text_message(telegram_message)
             self.throttle_count = 0

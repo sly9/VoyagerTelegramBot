@@ -32,17 +32,6 @@ class GiantEventHandler(VoyagerEventHandler):
                 'ControlData',
                 'RemoteActionResult']
 
-    def send_text_message(self, msg_text: str = ''):
-        if self.telegram_bot:
-            self.telegram_bot.send_text_message(msg_text)
-
-    def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '',
-                           as_doc: bool = True):
-        # Send a message, and returns (chat_id, message_id)
-        if self.telegram_bot:
-            return self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
-        return None, None
-
     def handle_event(self, event_name: str, message: Dict):
         if event_name == 'NewJPGReady':
             self.handle_jpg_ready(message)
@@ -206,12 +195,30 @@ class GiantEventHandler(VoyagerEventHandler):
                                                           msg_text='Statistics for {target}'.format(
                                                               target=self.running_seq),
                                                           as_doc=False)
-            self.current_sequence_stat_chat_id = chat_id
-            self.current_sequence_stat_message_id = message_id
-            self.telegram_bot.unpin_all_messages(chat_id=chat_id)
-            self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
+            # TODO(sly@): Should consider a new way to get status
+            if chat_id != '--' and message_id != '--':
+                self.current_sequence_stat_chat_id = chat_id
+                self.current_sequence_stat_message_id = message_id
+                status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)
+                if status == 'ERROR':
+                    print(
+                        f'\n[ERROR - {self.get_name()} - Unpin All Message]'
+                        f'[{info_dict["error_code"]}]'
+                        f'[{info_dict["description"]}]')
+
+                status, info_dict = self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
+                if status == 'ERROR':
+                    print(
+                        f'\n[ERROR - {self.get_name()} - Pin Message]'
+                        f'[{info_dict["error_code"]}]'
+                        f'[{info_dict["description"]}]')
         else:
-            self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
-                                                 message_id=self.current_sequence_stat_message_id,
-                                                 base64_encoded_image=base64_img,
-                                                 filename=self.running_seq + '_stat.jpg')
+            status, info_dict = self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
+                                                                     message_id=self.current_sequence_stat_message_id,
+                                                                     base64_encoded_image=base64_img,
+                                                                     filename=self.running_seq + '_stat.jpg')
+            if status == 'ERROR':
+                print(
+                    f'\n[ERROR - {self.get_name()} - Edit Image Message]'
+                    f'[{info_dict["error_code"]}]'
+                    f'[{info_dict["description"]}]')

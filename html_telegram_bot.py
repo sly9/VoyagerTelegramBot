@@ -1,12 +1,12 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
-from pathlib import Path
-import codecs
 import base64
-import webbrowser
+import codecs
 import io
+import webbrowser
+from pathlib import Path
+from typing import Tuple, Dict
 
 from PIL import Image
 
@@ -21,30 +21,30 @@ class HTMLTelegramBot:
 
     def write_header(self):
         self.html_file.write('''<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title></title>
-  <link href="style.css" rel="stylesheet" />
-</head>
-<body>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-  <script>
-  </script>
-  <style>
-  td{
-  border:1px solid
-  }
-  </style>
-  <table id="table">
-    <tbody>
-        <thead>
-            <th>Event Sequence</th>
-            <th>Type</th>
-            <th>Details</th>
-            <th>DateTime</th>                        
-        </thead>
-''')
+                            <html lang="en">
+                            <head>
+                              <meta charset="utf-8">
+                              <title></title>
+                              <link href="style.css" rel="stylesheet" />
+                            </head>
+                            <body>
+                              <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+                              <script>
+                              </script>
+                              <style>
+                              td{
+                              border:1px solid
+                              }
+                              </style>
+                              <table id="table">
+                                <tbody>
+                                    <thead>
+                                        <th>Event Sequence</th>
+                                        <th>Type</th>
+                                        <th>Details</th>
+                                        <th>DateTime</th>                        
+                                    </thead>
+                            ''')
 
     def write_footer(self):
         self.html_file.write('''</tbody></table></body></html>''')
@@ -53,11 +53,14 @@ class HTMLTelegramBot:
         self.html_file.close()
         webbrowser.open(url, new=2)
 
-    def send_text_message(self, message):
+    def send_text_message(self, message) -> Tuple[str, Dict]:
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Text Message</td><td>{message}</td></tr>\n')
         self.event_sequence += 1
 
-    def edit_image_message(self, chat_id: str, message_id: str, base64_encoded_image, filename: str = ''):
+        return 'OK', {'chat_id': '19052485', 'message_id': '19091585'}
+
+    def edit_image_message(self, chat_id: str, message_id: str,
+                           base64_encoded_image, filename: str = '') -> Tuple[str, Dict]:
         f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
@@ -86,23 +89,31 @@ class HTMLTelegramBot:
         self.event_sequence += 1
         self.image_count += 1
 
-    def pin_message(self, chat_id: str, message_id: str) -> bool:
+        return 'OK', {'chat_id': '19052485', 'message_id': '19091585'}
+
+    def pin_message(self, chat_id: str, message_id: str) -> Tuple[str, Dict]:
         message = f'Pinning messages for room [{chat_id}], message id: [{message_id}]'
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Pin Message</td><td>{message}</td></tr>\n')
         self.event_sequence += 1
 
-    def unpin_message(self, chat_id: str, message_id: str) -> bool:
+        return 'OK', dict()
+
+    def unpin_message(self, chat_id: str, message_id: str) -> Tuple[str, Dict]:
         message = f'Unpinning messages for room [{chat_id}], message id: [{message_id}]'
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin Message</td><td>{chat_id}</td></tr>\n')
         self.event_sequence += 1
 
-    def unpin_all_messages(self, chat_id: str) -> bool:
+        return 'OK', dict()
+
+    def unpin_all_messages(self, chat_id: str) -> Tuple[str, Dict]:
         message = f'Unpinning all messages for room [{chat_id}]'
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin all Messages</td><td>N/A</td></tr>\n')
         self.event_sequence += 1
 
+        return 'OK', dict()
+
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '',
-                           as_document: bool = True):
+                           as_document: bool = True) -> Tuple[str, Dict]:
         f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
         file_content = base64.b64decode(base64_encoded_image)
         f.write(file_content)
@@ -128,4 +139,4 @@ class HTMLTelegramBot:
         self.image_count += 1
         self.event_sequence += 1
 
-        return 'dummy_chat_id', 'dummy_message_id'
+        return 'OK', {'chat_id': '19052485', 'message_id': '19091585'}

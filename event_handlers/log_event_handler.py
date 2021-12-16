@@ -24,5 +24,6 @@ class LogEventHandler(VoyagerEventHandler):
 
         telegram_message = f'{type_emoji}  <b><pre>{message["Text"]}</pre></b>'
         allowed_log_type_names = self.config.text_message_config.allowed_log_types
+
         if type_name in allowed_log_type_names:
-            self.telegram_bot.send_text_message(telegram_message)
+            self.send_text_message(telegram_message)

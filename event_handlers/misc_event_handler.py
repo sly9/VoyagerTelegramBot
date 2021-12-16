@@ -25,5 +25,4 @@ class MiscellaneousEventHandler(VoyagerEventHandler):
             url=self.config.voyager_setting.domain,
             version=message['VOYVersion'])
 
-        if self.telegram_bot:
-            self.telegram_bot.send_text_message(telegram_message)
+        self.send_text_message(telegram_message)
