@@ -28,26 +28,26 @@ class ExposureInfo:
 
     @filter_name.setter
     def filter_name(self, value: str = 'L'):
-        filter_mapping = {
-            'H': 'Ha',
-            'HA': 'Ha',
-            'S': 'SII',
-            'S2': 'SII',
-            'SII': 'SII',
-            'O': 'OIII',
-            'O3': 'OIII',
-            'OIII': 'OIII',
-            'LUM': 'L',
-            'L': 'L',
-            'R': 'R',
-            'G': 'G',
-            'B': 'B',
-            'RED': 'R',
-            'GREEN': 'G',
-            'BLUE': 'B',
+        filter_alias = {
+            'Ha': ['H', 'Ha', 'H-Alpha'],
+            'SII': ['S', 'S2', 'SII', 'S-II'],
+            'OIII': ['O', 'O3', 'OIII', 'O-III'],
+            'L': ['L', 'Lum', 'Luminance'],
+            'R': ['R', 'Red'],
+            'G': ['G', 'Green'],
+            'B': ['B', 'Blue']
         }
 
-        self._filter_name = filter_mapping[value.upper()]
+        filter_mapping = dict()
+        for filter_key in filter_alias:
+            for alias in filter_alias[filter_key]:
+                filter_mapping[alias.upper()] = filter_key
+
+        if value.upper() in filter_mapping:
+            self._filter_name = filter_mapping[value.upper()]
+        else:
+            # Keep original filter name if no mapping can be found
+            self._filter_name = 'UNKNOWN-' + value
 
     @filter_name.deleter
     def filter_name(self):
@@ -131,7 +131,11 @@ class StatPlotter:
         for exposure_info in sequence_stat.exposure_info_list:
             hfd_values.append(exposure_info.hfd)
             star_indices.append(exposure_info.star_index)
-            color = self.filter_meta[exposure_info.filter_name]['color']
+            if exposure_info.filter_name in self.filter_meta:
+                color = self.filter_meta[exposure_info.filter_name]['color']
+            else:
+                color = '#660874'
+
             dot_colors.append(color)
 
         ax.set_facecolor('#212121')
@@ -171,7 +175,10 @@ class StatPlotter:
         rectangles = ax.bar(keys, values)
         for i in range(len(keys)):
             filter_name = keys[i]
-            color = self.filter_meta[filter_name]['color']
+            if filter_name in self.filter_meta:
+                color = self.filter_meta[filter_name]['color']
+            else:
+                color = '#660874'
             rect = rectangles[i]
             rect.set_color(color)
 
