@@ -43,6 +43,9 @@ class VoyagerClient:
                 try:
                     handler.handle_event(event_name, message)
                 except Exception as exception:
+                    if 'Base64Data' in message:
+                        message.pop('Base64Data')
+
                     print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                           f'raw message: {message}, exception details:{exception}')
                     traceback.print_exc()
@@ -51,6 +54,9 @@ class VoyagerClient:
             try:
                 handler.handle_event(event_name, message)
             except Exception as exception:
+                if 'Base64Data' in message:
+                    message.pop('Base64Data')
+
                 print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                       f'raw message: {message}, exception details:{exception}')
                 traceback.print_exc()
