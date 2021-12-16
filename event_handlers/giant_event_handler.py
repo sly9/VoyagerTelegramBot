@@ -192,11 +192,9 @@ class GiantEventHandler(VoyagerEventHandler):
 
         if not self.current_sequence_stat_chat_id and not self.current_sequence_stat_message_id:
             chat_id, message_id = self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
-                                                          msg_text='Statistics for {target}'.format(
-                                                              target=self.running_seq),
+                                                          msg_text=f'Statistics for {self.running_seq}',
                                                           as_doc=False)
-            # TODO(sly@): Should consider a new way to get status
-            if chat_id != '--' and message_id != '--':
+            if chat_id and message_id:
                 self.current_sequence_stat_chat_id = chat_id
                 self.current_sequence_stat_message_id = message_id
                 status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)

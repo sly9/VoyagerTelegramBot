@@ -57,7 +57,7 @@ class VoyagerEventHandler:
             print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
 
     def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '',
-                           as_doc: bool = True) -> Tuple[int ,int]:
+                           as_doc: bool = True) -> Tuple[str or None, str or None]:
         """
         Send image message to Telegram, and print out error message
         :param base64_img: image data that encoded as base64
@@ -75,11 +75,11 @@ class VoyagerEventHandler:
                     f'[{info_dict["error_code"]}]'
                     f'[{info_dict["description"]}]')
             elif status == 'OK':
-                return info_dict['chat_id'], info_dict['message_id']
+                return str(info_dict['chat_id']), str(info_dict['message_id'])
         else:
             print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
 
-        return '--', '--'
+        return None, None
 
     @abstractmethod
     def handle_event(self, event_name: str, message: Dict):
