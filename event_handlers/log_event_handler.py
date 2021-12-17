@@ -1,6 +1,7 @@
 from typing import Dict
 
 from curse_manager import CursesManager
+from data_structure.log_info import LogInfo
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
 
@@ -27,5 +28,5 @@ class LogEventHandler(VoyagerEventHandler):
         allowed_log_type_names = self.config.text_message_config.allowed_log_types
 
         if type_name in allowed_log_type_names:
-            self.curses_manager.append_log(f'{type_name:9} | {message["Text"]}')
+            self.curses_manager.append_log(LogInfo(type=type_name, message=message['Text']))
             self.send_text_message(telegram_message)

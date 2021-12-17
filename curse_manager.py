@@ -1,10 +1,10 @@
 import curses
-import queue
 import time
 from collections import deque
 from typing import Dict
 
 from data_structure.host_info import HostInfo
+from data_structure.log_info import LogInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
 
@@ -23,14 +23,13 @@ class CursesManager:
         self.normal_style = curses.color_pair(1)
 
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
-        self.error_style = curses.color_pair(2)
-        self.battery_critical_style = curses.color_pair(2)
+        self.critical_style = curses.color_pair(2)
 
         curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
-        self.battery_warning_style = curses.color_pair(3)
+        self.warning_style = curses.color_pair(3)
 
         curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_GREEN)
-        self.battery_safe_style = curses.color_pair(4)
+        self.safe_style = curses.color_pair(4)
 
         # status information used to update info
         self.last_error_dict = {'error_code': 0, 'description': ''}
@@ -56,18 +55,18 @@ class CursesManager:
 
         # Battery Info
         if self.battery_percentage == SpecialBatteryPercentageEnum.ON_AC_POWER:
-            self.stdscr.addstr(f'  ON AC POWER  ', self.battery_safe_style)
+            self.stdscr.addstr(f'  ON AC POWER  ', self.safe_style)
         elif self.battery_percentage == SpecialBatteryPercentageEnum.NOT_MONITORED:
-            self.stdscr.addstr(f' NOT MONITORED ', self.battery_safe_style)
+            self.stdscr.addstr(f' NOT MONITORED ', self.safe_style)
         elif self.battery_percentage == SpecialBatteryPercentageEnum.NOT_AVAILABLE:
-            self.stdscr.addstr(f' NOT AVAILABLE ', self.battery_safe_style)
+            self.stdscr.addstr(f' NOT AVAILABLE ', self.safe_style)
         else:
             if self.battery_percentage > 75:
-                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.battery_safe_style)
+                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.safe_style)
             elif self.battery_percentage <= 25:
-                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.battery_critical_style)
+                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.critical_style)
             else:
-                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.battery_warning_style)
+                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.warning_style)
         self.stdscr.addstr('|', self.normal_style)
         line_pos += 1
 
@@ -83,7 +82,7 @@ class CursesManager:
             self.stdscr.addstr(f'{error_str:116}', self.normal_style)
         else:
             error_str = f'[{self.last_error_dict["error_code"]}] {self.last_error_dict["description"]}'
-            self.stdscr.addstr(f'{error_str:116.116}', self.error_style)
+            self.stdscr.addstr(f'{error_str:116.116}', self.critical_style)
 
         self.stdscr.addstr(' |', self.normal_style)
         line_pos += 1
@@ -92,10 +91,16 @@ class CursesManager:
         line_pos += 1
 
         # Log
-        for log_message in self.log_queue:
-            self.stdscr.addstr(line_pos, 0,
-                               f'| {log_message:116.116} |',
-                               self.normal_style)
+        for log_item in self.log_queue:
+            self.stdscr.addstr(line_pos, 0, f'| ', self.normal_style)
+            if log_item.type == 'CRITICAL' or log_item.type == 'EMERGENCY':
+                self.stdscr.addstr(f'{log_item.type:9}', self.critical_style)
+            elif log_item.type == 'WARNING':
+                self.stdscr.addstr(f'{log_item.type:9}', self.warning_style)
+            else:
+                self.stdscr.addstr(f'{log_item.type:9}', self.safe_style)
+
+            self.stdscr.addstr(f' | {log_item.message:104.104} |', self.normal_style)
             line_pos += 1
 
         # Horizontal Line
@@ -127,12 +132,12 @@ class CursesManager:
         self.host_info = host_info
         self._update_whole_scr()
 
-    def update_battery_percentage(self, battery_percentage:int=0, update=True):
-        self.battery_percentage=battery_percentage
+    def update_battery_percentage(self, battery_percentage: int = 0, update: bool = True):
+        self.battery_percentage = battery_percentage
         if update:
             self._update_whole_scr()
 
-    def append_log(self, new_message: str=''):
+    def append_log(self, new_message: LogInfo = None):
         self.log_queue.append(new_message)
         self._update_whole_scr()
 
