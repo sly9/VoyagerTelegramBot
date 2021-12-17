@@ -1,9 +1,9 @@
 # VoyagerTelegramBot
 by Liuyi Sun ([AstroBin](https://www.astrobin.com/users/liuyisun/)) and Kun Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
-Last updates: 12/11/2021
+Last updates: 12/16/2021
 
-> We just released `v0.1.0` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/V0.1.0)!
+> We just released `v0.1.1` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/V0.1.1)!
 
 ## Introduction
 `VoyagerTelegramBot` is a lightweight client of Voyager Application Server.
