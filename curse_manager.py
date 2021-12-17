@@ -92,16 +92,19 @@ class CursesManager:
         line_pos += 1
 
         # Job Detail
-        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.job_status_info.drag_script_name:26} |', self.normal_style)
-        self.stdscr.addstr(f' Sequence | {self.job_status_info.sequence_name:26} | ', self.normal_style)
+        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.job_status_info.drag_script_name:27} |', self.normal_style)
+        self.stdscr.addstr(f' Sequence | {self.job_status_info.sequence_name:27} | ', self.normal_style)
 
-        motion_str = ''
         if self.job_status_info.is_slewing:
             motion_str = 'SLEWING'
+            self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
         elif self.job_status_info.is_tracking:
             motion_str = 'TRACKING'
-        self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
-
+            self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
+        else:
+            motion_str = ''
+            self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
+        
         self.stdscr.addstr(' | ', self.normal_style)
         if self.job_status_info.guide_status == GuideStatEnum.STOPPED:
             self.stdscr.addstr(f' STOPPED ', self.critical_style)

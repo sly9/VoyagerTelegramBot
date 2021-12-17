@@ -1,9 +1,11 @@
 from typing import Dict
 
 from curse_manager import CursesManager
+from data_structure.filter_info import ExposureInfo
+from data_structure.focus_result import FocusResult
 from data_structure.job_status_info import GuideStatEnum, DitherStatEnum, JobStatusInfo
 from event_handlers.voyager_event_handler import VoyagerEventHandler
-from sequence_stat import StatPlotter, FocusResult, SequenceStat, ExposureInfo
+from sequence_stat import StatPlotter, SequenceStat
 from telegram import TelegramBot
 
 

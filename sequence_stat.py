@@ -9,60 +9,8 @@ import numpy as np
 from matplotlib import axes
 from matplotlib import pyplot as plt
 
-
-class ExposureInfo:
-    def __init__(self, filter_name: str = '', exposure_time: int = 0, hfd: float = 0, star_index: float = 0,
-                 timestamp: float = 0, sequence_name: str = ''):
-        self._filter_name = None
-        self.filter_name = filter_name
-        # exposure time in seconds
-        self.exposure_time = exposure_time
-        self.hfd = hfd
-        self.star_index = star_index
-        self.timestamp = timestamp
-        self.sequence_name = sequence_name
-
-    @property
-    def filter_name(self) -> str:
-        return self._filter_name
-
-    @filter_name.setter
-    def filter_name(self, value: str = 'L'):
-        filter_alias = {
-            'Ha': ['H', 'Ha', 'H-Alpha'],
-            'SII': ['S', 'S2', 'SII', 'S-II'],
-            'OIII': ['O', 'O3', 'OIII', 'O-III'],
-            'L': ['L', 'Lum', 'Luminance'],
-            'R': ['R', 'Red'],
-            'G': ['G', 'Green'],
-            'B': ['B', 'Blue']
-        }
-
-        filter_mapping = dict()
-        for filter_key in filter_alias:
-            for alias in filter_alias[filter_key]:
-                filter_mapping[alias.upper()] = filter_key
-
-        if value.upper() in filter_mapping:
-            self._filter_name = filter_mapping[value.upper()]
-        else:
-            # Keep original filter name if no mapping can be found
-            self._filter_name = 'UNKNOWN-' + value
-
-    @filter_name.deleter
-    def filter_name(self):
-        del self._filter_name
-
-
-class FocusResult:
-    def __init__(self, filter_name: str = '', filter_color: str = '#ddd', hfd: float = 0, timestamp: float = 0,
-                 temperature: float = 0):
-        self.filter_name = filter_name
-        self.filter_color = filter_color
-        self.hfd = hfd
-        self.timestamp = timestamp
-        self.temperature = temperature
-        self.recommended_index = 0
+from data_structure.filter_info import ExposureInfo
+from data_structure.focus_result import FocusResult
 
 
 class SequenceStat:
