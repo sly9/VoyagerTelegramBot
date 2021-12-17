@@ -3,8 +3,9 @@ import time
 from collections import deque
 from typing import Dict
 
+from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
-from data_structure.log_info import LogInfo
+from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
 
@@ -32,7 +33,7 @@ class CursesManager:
         self.safe_style = curses.color_pair(4)
 
         # status information used to update info
-        self.last_error_dict = {'error_code': 0, 'description': ''}
+        self.last_error = ErrorMessageInfo()
         self.received_message_counter = 0
         self.host_info = HostInfo()
         self.log_queue = deque(maxlen=10)
@@ -47,9 +48,7 @@ class CursesManager:
         line_pos += 1
 
         # Version and Host Information
-        self.stdscr.addstr(line_pos, 0,
-                           f'|     VoyagerTelegramBot v{bot_version_string()}     |',
-                           self.normal_style)
+        self.stdscr.addstr(line_pos, 0, f'|     VoyagerTelegramBot v{bot_version_string()}     |', self.normal_style)
         host_str = f'{self.host_info.url}:{self.host_info.port} ({self.host_info.host_name})'
         self.stdscr.addstr(f' {host_str:54} | Battery |', self.normal_style)
 
@@ -62,11 +61,11 @@ class CursesManager:
             self.stdscr.addstr(f' NOT AVAILABLE ', self.safe_style)
         else:
             if self.battery_percentage > 75:
-                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.safe_style)
+                self.stdscr.addstr(f' {self.battery_percentage:^12}% ', self.safe_style)
             elif self.battery_percentage <= 25:
-                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.critical_style)
+                self.stdscr.addstr(f' {self.battery_percentage:^12}% ', self.critical_style)
             else:
-                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.warning_style)
+                self.stdscr.addstr(f' {self.battery_percentage:^12}% ', self.warning_style)
         self.stdscr.addstr('|', self.normal_style)
         line_pos += 1
 
@@ -77,11 +76,11 @@ class CursesManager:
         # Error
         self.stdscr.addstr(line_pos, 0, f'| ', self.normal_style)
 
-        if self.last_error_dict['error_code'] == 0:
+        if self.last_error.code == 0:
             error_str = 'Everything is AWESOME!'
             self.stdscr.addstr(f'{error_str:116}', self.normal_style)
         else:
-            error_str = f'[{self.last_error_dict["error_code"]}] {self.last_error_dict["description"]}'
+            error_str = f'[{self.last_error.code}] {self.last_error.message}'
             self.stdscr.addstr(f'{error_str:116.116}', self.critical_style)
 
         self.stdscr.addstr(' |', self.normal_style)
@@ -109,11 +108,9 @@ class CursesManager:
 
         # Message Counter
         counter_str = f'{self.received_message_counter} messages have been processed...'
-        self.stdscr.addstr(line_pos, 0,
-                           f'| {counter_str:116.116} |',
-                           self.normal_style)
-
+        self.stdscr.addstr(line_pos, 0, f'| {counter_str:116.116} |', self.normal_style)
         line_pos += 1
+
         # Horizontal Line
         self.stdscr.addstr(line_pos, 0, '+' + '-' * 118 + '+', self.normal_style)
 
@@ -123,9 +120,9 @@ class CursesManager:
         self.received_message_counter = counter_number
         self._update_whole_scr()
 
-    def update_lass_error(self, error_dict: Dict = None):
-        if error_dict and 'error_code' in error_dict and 'description' in error_dict:
-            self.last_error_dict = error_dict
+    def update_lass_error(self, error_info: ErrorMessageInfo = None):
+        if error_info:
+            self.last_error = error_info
             self._update_whole_scr()
 
     def update_host_info(self, host_info: HostInfo):
@@ -137,9 +134,10 @@ class CursesManager:
         if update:
             self._update_whole_scr()
 
-    def append_log(self, new_message: LogInfo = None):
-        self.log_queue.append(new_message)
-        self._update_whole_scr()
+    def append_log(self, new_message: LogMessageInfo = None):
+        if new_message:
+            self.log_queue.append(new_message)
+            self._update_whole_scr()
 
     def close(self):
         # Close the screen
@@ -156,11 +154,11 @@ if __name__ == '__main__':
     time.sleep(2)
 
     curses_mgr.update_message_counter(99)
-    curses_mgr.update_lass_error({'error_code': 111, 'description': 'xxx'})
+    curses_mgr.update_lass_error(ErrorMessageInfo(code=999, message='Error 999'))
     time.sleep(2)
 
     curses_mgr.update_message_counter(99)
-    curses_mgr.update_lass_error({'error_code': 0, 'description': ''})
+    curses_mgr.update_lass_error(ErrorMessageInfo(code=0, message='No Error'))
     time.sleep(2)
 
     curses_mgr.close()
