@@ -12,7 +12,6 @@ import websocket
 
 from configs import ConfigBuilder
 from log_writer import LogWriter
-from version import bot_version_string
 from voyager_client import VoyagerClient
 
 
@@ -41,7 +40,6 @@ class VoyagerConnectionManager:
         self.should_exit_keep_alive_thread = False
 
         self.command_uid_to_method_name_dict = {}
-        self.print_version()
 
     def send_command(self, command_name, params):
         command_uuid = str(uuid.uuid1())
@@ -133,10 +131,6 @@ class VoyagerConnectionManager:
             on_close=self.on_close)
 
         self.ws.run_forever()
-
-    @staticmethod
-    def print_version():
-        print(f'VoyagerTelegramBot Version: {bot_version_string()}')
 
     def keep_alive_routine(self):
         while not self.should_exit_keep_alive_thread:

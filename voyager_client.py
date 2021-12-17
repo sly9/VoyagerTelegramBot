@@ -1,7 +1,9 @@
 #!/bin/env python3
+import traceback
 from collections import defaultdict
 from typing import Dict
 
+from curse_manager import CursesManager
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
@@ -9,13 +11,13 @@ from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from html_telegram_bot import HTMLTelegramBot
 from telegram import TelegramBot
-import traceback
 
 
 class VoyagerClient:
     def __init__(self, config=None):
         self.config = config
         self.telegram_bot = None
+        self.curses_manager = CursesManager()
 
         if self.config.debugging:
             self.telegram_bot = HTMLTelegramBot()
@@ -25,13 +27,16 @@ class VoyagerClient:
         self.handler_dict = defaultdict(set)
         self.greedy_handler_set = set()
 
-        miscellaneous_event_handler = MiscellaneousEventHandler(config=config, telegram_bot=self.telegram_bot)
+        miscellaneous_event_handler = MiscellaneousEventHandler(config=config,
+                                                                telegram_bot=self.telegram_bot,
+                                                                curses_manager=self.curses_manager)
         self.register_event_handler(miscellaneous_event_handler)
 
         giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot)
         self.register_event_handler(giant_handler)
 
-        log_event_handler = LogEventHandler(config=config, telegram_bot=self.telegram_bot)
+        log_event_handler = LogEventHandler(config=config, telegram_bot=self.telegram_bot,
+                                            curses_manager=self.curses_manager)
         self.register_event_handler(log_event_handler)
 
         client_status_event_handler = BatteryStatusEventHandler(config=config, telegram_bot=self.telegram_bot)

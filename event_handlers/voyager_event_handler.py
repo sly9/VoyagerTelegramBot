@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Dict, Tuple
 
+from curse_manager import CursesManager
 from telegram import TelegramBot
 
 
@@ -11,10 +12,14 @@ class VoyagerEventHandler:
     To handle an incoming event from voyager application server, Most important method is the 'handle_event' method.
     """
 
-    def __init__(self, config, telegram_bot: TelegramBot, handler_name: str = 'DefaultHandler'):
+    def __init__(self, config,
+                 telegram_bot: TelegramBot,
+                 handler_name: str = 'DefaultHandler',
+                 curses_manager: CursesManager = None):
         self.name = handler_name
         self.config = config
         self.telegram_bot = telegram_bot
+        self.curses_manager = curses_manager
 
     def interested_event_names(self):
         """

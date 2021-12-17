@@ -1,13 +1,14 @@
 from typing import Dict
 
+from curse_manager import CursesManager
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
 
 
 # This is just one of the event handlers which are interested in log events. You can write more
 class LogEventHandler(VoyagerEventHandler):
-    def __init__(self, config, telegram_bot: TelegramBot):
-        super().__init__(config=config, telegram_bot=telegram_bot, handler_name='LogEventHandler')
+    def __init__(self, config, telegram_bot: TelegramBot, curses_manager: CursesManager):
+        super().__init__(config=config, telegram_bot=telegram_bot, handler_name='LogEventHandler', curses_manager=curses_manager)
 
     def interested_event_name(self):
         return 'LogEvent'
@@ -26,4 +27,5 @@ class LogEventHandler(VoyagerEventHandler):
         allowed_log_type_names = self.config.text_message_config.allowed_log_types
 
         if type_name in allowed_log_type_names:
+            self.curses_manager.append_log(f'{type_name:9} | {message["Text"]}')
             self.send_text_message(telegram_message)
