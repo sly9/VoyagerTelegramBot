@@ -60,12 +60,13 @@ class CursesManager:
         elif self.battery_percentage == SpecialBatteryPercentageEnum.NOT_AVAILABLE:
             self.stdscr.addstr(f' NOT AVAILABLE ', self.safe_style)
         else:
+            battery_str = f'{self.battery_percentage} %'
             if self.battery_percentage > 75:
-                self.stdscr.addstr(f' {self.battery_percentage:^12}% ', self.safe_style)
+                self.stdscr.addstr(f' {battery_str:^13} ', self.safe_style)
             elif self.battery_percentage <= 25:
-                self.stdscr.addstr(f' {self.battery_percentage:^12}% ', self.critical_style)
+                self.stdscr.addstr(f' {battery_str:^13} ', self.critical_style)
             else:
-                self.stdscr.addstr(f' {self.battery_percentage:^12}% ', self.warning_style)
+                self.stdscr.addstr(f' {battery_str:^13} ', self.warning_style)
         self.stdscr.addstr('|', self.normal_style)
         line_pos += 1
 
