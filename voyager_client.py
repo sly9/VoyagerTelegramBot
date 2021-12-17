@@ -31,7 +31,8 @@ class VoyagerClient:
                                                                 curses_manager=self.curses_manager)
         self.register_event_handler(miscellaneous_event_handler)
 
-        giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot)
+        giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot,
+                                          curses_manager=self.curses_manager)
         self.register_event_handler(giant_handler)
 
         log_event_handler = LogEventHandler(config=config, telegram_bot=self.telegram_bot,

@@ -1,13 +1,16 @@
 from typing import Dict
 
+from curse_manager import CursesManager
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from sequence_stat import StatPlotter, FocusResult, SequenceStat, ExposureInfo
 from telegram import TelegramBot
 
 
 class GiantEventHandler(VoyagerEventHandler):
-    def __init__(self, config, telegram_bot: TelegramBot):
-        super().__init__(config=config, telegram_bot=telegram_bot, handler_name='GiantEventHandler')
+    def __init__(self, config, telegram_bot: TelegramBot, curses_manager: CursesManager):
+        super().__init__(config=config, telegram_bot=telegram_bot,
+                         handler_name='GiantEventHandler',
+                         curses_manager=curses_manager)
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
