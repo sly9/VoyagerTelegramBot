@@ -27,8 +27,7 @@ class VoyagerClient:
         self.handler_dict = defaultdict(set)
         self.greedy_handler_set = set()
 
-        miscellaneous_event_handler = MiscellaneousEventHandler(config=config,
-                                                                telegram_bot=self.telegram_bot,
+        miscellaneous_event_handler = MiscellaneousEventHandler(config=config, telegram_bot=self.telegram_bot,
                                                                 curses_manager=self.curses_manager)
         self.register_event_handler(miscellaneous_event_handler)
 
@@ -39,7 +38,8 @@ class VoyagerClient:
                                             curses_manager=self.curses_manager)
         self.register_event_handler(log_event_handler)
 
-        client_status_event_handler = BatteryStatusEventHandler(config=config, telegram_bot=self.telegram_bot)
+        client_status_event_handler = BatteryStatusEventHandler(config=config, telegram_bot=self.telegram_bot,
+                                                                curses_manager=self.curses_manager)
         self.register_event_handler(client_status_event_handler)
 
     def parse_message(self, event_name: str, message: Dict):

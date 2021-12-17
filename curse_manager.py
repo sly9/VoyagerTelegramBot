@@ -5,6 +5,7 @@ from collections import deque
 from typing import Dict
 
 from data_structure.host_info import HostInfo
+from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
 
 
@@ -15,6 +16,7 @@ class CursesManager:
         self.stdscr.keypad(True)
         curses.noecho()
         curses.cbreak()
+
         # setup color styles
         curses.start_color()
         curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
@@ -22,12 +24,20 @@ class CursesManager:
 
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
         self.error_style = curses.color_pair(2)
+        self.battery_critical_style = curses.color_pair(2)
+
+        curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
+        self.battery_warning_style = curses.color_pair(3)
+
+        curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_GREEN)
+        self.battery_safe_style = curses.color_pair(4)
 
         # status information used to update info
         self.last_error_dict = {'error_code': 0, 'description': ''}
         self.received_message_counter = 0
         self.host_info = HostInfo()
         self.log_queue = deque(maxlen=10)
+        self.battery_percentage = 100
 
     def _update_whole_scr(self):
         self.stdscr.clear()
@@ -39,10 +49,26 @@ class CursesManager:
 
         # Version and Host Information
         self.stdscr.addstr(line_pos, 0,
-                           f'|     VoyagerTelegramBot v{bot_version_string()}',
+                           f'|     VoyagerTelegramBot v{bot_version_string()}     |',
                            self.normal_style)
         host_str = f'{self.host_info.url}:{self.host_info.port} ({self.host_info.host_name})'
-        self.stdscr.addstr(f'     | {host_str:80} |', self.normal_style)
+        self.stdscr.addstr(f' {host_str:54} | Battery |', self.normal_style)
+
+        # Battery Info
+        if self.battery_percentage == SpecialBatteryPercentageEnum.ON_AC_POWER:
+            self.stdscr.addstr(f'  ON AC POWER  ', self.battery_safe_style)
+        elif self.battery_percentage == SpecialBatteryPercentageEnum.NOT_MONITORED:
+            self.stdscr.addstr(f' NOT MONITORED ', self.battery_safe_style)
+        elif self.battery_percentage == SpecialBatteryPercentageEnum.NOT_AVAILABLE:
+            self.stdscr.addstr(f' NOT AVAILABLE ', self.battery_safe_style)
+        else:
+            if self.battery_percentage > 75:
+                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.battery_safe_style)
+            elif self.battery_percentage <= 25:
+                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.battery_critical_style)
+            else:
+                self.stdscr.addstr(f' {self.battery_percentage:^13} ', self.battery_warning_style)
+        self.stdscr.addstr('|', self.normal_style)
         line_pos += 1
 
         # Horizontal Line
@@ -100,6 +126,11 @@ class CursesManager:
     def update_host_info(self, host_info: HostInfo):
         self.host_info = host_info
         self._update_whole_scr()
+
+    def update_battery_percentage(self, battery_percentage:int=0, update=True):
+        self.battery_percentage=battery_percentage
+        if update:
+            self._update_whole_scr()
 
     def append_log(self, new_message: str=''):
         self.log_queue.append(new_message)
