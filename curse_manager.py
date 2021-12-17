@@ -1,10 +1,10 @@
 import curses
 import time
 from collections import deque
-from typing import Dict
 
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
+from data_structure.job_status_info import JobStatusInfo, GuideStatEnum, DitherStatEnum
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
@@ -38,6 +38,7 @@ class CursesManager:
         self.host_info = HostInfo()
         self.log_queue = deque(maxlen=10)
         self.battery_percentage = 100
+        self.job_status_info = JobStatusInfo()
 
     def _update_whole_scr(self):
         self.stdscr.clear()
@@ -90,6 +91,39 @@ class CursesManager:
         self.stdscr.addstr(line_pos, 0, '+' + '-' * 118 + '+', self.normal_style)
         line_pos += 1
 
+        # Job Detail
+        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.job_status_info.drag_script_name:26} |', self.normal_style)
+        self.stdscr.addstr(f' Sequence | {self.job_status_info.sequence_name:26} | ', self.normal_style)
+
+        motion_str = ''
+        if self.job_status_info.is_slewing:
+            motion_str = 'SLEWING'
+        elif self.job_status_info.is_tracking:
+            motion_str = 'TRACKING'
+        self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
+
+        self.stdscr.addstr(' | ', self.normal_style)
+        if self.job_status_info.guide_status == GuideStatEnum.STOPPED:
+            self.stdscr.addstr(f' STOPPED ', self.critical_style)
+        elif self.job_status_info.guide_status == GuideStatEnum.RUNNING:
+            self.stdscr.addstr(f' GUIDING ', self.safe_style)
+        else:
+            self.stdscr.addstr(f' WAITING ', self.warning_style)
+        self.stdscr.addstr(' | ', self.normal_style)
+
+        if self.job_status_info.dither_status == DitherStatEnum.STOPPED:
+            self.stdscr.addstr(f' STOPPED ', self.critical_style)
+        elif self.job_status_info.dither_status == DitherStatEnum.RUNNING:
+            self.stdscr.addstr(f'DITHERING', self.safe_style)
+        else:
+            self.stdscr.addstr(f' WAITING ', self.warning_style)
+        self.stdscr.addstr(' |', self.normal_style)
+        line_pos += 1
+
+        # Horizontal Line
+        self.stdscr.addstr(line_pos, 0, '+' + '-' * 118 + '+', self.normal_style)
+        line_pos += 1
+
         # Log
         for log_item in self.log_queue:
             self.stdscr.addstr(line_pos, 0, f'| ', self.normal_style)
@@ -126,7 +160,7 @@ class CursesManager:
             self.last_error = error_info
             self._update_whole_scr()
 
-    def update_host_info(self, host_info: HostInfo):
+    def update_host_info(self, host_info: HostInfo = None):
         self.host_info = host_info
         self._update_whole_scr()
 
@@ -138,6 +172,11 @@ class CursesManager:
     def append_log(self, new_message: LogMessageInfo = None):
         if new_message:
             self.log_queue.append(new_message)
+            self._update_whole_scr()
+
+    def update_job_status_info(self, job_status_info: JobStatusInfo = None):
+        if job_status_info:
+            self.job_status_info = job_status_info
             self._update_whole_scr()
 
     def close(self):

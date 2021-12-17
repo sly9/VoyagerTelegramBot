@@ -1,6 +1,7 @@
 from typing import Dict
 
 from curse_manager import CursesManager
+from data_structure.job_status_info import GuideStatEnum, DitherStatEnum, JobStatusInfo
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from sequence_stat import StatPlotter, FocusResult, SequenceStat, ExposureInfo
 from telegram import TelegramBot
@@ -21,8 +22,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
         # A dictionary of 'sequence name' => 'sequence stats'
         self.sequence_map = dict()
-        # Note this violates the assumption that there could be more chat ids we should send message to...
-        # but let's bear with it for now
+
         self.current_sequence_stat_chat_id = None
         self.current_sequence_stat_message_id = None
 
@@ -85,9 +85,12 @@ class GiantEventHandler(VoyagerEventHandler):
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
 
-        # definition for GUIDESTAT, {0: STOPPED, 1: WAITING_SETTLE, 2: RUNNING, 3: TIMEOUT_SETTLE}
-        # definition for DITHSTAT, {0: STOPPED, 1: RUNNING, 2: WAITING_SETTLE, 3: TIMEOUT_SETTLE}
-        if self.shot_running and guide_status == 2 and dither_status == 0:
+        self.curses_manager.update_job_status_info(
+            JobStatusInfo(drag_script_name=running_dragscript, sequence_name=running_seq,
+                          guide_status=guide_status, dither_status=dither_status,
+                          is_tracking=is_tracking, is_slewing=is_slewing))
+
+        if self.shot_running and guide_status == GuideStatEnum.RUNNING and dither_status == DitherStatEnum.STOPPED:
             self.add_guide_error_stat(guide_x, guide_y)
 
         if running_dragscript != self.running_dragscript:
