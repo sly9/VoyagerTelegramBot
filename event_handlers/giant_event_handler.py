@@ -1,6 +1,7 @@
 from typing import Dict
 
 from curse_manager import CursesManager
+from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
 from data_structure.job_status_info import GuideStatEnum, DitherStatEnum, JobStatusInfo
@@ -131,6 +132,8 @@ class GiantEventHandler(VoyagerEventHandler):
         done = message['Done']
         last_error = message['LastError']
         if not done:
+            self.curses_manager.update_lass_error(
+                ErrorMessageInfo(code=999, message=last_error, error_module=self.get_name(), error_operation='Focus'))
             self.send_text_message(f'Auto focusing failed with reason: {last_error}')
             return
 
@@ -207,24 +210,26 @@ class GiantEventHandler(VoyagerEventHandler):
                 self.current_sequence_stat_message_id = message_id
                 status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)
                 if status == 'ERROR':
-                    print(
-                        f'\n[ERROR - {self.get_name()} - Unpin All Message]'
-                        f'[{info_dict["error_code"]}]'
-                        f'[{info_dict["description"]}]')
+                    self.curses_manager.update_lass_error(ErrorMessageInfo(code=info_dict["error_code"],
+                                                                           message=info_dict["description"],
+                                                                           error_module=self.get_name(),
+                                                                           error_operation='UnpinAllMessage'))
 
                 status, info_dict = self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
                 if status == 'ERROR':
-                    print(
-                        f'\n[ERROR - {self.get_name()} - Pin Message]'
-                        f'[{info_dict["error_code"]}]'
-                        f'[{info_dict["description"]}]')
+                    self.curses_manager.update_lass_error(
+                        ErrorMessageInfo(code=info_dict["error_code"],
+                                         message=info_dict["description"],
+                                         error_module=self.get_name(),
+                                         error_operation='PinMessage'))
         else:
             status, info_dict = self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
                                                                      message_id=self.current_sequence_stat_message_id,
                                                                      base64_encoded_image=base64_img,
                                                                      filename=self.running_seq + '_stat.jpg')
             if status == 'ERROR':
-                print(
-                    f'\n[ERROR - {self.get_name()} - Edit Image Message]'
-                    f'[{info_dict["error_code"]}]'
-                    f'[{info_dict["description"]}]')
+                self.curses_manager.update_lass_error(
+                    ErrorMessageInfo(code=info_dict["error_code"],
+                                     message=info_dict["description"],
+                                     error_module=self.get_name(),
+                                     error_operation='EditImageMessage'))

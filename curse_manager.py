@@ -82,7 +82,8 @@ class CursesManager:
             error_str = 'Everything is AWESOME!'
             self.stdscr.addstr(f'{error_str:116}', self.normal_style)
         else:
-            error_str = f'[{self.last_error.code}] {self.last_error.message}'
+            error_str = f'{self.last_error.error_module} | {self.last_error.error_operation} |' \
+                        f' [{self.last_error.code}] {self.last_error.message}'
             self.stdscr.addstr(f'{error_str:116.116}', self.critical_style)
 
         self.stdscr.addstr(' |', self.normal_style)
@@ -104,7 +105,7 @@ class CursesManager:
         else:
             motion_str = ''
             self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
-        
+
         self.stdscr.addstr(' | ', self.normal_style)
         if self.job_status_info.guide_status == GuideStatEnum.STOPPED:
             self.stdscr.addstr(f' STOPPED ', self.critical_style)
