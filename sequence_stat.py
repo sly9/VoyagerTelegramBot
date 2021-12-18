@@ -23,8 +23,7 @@ class SequenceStat:
         self.guide_y_error_list = list()  # list of guide error on y axis in pixel
 
     def add_exposure(self, exposure: ExposureInfo):
-        if exposure.exposure_time > 30:
-            self.exposure_info_list.append(exposure)
+        self.exposure_info_list.append(exposure)
 
     def add_focus_result(self, focus_result: FocusResult):
         focus_result.recommended_index = self.exposure_count() - 0.5

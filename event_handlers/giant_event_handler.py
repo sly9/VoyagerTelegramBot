@@ -174,24 +174,24 @@ class GiantEventHandler(VoyagerEventHandler):
         sequence_target = message['SequenceTarget']
         timestamp = message['TimeInfo']
 
-        # new stat code
-        exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
-                                timestamp=timestamp)
-        self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
-
-        base64_photo = message['Base64Data']
-
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
                            + f'HFD: {hfd}, StarIndex: {star_index}'
 
         if expo >= self.config.exposure_limit:
+            # new stat code
+            exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
+                                    timestamp=timestamp)
+            self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
+            # with PINNING and UNPINNING implemented, we can safely report stats for all images
+            self.report_stats_for_current_sequence()
+
+            base64_photo = message['Base64Data']
+
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
             self.send_image_message(base64_photo, new_filename, telegram_message)
         else:
             self.send_text_message(telegram_message)
-        # with PINNING and UNPINNING implemented, we can safely report stats for all images
-        self.report_stats_for_current_sequence()
 
     def report_stats_for_current_sequence(self):
         if self.current_sequence_stat().name == '':
