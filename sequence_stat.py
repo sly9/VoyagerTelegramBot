@@ -247,4 +247,6 @@ class StatPlotter:
         # Prevent RuntimeWarning 'More than 20 figures have been opened' from matplotlib
         plt.close('all')
 
+        img_bytes.close()
+
         return base64_img

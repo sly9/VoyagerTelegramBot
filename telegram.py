@@ -73,6 +73,8 @@ class TelegramBot:
 
             response_json = json.loads(send_image_response.text)
 
+            stream.close()
+
             if response_json['ok']:
                 info_dict = {
                     'chat_id': str(response_json['result']['chat']['id']),
