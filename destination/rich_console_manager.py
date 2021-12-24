@@ -1,21 +1,15 @@
 #!/bin/env python3
 import threading
 from datetime import datetime
+from time import sleep
 
 from rich import box
 from rich.align import Align
-from rich.console import Console, Group
 from rich.layout import Layout
+from rich.live import Live
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
-from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
-from console import console
-
-
-from rich.live import Live
-from time import sleep
 
 
 class RichConsoleManager:
@@ -24,6 +18,9 @@ class RichConsoleManager:
     def __init__(self, config):
         self.config = config
         self.thread = None
+        self.header = RichConsoleHeader()
+        self.layout = None
+        # ee.on(BotEvent.UPDATE_HOST_INFO, self.update_host_info)
 
     def run(self):
         if self.thread:
@@ -33,162 +30,103 @@ class RichConsoleManager:
         self.thread.start()
 
     def run_loop(self):
+        self.layout = self.make_layout()
 
-        job_progress = Progress(
-            "{task.description}",
-            SpinnerColumn(),
-            BarColumn(),
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        )
-        job_progress.add_task("[green]Cooking")
-        job_progress.add_task("[magenta]Baking", total=200)
-        job_progress.add_task("[cyan]Mixing", total=400)
+        self.layout['header'].update(self.header)
+        self.mount_info_panel_updater()
+        self.dummy_updater(self.layout['operations'])
+        self.dummy_updater(self.layout['stat'])
+        self.dummy_updater(self.layout['logs'])
+        self.dummy_updater(self.layout['imaging'])
 
-        total = sum(task.total for task in job_progress.tasks)
-        overall_progress = Progress()
-        overall_task = overall_progress.add_task("All Jobs", total=int(total))
-
-        progress_table = Table.grid(expand=True)
-        progress_table.add_row(
-            Panel(
-                overall_progress,
-                title="Overall Progress",
-                border_style="green",
-                padding=(2, 2),
-            ),
-            Panel(job_progress, title="[b]Jobs", border_style="red", padding=(1, 2)),
-        )
-
-        layout = self.make_layout()
-        layout["header"].update(Header())
-        layout["body"].update(self.make_sponsor_message())
-        layout["box2"].update(Panel(self.make_syntax(), border_style="green"))
-        layout["box1"].update(Panel(layout.tree, border_style="red"))
-        layout["footer"].update(progress_table)
-
-        with Live(layout, refresh_per_second=10, screen=True):
+        with Live(self.layout, refresh_per_second=10, screen=True):
             while True:
                 sleep(0.1)
-                for job in job_progress.tasks:
-                    if not job.finished:
-                        job_progress.advance(job.id)
-
-                completed = sum(task.completed for task in job_progress.tasks)
-                overall_progress.update(overall_task, completed=completed)
-
 
     def make_layout(self) -> Layout:
         """Define the layout."""
-        layout = Layout(name="root")
-
+        layout = Layout(name='root')
         layout.split(
-            Layout(name="header", size=3),
-            Layout(name="main", ratio=1),
-            Layout(name="footer", size=7),
+            Layout(name='header', size=3),
+            Layout(name='status', size=8),
+            Layout(name='main', ratio=1)
         )
-        layout["main"].split_row(
-            Layout(name="side"),
-            Layout(name="body", ratio=2, minimum_size=60),
+
+        layout['status'].split_row(
+            Layout(name='mount_info', ratio=3),  # DEC, RA, ALT, AZ, etc.
+            Layout(name='operations', ratio=3),  # Slewing, guiding, parked, dithering, etc.
+            Layout(name='stat', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
         )
-        layout["side"].split(Layout(name="box1"), Layout(name="box2"))
+
+        layout['main'].split_row(
+            Layout(name='logs', ratio=1),  # general logs, last error etc
+            Layout(name='imaging')  # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
+        )
+
         return layout
 
+    def mount_info_panel_updater(self):
+        mount_table = Table.grid(padding=1)
+        mount_table.add_column()
+        mount_table.add_column()
+        mount_table.add_column()
+        mount_table.add_column()
+        mount_table.add_row('RA', '0', 'DEC', '0')
+        mount_table.add_row('RA J2000', '0', 'DEC J2000', '0')
+        mount_table.add_row('AZ', '0', 'ALT', '0')
+        mount_table.add_row('Pier', 'WEST', '', '')
 
-    def make_sponsor_message(self) -> Panel:
-        """Some example content."""
-        sponsor_message = Table.grid(padding=1)
-        sponsor_message.add_column(style="green", justify="right")
-        sponsor_message.add_column(no_wrap=True)
-        sponsor_message.add_row(
-            "Sponsor me",
-            "[u blue link=https://github.com/sponsors/willmcgugan]https://github.com/sponsors/willmcgugan",
-        )
-        sponsor_message.add_row(
-            "Buy me a :coffee:",
-            "[u blue link=https://ko-fi.com/willmcgugan]https://ko-fi.com/willmcgugan",
-        )
-        sponsor_message.add_row(
-            "Twitter",
-            "[u blue link=https://twitter.com/willmcgugan]https://twitter.com/willmcgugan",
-        )
-        sponsor_message.add_row(
-            "Blog", "[u blue link=https://www.willmcgugan.com]https://www.willmcgugan.com"
+        mount_info_panel = Panel(
+            Align.center(mount_table, vertical='top'),
+            box=box.ROUNDED,
+            padding=(0, 2),
+            title="[b blue]Mount Info",
+            border_style='bright_blue',
         )
 
-        intro_message = Text.from_markup(
-            """Consider supporting my work via Github Sponsors (ask your company / organization), or buy me a coffee to say thanks. - Will McGugan"""
+        self.layout['mount_info'].update(mount_info_panel)
+
+    def dummy_updater(self, layout: Layout = None):
+        if not layout:
+            return
+
+        layout.update(self.dummy_maker())
+
+    def dummy_maker(self) -> Panel:
+        dummy_message = Text.from_markup(
+            '''
+            Dummy Message for Dummy Panel with love!
+            '''
         )
 
         message = Table.grid(padding=1)
         message.add_column()
-        message.add_column(no_wrap=True)
-        message.add_row(intro_message, sponsor_message)
+        message.add_row(dummy_message)
 
         message_panel = Panel(
             Align.center(
-                Group(intro_message, "\n", Align.center(sponsor_message)),
+                dummy_message,
                 vertical="middle",
             ),
             box=box.ROUNDED,
             padding=(1, 2),
-            title="[b red]Thanks for trying out Rich!",
+            title="[b red]Dummy Panel",
             border_style="bright_blue",
         )
         return message_panel
 
-    def make_syntax(self) -> Syntax:
-        code = """\
-    def ratio_resolve(total: int, edges: List[Edge]) -> List[int]:
-        sizes = [(edge.size or None) for edge in edges]
-        # While any edges haven't been calculated
-        while any(size is None for size in sizes):
-            # Get flexible edges and index to map these back on to sizes list
-            flexible_edges = [
-                (index, edge)
-                for index, (size, edge) in enumerate(zip(sizes, edges))
-                if size is None
-            ]
-            # Remaining space in total
-            remaining = total - sum(size or 0 for size in sizes)
-            if remaining <= 0:
-                # No room for flexible edges
-                sizes[:] = [(size or 0) for size in sizes]
-                break
-            # Calculate number of characters in a ratio portion
-            portion = remaining / sum((edge.ratio or 1) for _, edge in flexible_edges)
-            # If any edges will be less than their minimum, replace size with the minimum
-            for index, edge in flexible_edges:
-                if portion * edge.ratio <= edge.minimum_size:
-                    sizes[index] = edge.minimum_size
-                    break
-            else:
-                # Distribute flexible space and compensate for rounding error
-                # Since edge sizes can only be integers we need to add the remainder
-                # to the following line
-                _modf = modf
-                remainder = 0.0
-                for index, edge in flexible_edges:
-                    remainder, size = _modf(portion * edge.ratio + remainder)
-                    sizes[index] = int(size)
-                break
-        # Sizes now contains integers only
-        return cast(List[int], sizes)
-        """
-        syntax = Syntax(code, "python", line_numbers=True)
-        return syntax
 
-
-class Header:
+class RichConsoleHeader:
     """Display header with clock."""
 
     def __rich__(self) -> Panel:
         grid = Table.grid(expand=True)
-        grid.add_column(justify="center", ratio=1)
-        grid.add_column(justify="right")
+        grid.add_column(justify='center', min_width=25)
+        grid.add_column(justify='left', ratio=1)
+        grid.add_column(justify='right')
         grid.add_row(
-            "[b]Rich[/b] Layout application",
+            'VogagerBot v0.5',
+            '127.0.0.1:5950 (Unknown Host)',
             datetime.now().ctime().replace(":", "[blink]:[/]"),
         )
         return Panel(grid, style="white on blue")
-
-
