@@ -53,20 +53,20 @@ class Telegram:
             if chat_id and message_id:
                 self.current_chat_id = chat_id
                 self.current_sequence_stat_message_id = message_id
-                status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)
+                status, info_dict = self.unpin_all_messages(chat_id=chat_id)
                 if status == 'ERROR':
                     ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                             error=ErrorMessageInfo(code=info_dict["error_code"],
                                                    message=info_dict["description"],
-                                                   error_module=self.get_name(),
+                                                   error_module=type(self),
                                                    error_operation='UnpinAllMessage'))
 
-                status, info_dict = self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
+                status, info_dict = self.pin_message(chat_id=chat_id, message_id=message_id)
                 if status == 'ERROR':
                     ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                             error=ErrorMessageInfo(code=info_dict["error_code"],
                                                    message=info_dict["description"],
-                                                   error_module=self.get_name(),
+                                                   error_module=type(self),
                                                    error_operation='PinMessage'))
         else:
             status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
@@ -77,7 +77,7 @@ class Telegram:
                 ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                         error=ErrorMessageInfo(code=info_dict["error_code"],
                                                message=info_dict["description"],
-                                               error_module=self.get_name(),
+                                               error_module=type(self),
                                                error_operation='EditImageMessage'))
 
     def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
@@ -200,6 +200,7 @@ class Telegram:
         else:
             response_json.pop('ok')
             return 'ERROR', response_json
+
 
 
 if __name__ == '__main__':
