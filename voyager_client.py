@@ -18,12 +18,18 @@ class VoyagerClient:
     def __init__(self, config=None):
         self.config = config
 
-        if self.config.debugging:
+        if self.config.html_report_enabled:
             self.html_reporter = HTMLReporter()
-        else:
+        if self.config.telegram_enabled:
+            self.telegram = Telegram(config=config)
+
+        if self.config.console_type == 'BASIC':
             curses_manager = CursesManager()
             self.console_manager = ConsoleManager(config=config, curses_manager=curses_manager)
-            self.telegram = Telegram(config=config)
+        elif self.config.console_type == 'FULL':
+            print('A fancy full screen console powered by rich will be built')
+        else:
+            print('Not planning to take over the console')
 
         # Event handlers for business logic:
         self.handler_dict = defaultdict(set)

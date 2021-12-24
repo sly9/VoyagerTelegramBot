@@ -60,3 +60,7 @@ should_dump_log: True  # [Optional] If true, all received JSON messages will be 
 monitor_battery: False
 debugging: False
 allow_auto_reconnect: True
+
+console_type: PLAIN # Whether you want an application like console or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
+telegram_enabled: True
+html_report_enabled: False
