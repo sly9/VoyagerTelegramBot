@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import _thread
 import base64
 import json
+import threading
 import time
 import uuid
 from collections import deque
@@ -122,7 +122,10 @@ class VoyagerConnectionManager:
         self.send_command('RemoteGetFilterConfiguration', {})
         if self.keep_alive_thread is None:
             self.should_exit_keep_alive_thread = False
-            self.keep_alive_thread = _thread.start_new_thread(self.keep_alive_routine, ())
+            thread = threading.Thread(target=self.keep_alive_routine)
+            thread.daemon = True
+            self.keep_alive_thread = thread
+            thread.start()
 
     def run_forever(self):
         self.ws = websocket.WebSocketApp(

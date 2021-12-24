@@ -29,6 +29,7 @@ class VoyagerClient:
             self.console_manager = ConsoleManager(config=config, curses_manager=curses_manager)
         elif self.config.console_type == 'FULL':
             self.console_manager = RichConsoleManager(config=config)
+            self.console_manager.run()
         else:
             print('Not planning to take over the console')
 
