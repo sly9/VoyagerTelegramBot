@@ -7,6 +7,9 @@ from data_structure.special_battery_percentage import SpecialBatteryPercentageEn
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
 
+from event_emitter import ee
+from event_names import BotEvent
+
 
 class BatteryStatusEventHandler(VoyagerEventHandler):
     """
@@ -23,22 +26,26 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
         try:
             battery = psutil.sensors_battery()
             if battery is None:
-                self.curses_manager.update_battery_percentage(SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
+                ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                        battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
                 return list()
             return ['LogEvent', 'ShotRunning', 'ControlData']
         except Exception as exception:
-            self.curses_manager.update_battery_percentage(SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
+            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                    battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
             return list()
 
     def handle_event(self, event_name: str, message: Dict):
         battery_msg = ''
         if not self.config.monitor_battery:
-            self.curses_manager.update_battery_percentage(SpecialBatteryPercentageEnum.NOT_MONITORED, update=False)
+            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                    battery_percentage=SpecialBatteryPercentageEnum.NOT_MONITORED, update=False)
             return
 
         battery = psutil.sensors_battery()
         if battery.power_plugged:
-            self.curses_manager.update_battery_percentage(SpecialBatteryPercentageEnum.ON_AC_POWER, update=False)
+            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                    battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=False)
             battery_msg = 'AC power is connected.'
         elif battery.percent > 30:
             battery_msg = f'Battery ({battery.percent}%)'
@@ -50,6 +57,7 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
         if self.throttle_count < 30:
             self.throttle_count += 1
         else:
-            self.curses_manager.update_battery_percentage(battery.percent)
+            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                    battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=True)
             self.send_text_message(telegram_message)
             self.throttle_count = 0

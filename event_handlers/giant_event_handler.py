@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 from curse_manager import CursesManager
 from data_structure.error_message_info import ErrorMessageInfo
@@ -8,6 +8,10 @@ from data_structure.job_status_info import GuideStatEnum, DitherStatEnum, JobSta
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from sequence_stat import StatPlotter, SequenceStat
 from telegram import TelegramBot
+
+from event_emitter import ee
+from event_names import BotEvent
+from deprecated import deprecated
 
 
 class GiantEventHandler(VoyagerEventHandler):
@@ -52,6 +56,8 @@ class GiantEventHandler(VoyagerEventHandler):
         else:
             return
 
+    # Handles each types of events
+
     def handle_version(self, message: Dict):
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
             host_name=message['Host'],
@@ -88,10 +94,10 @@ class GiantEventHandler(VoyagerEventHandler):
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
 
-        self.curses_manager.update_job_status_info(
-            JobStatusInfo(drag_script_name=running_dragscript, sequence_name=running_seq,
-                          guide_status=guide_status, dither_status=dither_status,
-                          is_tracking=is_tracking, is_slewing=is_slewing))
+        ee.emit(BotEvent.UPDATE_JOB_STATUS.name,
+                job_status=JobStatusInfo(drag_script_name=running_dragscript, sequence_name=running_seq,
+                                         guide_status=guide_status, dither_status=dither_status,
+                                         is_tracking=is_tracking, is_slewing=is_slewing))
 
         if self.shot_running and guide_status == GuideStatEnum.RUNNING and dither_status == DitherStatEnum.STOPPED:
             self.add_guide_error_stat(guide_x, guide_y)
@@ -132,8 +138,9 @@ class GiantEventHandler(VoyagerEventHandler):
         done = message['Done']
         last_error = message['LastError']
         if not done:
-            self.curses_manager.update_lass_error(
-                ErrorMessageInfo(code=999, message=last_error, error_module=self.get_name(), error_operation='Focus'))
+            ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                    error=ErrorMessageInfo(code=999, message=last_error, error_module=self.get_name(),
+                                           error_operation='Focus'))
             self.send_text_message(f'Auto focusing failed with reason: {last_error}')
             return
 
@@ -152,19 +159,6 @@ class GiantEventHandler(VoyagerEventHandler):
 
         telegram_message = f'AutoFocusing for filter {filter_name} succeeded with position {position}, HFD: {hfd:.2f}'
         self.send_text_message(telegram_message)
-
-    def current_sequence_stat(self) -> SequenceStat:
-        self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
-        return self.sequence_map[self.running_seq]
-
-    def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
-        self.current_sequence_stat().add_exposure(exposure)
-
-    def add_guide_error_stat(self, error_x: float, error_y: float):
-        self.current_sequence_stat().add_guide_error((error_x, error_y))
-
-    def add_focus_result(self, focus_result: FocusResult):
-        self.current_sequence_stat().add_focus_result(focus_result)
 
     def handle_jpg_ready(self, message: Dict):
         expo = message['Expo']
@@ -193,6 +187,64 @@ class GiantEventHandler(VoyagerEventHandler):
         else:
             self.send_text_message(telegram_message)
 
+    # Helper methods
+
+    def current_sequence_stat(self) -> SequenceStat:
+        self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
+        return self.sequence_map[self.running_seq]
+
+    def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
+        self.current_sequence_stat().add_exposure(exposure)
+
+    def add_guide_error_stat(self, error_x: float, error_y: float):
+        self.current_sequence_stat().add_guide_error((error_x, error_y))
+
+    def add_focus_result(self, focus_result: FocusResult):
+        self.current_sequence_stat().add_focus_result(focus_result)
+
+    def send_text_message(self, message: str):
+        """
+        Send plain text message to Telegram, and print out error message
+        :param message: The text that need to be sent to Telegram
+        """
+        if self.telegram_bot:
+            status, info_dict = self.telegram_bot.send_text_message(message)
+
+            if status == 'ERROR':
+                print(
+                    f'\n[ERROR - {self.get_name()} - Text Message]'
+                    f'[{info_dict["error_code"]}]'
+                    f'[{info_dict["description"]}]')
+        else:
+            print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
+
+    def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '',
+                           as_doc: bool = True) -> Tuple[str or None, str or None]:
+        """
+        Send image message to Telegram, and print out error message
+        :param base64_img: image data that encoded as base64
+        :param image_fn: the file name of the image
+        :param msg_text: image capture in string format
+        :param as_doc: if the image should be sent as document (for larger image file)
+        :return: Tuple of chat_id and message_id to check status
+        """
+        if self.telegram_bot:
+            status, info_dict = self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
+
+            if status == 'ERROR':
+                print(
+                    f'\n[ERROR - {self.get_name()} - Text Message]'
+                    f'[{info_dict["error_code"]}]'
+                    f'[{info_dict["description"]}]')
+            elif status == 'OK':
+                return str(info_dict['chat_id']), str(info_dict['message_id'])
+        else:
+            print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
+
+        return None, None
+
+    # Reporting methods
+
     def report_stats_for_current_sequence(self):
         if self.current_sequence_stat().name == '':
             # one-off shots doesn't need stats, we only care about sequences.
@@ -210,26 +262,27 @@ class GiantEventHandler(VoyagerEventHandler):
                 self.current_sequence_stat_message_id = message_id
                 status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)
                 if status == 'ERROR':
-                    self.curses_manager.update_lass_error(ErrorMessageInfo(code=info_dict["error_code"],
-                                                                           message=info_dict["description"],
-                                                                           error_module=self.get_name(),
-                                                                           error_operation='UnpinAllMessage'))
+                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                            error=ErrorMessageInfo(code=info_dict["error_code"],
+                                                   message=info_dict["description"],
+                                                   error_module=self.get_name(),
+                                                   error_operation='UnpinAllMessage'))
 
                 status, info_dict = self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
                 if status == 'ERROR':
-                    self.curses_manager.update_lass_error(
-                        ErrorMessageInfo(code=info_dict["error_code"],
-                                         message=info_dict["description"],
-                                         error_module=self.get_name(),
-                                         error_operation='PinMessage'))
+                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                            error=ErrorMessageInfo(code=info_dict["error_code"],
+                                                   message=info_dict["description"],
+                                                   error_module=self.get_name(),
+                                                   error_operation='PinMessage'))
         else:
             status, info_dict = self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
                                                                      message_id=self.current_sequence_stat_message_id,
                                                                      base64_encoded_image=base64_img,
                                                                      filename=self.running_seq + '_stat.jpg')
             if status == 'ERROR':
-                self.curses_manager.update_lass_error(
-                    ErrorMessageInfo(code=info_dict["error_code"],
-                                     message=info_dict["description"],
-                                     error_module=self.get_name(),
-                                     error_operation='EditImageMessage'))
+                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                        error=ErrorMessageInfo(code=info_dict["error_code"],
+                                               message=info_dict["description"],
+                                               error_module=self.get_name(),
+                                               error_operation='EditImageMessage'))

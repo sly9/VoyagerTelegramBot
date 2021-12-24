@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Dict
 
 from curse_manager import CursesManager
+from destination.console_manager import ConsoleManager
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
@@ -19,12 +20,14 @@ class VoyagerClient:
     def __init__(self, config=None):
         self.config = config
         self.telegram_bot = None
-        self.curses_manager = CursesManager()
+        self.curses_manager = None
 
         if self.config.debugging:
             self.telegram_bot = HTMLTelegramBot()
             self.html_reporter = HTMLReporter()
         else:
+            self.curses_manager = CursesManager()
+            self.console_manager = ConsoleManager(curses_manager = self.curses_manager)
             self.telegram_bot = TelegramBot(config=config)
 
         # Event handlers for business logic:
