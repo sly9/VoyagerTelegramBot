@@ -3,7 +3,7 @@ from typing import Dict
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
-from data_structure.job_status_info import GuideStatEnum, DitherStatEnum, JobStatusInfo
+from data_structure.system_status_info import GuideStatEnum, DitherStatEnum, SystemStatusInfo
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
@@ -86,11 +86,6 @@ class GiantEventHandler(VoyagerEventHandler):
         guide_y = message['GUIDEY']
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
-
-        ee.emit(BotEvent.UPDATE_JOB_STATUS.name,
-                job_status=JobStatusInfo(drag_script_name=running_dragscript, sequence_name=running_seq,
-                                         guide_status=guide_status, dither_status=dither_status,
-                                         is_tracking=is_tracking, is_slewing=is_slewing))
 
         if self.shot_running and guide_status == GuideStatEnum.RUNNING and dither_status == DitherStatEnum.STOPPED:
             self.add_guide_error_stat(guide_x, guide_y)

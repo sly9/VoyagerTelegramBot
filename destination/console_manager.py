@@ -3,7 +3,7 @@
 from curse_manager import CursesManager
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
-from data_structure.job_status_info import JobStatusInfo
+from data_structure.system_status_info import SystemStatusInfo
 from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
@@ -16,7 +16,7 @@ class ConsoleManager:
         ee.on(BotEvent.UPDATE_BATTERY_PERCENTAGE.name, self.update_battery_percentage)
         ee.on(BotEvent.UPDATE_MESSAGE_COUNTER.name, self.update_message_counter)
         ee.on(BotEvent.UPDATE_HOST_INFO.name, self.update_host_info)
-        ee.on(BotEvent.UPDATE_JOB_STATUS.name, self.update_job_status)
+        ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_system_status_info)
         ee.on(BotEvent.APPEND_ERROR_LOG.name, self.append_error)
         ee.on(BotEvent.APPEND_LOG.name, self.append_log)
 
@@ -46,9 +46,9 @@ class ConsoleManager:
             return
         self.curses_manager.append_log(new_message=log)
 
-    def update_job_status(self, job_status: JobStatusInfo = None):
+    def update_system_status_info(self, job_status: SystemStatusInfo = None):
         if not self.curses_manager:
             return
-        self.curses_manager.update_job_status_info(job_status_info=job_status)
+        self.curses_manager.update_system_status_info(system_status_info=job_status)
 
     # private methods

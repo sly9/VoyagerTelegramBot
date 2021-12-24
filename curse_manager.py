@@ -6,7 +6,7 @@ from deprecated import deprecated
 
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
-from data_structure.job_status_info import JobStatusInfo, GuideStatEnum, DitherStatEnum
+from data_structure.system_status_info import SystemStatusInfo, GuideStatEnum, DitherStatEnum
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
@@ -41,7 +41,7 @@ class CursesManager:
         self.host_info = HostInfo()
         self.log_queue = deque(maxlen=10)
         self.battery_percentage = 100
-        self.job_status_info = JobStatusInfo()
+        self.job_status_info = SystemStatusInfo()
 
     def _update_whole_scr(self):
         self.stdscr.clear()
@@ -182,9 +182,9 @@ class CursesManager:
             self.log_queue.append(new_message)
             self._update_whole_scr()
 
-    def update_job_status_info(self, job_status_info: JobStatusInfo = None):
-        if job_status_info:
-            self.job_status_info = job_status_info
+    def update_system_status_info(self, system_status_info: SystemStatusInfo = None):
+        if system_status_info:
+            self.job_status_info = system_status_info
             self._update_whole_scr()
 
     def close(self):
