@@ -9,8 +9,10 @@ from pathlib import Path
 from typing import Tuple, Dict
 
 from PIL import Image
+from deprecated import deprecated
 
 
+@deprecated('This class will be refactored and moved to "destination" folder soon')
 class HTMLTelegramBot:
     def __init__(self):
         Path("./replay/images").mkdir(parents=True, exist_ok=True)

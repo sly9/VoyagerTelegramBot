@@ -9,7 +9,10 @@ from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
 
+from deprecated import deprecated
 
+
+@deprecated('This class will be refactored and moved to "destination" folder soon')
 class CursesManager:
     def __init__(self):
         # Initial a new screen
@@ -93,7 +96,8 @@ class CursesManager:
         line_pos += 1
 
         # Job Detail
-        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.job_status_info.drag_script_name:27} |', self.normal_style)
+        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.job_status_info.drag_script_name:27} |',
+                           self.normal_style)
         self.stdscr.addstr(f' Sequence | {self.job_status_info.sequence_name:27} | ', self.normal_style)
 
         if self.job_status_info.is_slewing:

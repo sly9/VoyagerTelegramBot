@@ -1,11 +1,17 @@
 from abc import abstractmethod
 from typing import Dict, Tuple
 
+
 from curse_manager import CursesManager
 from telegram import TelegramBot
+from pymitter import EventEmitter
+
+global_ee = EventEmitter()
 
 
 class VoyagerEventHandler:
+    ee = global_ee
+
     """
     A base class for all event handlers to inherit from.
 

@@ -7,12 +7,15 @@ import time
 import traceback
 import uuid
 from collections import deque
+from rich import pretty
 
 import websocket
 
 from configs import ConfigBuilder
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
+
+pretty.install()
 
 
 class VoyagerConnectionManager:

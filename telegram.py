@@ -11,7 +11,10 @@ from PIL import Image
 
 from configs import ConfigBuilder
 
+from deprecated import deprecated
 
+
+@deprecated('This class will be refactored and moved to "destination" folder soon')
 class TelegramBot:
     def __init__(self, config=None):
         self.config = config
