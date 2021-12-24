@@ -115,9 +115,15 @@ Currently, we only provide a general installation steps which may require some *
    ```Shell
    pip3 install -r requirements.txt
    ```
-3. Duplicate `config.yml.example` and rename it to `config.xml`. For more information, please refer
+   
+   If you are using Windows, and want to look at our latest "dev" version, please install an extra package named `windows-curses`:
+   
+   ```Shell
+   pip3 install windows-curses
+   ```
+4. Duplicate `config.yml.example` and rename it to `config.xml`. For more information, please refer
    to [Configurations](https://github.com/sly9/VoyagerTelegramBot#configurations) session;
-4. Launch the bot
+5. Launch the bot
 
    ```Shell
    python bot.py
