@@ -4,7 +4,6 @@ import _thread
 import base64
 import json
 import time
-import traceback
 import uuid
 from collections import deque
 from rich import pretty
@@ -14,6 +13,7 @@ import websocket
 from configs import ConfigBuilder
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
+from console import console
 
 pretty.install()
 
@@ -94,7 +94,7 @@ class VoyagerConnectionManager:
     def on_error(self, ws, error):
         self.log_writer.maybe_flush()
         print(f'Error: {error} ###')
-        traceback.print_exc()
+        console.print_exception(show_locals=True)
 
     def on_close(self, ws, close_status_code, close_msg):
         print(f'Closing connection, Code={close_status_code}, description= {close_msg}')

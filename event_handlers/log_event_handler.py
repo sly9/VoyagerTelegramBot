@@ -4,6 +4,8 @@ from curse_manager import CursesManager
 from data_structure.log_message_info import LogMessageInfo
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from telegram import TelegramBot
+from event_emitter import ee
+from event_names import BotEvent
 
 
 # This is just one of the event handlers which are interested in log events. You can write more
@@ -30,3 +32,5 @@ class LogEventHandler(VoyagerEventHandler):
         if type_name in allowed_log_type_names:
             self.curses_manager.append_log(LogMessageInfo(type=type_name, message=message['Text']))
             self.send_text_message(telegram_message)
+            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
+

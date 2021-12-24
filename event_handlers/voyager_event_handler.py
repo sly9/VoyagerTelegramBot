@@ -4,14 +4,11 @@ from typing import Dict, Tuple
 
 from curse_manager import CursesManager
 from telegram import TelegramBot
-from pymitter import EventEmitter
+from deprecated import deprecated
 
-global_ee = EventEmitter()
 
 
 class VoyagerEventHandler:
-    ee = global_ee
-
     """
     A base class for all event handlers to inherit from.
 
@@ -51,6 +48,7 @@ class VoyagerEventHandler:
         """
         return self.name
 
+    @deprecated('This method should not be part of "event handler"')
     def send_text_message(self, message: str):
         """
         Send plain text message to Telegram, and print out error message
@@ -67,6 +65,7 @@ class VoyagerEventHandler:
         else:
             print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
 
+    @deprecated('This method should not be part of "event handler"')
     def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '',
                            as_doc: bool = True) -> Tuple[str or None, str or None]:
         """

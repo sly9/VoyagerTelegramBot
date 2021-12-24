@@ -11,6 +11,8 @@ from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from html_telegram_bot import HTMLTelegramBot
 from telegram import TelegramBot
+from destination.html_reporter import HTMLReporter
+from console import console
 
 
 class VoyagerClient:
@@ -21,9 +23,11 @@ class VoyagerClient:
 
         if self.config.debugging:
             self.telegram_bot = HTMLTelegramBot()
+            self.html_reporter = HTMLReporter()
         else:
             self.telegram_bot = TelegramBot(config=config)
 
+        # Event handlers for business logic:
         self.handler_dict = defaultdict(set)
         self.greedy_handler_set = set()
 
@@ -54,7 +58,7 @@ class VoyagerClient:
 
                     print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                           f'raw message: {message}, exception details:{exception}')
-                    traceback.print_exc()
+                    console.print_exception(show_locals=True)
 
         for handler in self.greedy_handler_set:
             try:
@@ -65,7 +69,9 @@ class VoyagerClient:
 
                 print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                       f'raw message: {message}, exception details:{exception}')
-                traceback.print_exc()
+                #traceback.print_exc()
+                console.print_exception(show_locals=True)
+
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):
         if event_handler.interested_event_name():

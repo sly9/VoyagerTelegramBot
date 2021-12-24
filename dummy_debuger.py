@@ -25,6 +25,6 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('2021_11_13__voyager_bot_log.txt')
+    dd.load_messages('2021_11_15__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
