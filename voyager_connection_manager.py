@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
-from concurrent.futures import ThreadPoolExecutor
 import _thread
-import json
+import asyncio
 import base64
+import json
 import time
 import uuid
 from collections import deque
-from datetime import datetime
+from threading import Thread
+
 import websocket
+
 from configs import ConfigBuilder
 from log_writer import LogWriter
-import asyncio
-from threading import Thread
 
 
 class VoyagerConnectionManager(Thread):
@@ -23,7 +23,7 @@ class VoyagerConnectionManager(Thread):
     TODO: Consider reverse the order of creation. Maybe let voyager client create an instance of connection manager.
     """
 
-    def __init__(self, config = None, thread_id: str = 'WSThread'):
+    def __init__(self, config=None, thread_id: str = 'WSThread'):
         Thread.__init__(self)
         self.thread_id = thread_id
         self.wst = None
@@ -106,7 +106,7 @@ class VoyagerConnectionManager(Thread):
             return
 
         event = message['Event']
-        #self.voyager_client.parse_message(event, message)
+        # self.voyager_client.parse_message(event, message)
         if self.receive_message_callback:
             self.receive_message_callback(event, message)
 
