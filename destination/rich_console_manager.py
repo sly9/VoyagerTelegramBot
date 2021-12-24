@@ -11,6 +11,10 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from data_structure.system_status_info import SystemStatusInfo
+from event_emitter import ee
+from event_names import BotEvent
+
 
 class RichConsoleManager:
     """A console manager powered by rich"""
@@ -20,7 +24,7 @@ class RichConsoleManager:
         self.thread = None
         self.header = RichConsoleHeader()
         self.layout = None
-        # ee.on(BotEvent.UPDATE_HOST_INFO, self.update_host_info)
+        ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panel)
 
     def run(self):
         if self.thread:
@@ -33,9 +37,9 @@ class RichConsoleManager:
         self.layout = self.make_layout()
 
         self.layout['header'].update(self.header)
-        self.mount_info_panel_updater()
-        self.dummy_updater(self.layout['operations'])
-        self.dummy_updater(self.layout['stat'])
+
+        self.update_status_panel()
+
         self.dummy_updater(self.layout['logs'])
         self.dummy_updater(self.layout['imaging'])
 
@@ -65,26 +69,34 @@ class RichConsoleManager:
 
         return layout
 
-    def mount_info_panel_updater(self):
-        mount_table = Table.grid(padding=1)
-        mount_table.add_column()
-        mount_table.add_column()
-        mount_table.add_column()
-        mount_table.add_column()
-        mount_table.add_row('RA', '0', 'DEC', '0')
-        mount_table.add_row('RA J2000', '0', 'DEC J2000', '0')
-        mount_table.add_row('AZ', '0', 'ALT', '0')
-        mount_table.add_row('Pier', 'WEST', '', '')
+    def update_status_panel(self, system_status_info: SystemStatusInfo=None):
+        if not system_status_info:
+            # A dummy info object with default values
+            system_status_info = SystemStatusInfo()
+
+        # Update mount information sub-panel
+        mount_info = system_status_info.mount_info
+        mount_table = Table.grid(padding=(0, 3))
+        mount_table.add_column(justify='right', style='bold grey89')
+        mount_table.add_column(justify='left', style='bold gold3')
+        mount_table.add_column(justify='right', style='bold grey89')
+        mount_table.add_column(justify='left', style='bold gold3')
+        mount_table.add_row('RA', mount_info.ra, 'DEC', mount_info.dec)
+        mount_table.add_row('RA J2K', mount_info.ra, 'DEC J2K', mount_info.dec_j2000)
+        mount_table.add_row('AZ', mount_info.az, 'ALT', mount_info.alt)
+        mount_table.add_row('Pier', mount_info.pier, '', '')
 
         mount_info_panel = Panel(
             Align.center(mount_table, vertical='top'),
             box=box.ROUNDED,
-            padding=(0, 2),
+            padding=(1, 2),
             title="[b blue]Mount Info",
             border_style='bright_blue',
         )
 
         self.layout['mount_info'].update(mount_info_panel)
+        self.dummy_updater(self.layout['operations'])
+        self.dummy_updater(self.layout['stat'])
 
     def dummy_updater(self, layout: Layout = None):
         if not layout:
@@ -99,7 +111,7 @@ class RichConsoleManager:
             '''
         )
 
-        message = Table.grid(padding=1)
+        message = Table(padding=1)
         message.add_column()
         message.add_row(dummy_message)
 

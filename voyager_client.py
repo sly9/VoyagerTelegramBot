@@ -12,6 +12,7 @@ from event_handlers.battery_status_event_handler import BatteryStatusEventHandle
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
 from event_handlers.misc_event_handler import MiscellaneousEventHandler
+from event_handlers.system_status_event_handler import SystemStatusEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 
 
@@ -41,6 +42,7 @@ class VoyagerClient:
         self.register_event_handler(GiantEventHandler(config=config))
         self.register_event_handler(LogEventHandler(config=config))
         self.register_event_handler(BatteryStatusEventHandler(config=config))
+        self.register_event_handler(SystemStatusEventHandler(config=config))
 
     def parse_message(self, event_name: str, message: Dict):
         if event_name in self.handler_dict:
