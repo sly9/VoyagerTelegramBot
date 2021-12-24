@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class BotEvent(Enum):
+    # These telegram specific events should be merged into more 'logic' oriented names
     SEND_TEXT_MESSAGE = 1
     SEND_IMAGE_MESSAGE = 2
     EDIT_IMAGE_MESSAGE = 3

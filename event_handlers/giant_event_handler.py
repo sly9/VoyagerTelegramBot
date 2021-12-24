@@ -1,24 +1,18 @@
-from typing import Dict, Tuple
+from typing import Dict
 
-from curse_manager import CursesManager
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
 from data_structure.job_status_info import GuideStatEnum, DitherStatEnum, JobStatusInfo
-from event_handlers.voyager_event_handler import VoyagerEventHandler
-from sequence_stat import StatPlotter, SequenceStat
-from telegram import TelegramBot
-
 from event_emitter import ee
+from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
-from deprecated import deprecated
+from sequence_stat import StatPlotter, SequenceStat
 
 
 class GiantEventHandler(VoyagerEventHandler):
-    def __init__(self, config, telegram_bot: TelegramBot, curses_manager: CursesManager):
-        super().__init__(config=config, telegram_bot=telegram_bot,
-                         handler_name='GiantEventHandler',
-                         curses_manager=curses_manager)
+    def __init__(self, config):
+        super().__init__(config=config, handler_name='GiantEventHandler')
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
@@ -63,8 +57,7 @@ class GiantEventHandler(VoyagerEventHandler):
             host_name=message['Host'],
             url=self.config.voyager_setting.domain,
             version=message['VOYVersion'])
-
-        self.send_text_message(telegram_message)
+        ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
     def handle_remote_action_result(self, message: Dict):
         method_name = message['MethodName']
@@ -105,26 +98,26 @@ class GiantEventHandler(VoyagerEventHandler):
         if running_dragscript != self.running_dragscript:
             self.sequence_map = {}
             if running_dragscript == '':
-                self.send_text_message(f'Just finished DragScript {self.running_dragscript}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Just finished DragScript {self.running_dragscript}')
             elif self.running_dragscript == '':
-                self.send_text_message(f'Starting DragScript {running_dragscript}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Starting DragScript {running_dragscript}')
             else:
-                self.send_text_message(
-                    f'Switching DragScript from {running_dragscript} to {self.running_dragscript}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
+                        f'Switching DragScript from {running_dragscript} to {self.running_dragscript}')
             self.running_dragscript = running_dragscript
 
         if running_seq != self.running_seq:
             # self.report_stats_for_current_sequence()
             if running_seq == '':
-                self.send_text_message(f'Just finished Sequence {self.running_seq}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Just finished Sequence {self.running_seq}')
             elif self.running_seq == '':
-                self.send_text_message(f'Starting Sequence {running_seq}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Starting Sequence {running_seq}')
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
             else:
-                self.send_text_message(
-                    f'Switching Sequence from {running_seq} to {self.running_seq}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
+                        f'Switching Sequence from {running_seq} to {self.running_seq}')
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
@@ -141,7 +134,7 @@ class GiantEventHandler(VoyagerEventHandler):
             ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                     error=ErrorMessageInfo(code=999, message=last_error, error_module=self.get_name(),
                                            error_operation='Focus'))
-            self.send_text_message(f'Auto focusing failed with reason: {last_error}')
+            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Auto focusing failed with reason: {last_error}')
             return
 
         filter_index = message['FilterIndex']
@@ -158,7 +151,7 @@ class GiantEventHandler(VoyagerEventHandler):
         filter_name = self.filter_name_list[filter_index]
 
         telegram_message = f'AutoFocusing for filter {filter_name} succeeded with position {position}, HFD: {hfd:.2f}'
-        self.send_text_message(telegram_message)
+        ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
     def handle_jpg_ready(self, message: Dict):
         expo = message['Expo']
@@ -185,7 +178,7 @@ class GiantEventHandler(VoyagerEventHandler):
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
             self.send_image_message(base64_photo, new_filename, telegram_message)
         else:
-            self.send_text_message(telegram_message)
+            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
     # Helper methods
 
@@ -201,47 +194,6 @@ class GiantEventHandler(VoyagerEventHandler):
 
     def add_focus_result(self, focus_result: FocusResult):
         self.current_sequence_stat().add_focus_result(focus_result)
-
-    def send_text_message(self, message: str):
-        """
-        Send plain text message to Telegram, and print out error message
-        :param message: The text that need to be sent to Telegram
-        """
-        if self.telegram_bot:
-            status, info_dict = self.telegram_bot.send_text_message(message)
-
-            if status == 'ERROR':
-                print(
-                    f'\n[ERROR - {self.get_name()} - Text Message]'
-                    f'[{info_dict["error_code"]}]'
-                    f'[{info_dict["description"]}]')
-        else:
-            print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
-
-    def send_image_message(self, base64_img: bytes = None, image_fn: str = '', msg_text: str = '',
-                           as_doc: bool = True) -> Tuple[str or None, str or None]:
-        """
-        Send image message to Telegram, and print out error message
-        :param base64_img: image data that encoded as base64
-        :param image_fn: the file name of the image
-        :param msg_text: image capture in string format
-        :param as_doc: if the image should be sent as document (for larger image file)
-        :return: Tuple of chat_id and message_id to check status
-        """
-        if self.telegram_bot:
-            status, info_dict = self.telegram_bot.send_image_message(base64_img, image_fn, msg_text, as_doc)
-
-            if status == 'ERROR':
-                print(
-                    f'\n[ERROR - {self.get_name()} - Text Message]'
-                    f'[{info_dict["error_code"]}]'
-                    f'[{info_dict["description"]}]')
-            elif status == 'OK':
-                return str(info_dict['chat_id']), str(info_dict['message_id'])
-        else:
-            print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')
-
-        return None, None
 
     # Reporting methods
 

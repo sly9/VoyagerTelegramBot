@@ -1,11 +1,7 @@
 from abc import abstractmethod
-from typing import Dict, Tuple
-
+from typing import Dict
 
 from curse_manager import CursesManager
-from telegram import TelegramBot
-from deprecated import deprecated
-
 
 
 class VoyagerEventHandler:
@@ -16,13 +12,9 @@ class VoyagerEventHandler:
     """
 
     def __init__(self, config,
-                 telegram_bot: TelegramBot,
-                 handler_name: str = 'DefaultHandler',
-                 curses_manager: CursesManager = None):
+                 handler_name: str = 'DefaultHandler'):
         self.name = handler_name
         self.config = config
-        self.telegram_bot = telegram_bot
-        self.curses_manager = curses_manager
 
     def interested_event_names(self):
         """
@@ -47,8 +39,6 @@ class VoyagerEventHandler:
         :return: The name of this event_handler
         """
         return self.name
-
-
 
     @abstractmethod
     def handle_event(self, event_name: str, message: Dict):

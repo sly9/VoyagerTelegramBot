@@ -4,15 +4,15 @@ from collections import defaultdict
 from typing import Dict
 
 from curse_manager import CursesManager
-from destination.console_manager import ConsoleManager
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
 from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
-from html_telegram_bot import HTMLTelegramBot
-from telegram import TelegramBot
+
+from destination.console_manager import ConsoleManager
 from destination.html_reporter import HTMLReporter
+from destination.telegram import Telegram
 from console import console
 
 
@@ -23,31 +23,26 @@ class VoyagerClient:
         self.curses_manager = None
 
         if self.config.debugging:
-            self.telegram_bot = HTMLTelegramBot()
             self.html_reporter = HTMLReporter()
         else:
-            self.curses_manager = CursesManager()
-            self.console_manager = ConsoleManager(curses_manager = self.curses_manager)
-            self.telegram_bot = TelegramBot(config=config)
+            curses_manager = CursesManager()
+            self.console_manager = ConsoleManager(config=config, curses_manager=curses_manager)
+            self.telegram = Telegram(config=config)
 
         # Event handlers for business logic:
         self.handler_dict = defaultdict(set)
         self.greedy_handler_set = set()
 
-        miscellaneous_event_handler = MiscellaneousEventHandler(config=config, telegram_bot=self.telegram_bot,
-                                                                curses_manager=self.curses_manager)
+        miscellaneous_event_handler = MiscellaneousEventHandler(config=config)
         self.register_event_handler(miscellaneous_event_handler)
 
-        giant_handler = GiantEventHandler(config=config, telegram_bot=self.telegram_bot,
-                                          curses_manager=self.curses_manager)
+        giant_handler = GiantEventHandler(config=config)
         self.register_event_handler(giant_handler)
 
-        log_event_handler = LogEventHandler(config=config, telegram_bot=self.telegram_bot,
-                                            curses_manager=self.curses_manager)
+        log_event_handler = LogEventHandler(config=config)
         self.register_event_handler(log_event_handler)
 
-        client_status_event_handler = BatteryStatusEventHandler(config=config, telegram_bot=self.telegram_bot,
-                                                                curses_manager=self.curses_manager)
+        client_status_event_handler = BatteryStatusEventHandler(config=config)
         self.register_event_handler(client_status_event_handler)
 
     def parse_message(self, event_name: str, message: Dict):
@@ -72,9 +67,8 @@ class VoyagerClient:
 
                 print(f'\n[{handler.get_name()}] Exception occurred while handling {event_name}, '
                       f'raw message: {message}, exception details:{exception}')
-                #traceback.print_exc()
+                # traceback.print_exc()
                 console.print_exception(show_locals=True)
-
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):
         if event_handler.interested_event_name():

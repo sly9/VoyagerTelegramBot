@@ -2,12 +2,9 @@ from typing import Dict
 
 import psutil
 
-from curse_manager import CursesManager
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
-from event_handlers.voyager_event_handler import VoyagerEventHandler
-from telegram import TelegramBot
-
 from event_emitter import ee
+from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
 
 
@@ -16,10 +13,8 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
     An event handler which is interested in local -- the bot's local, not voyager application's local, battery status.
     """
 
-    def __init__(self, config, telegram_bot: TelegramBot, curses_manager: CursesManager):
-        super().__init__(config=config, telegram_bot=telegram_bot,
-                         handler_name='BatteryStatusEventHandler',
-                         curses_manager=curses_manager)
+    def __init__(self, config):
+        super().__init__(config=config, handler_name='BatteryStatusEventHandler', )
         self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
 
     def interested_event_names(self):
@@ -59,5 +54,5 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
         else:
             ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
                     battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=True)
-            self.send_text_message(telegram_message)
+            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
             self.throttle_count = 0

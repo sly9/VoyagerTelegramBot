@@ -12,9 +12,8 @@ from PIL import Image
 from configs import ConfigBuilder
 
 from deprecated import deprecated
-from pymitter import EventEmitter
-from .. import event_emitter
-from ..event_names import BotEvent
+from event_emitter import ee
+from event_names import BotEvent
 
 
 class Telegram:
@@ -33,7 +32,13 @@ class Telegram:
             'unpin_all_messages': f'https://api.telegram.org/bot{self.token}/unpinAllChatMessages',
         }
 
-    @event_emitter.ee.on(BotEvent.SEND_TEXT_MESSAGE.name)
+        ee.on(BotEvent.SEND_TEXT_MESSAGE.name, self.send_text_message)
+        ee.on(BotEvent.SEND_IMAGE_MESSAGE.name, self.send_image_message)
+        ee.on(BotEvent.EDIT_IMAGE_MESSAGE.name, self.edit_image_message)
+        ee.on(BotEvent.PIN_MESSAGE.name, self.pin_message)
+        ee.on(BotEvent.UNPIN_MESSAGE.name, self.unpin_message)
+        ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
+
     def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
         send_text_message_response = requests.post(self.urls['text'], data=payload)

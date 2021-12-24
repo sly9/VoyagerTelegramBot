@@ -1,18 +1,15 @@
 from typing import Dict
 
-from curse_manager import CursesManager
 from data_structure.log_message_info import LogMessageInfo
-from event_handlers.voyager_event_handler import VoyagerEventHandler
-from telegram import TelegramBot
 from event_emitter import ee
+from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
 
 
 # This is just one of the event handlers which are interested in log events. You can write more
 class LogEventHandler(VoyagerEventHandler):
-    def __init__(self, config, telegram_bot: TelegramBot, curses_manager: CursesManager):
-        super().__init__(config=config, telegram_bot=telegram_bot, handler_name='LogEventHandler',
-                         curses_manager=curses_manager)
+    def __init__(self, config):
+        super().__init__(config=config, handler_name='LogEventHandler')
 
     def interested_event_name(self):
         return 'LogEvent'
@@ -33,21 +30,4 @@ class LogEventHandler(VoyagerEventHandler):
         if type_name in allowed_log_type_names:
             ee.emit(BotEvent.APPEND_LOG.name,
                     log=LogMessageInfo(type=type_name, message=message['Text']))
-            self.send_text_message(telegram_message)
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
-
-    def send_text_message(self, message: str):
-        """
-        Send plain text message to Telegram, and print out error message
-        :param message: The text that need to be sent to Telegram
-        """
-        if self.telegram_bot:
-            status, info_dict = self.telegram_bot.send_text_message(message)
-
-            if status == 'ERROR':
-                print(
-                    f'\n[ERROR - {self.get_name()} - Text Message]'
-                    f'[{info_dict["error_code"]}]'
-                    f'[{info_dict["description"]}]')
-        else:
-            print(f'\n[ERROR - {self.get_name()} - Telegram Bot]')

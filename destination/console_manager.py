@@ -1,30 +1,17 @@
 #!/bin/env python3
 
-import base64
-import io
-import json
-import tempfile
-from typing import Tuple, Dict, Any
-
-import requests
-from PIL import Image
-
-from configs import ConfigBuilder
-
-from deprecated import deprecated
-from pymitter import EventEmitter
-
+from curse_manager import CursesManager
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
 from data_structure.job_status_info import JobStatusInfo
 from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
-from curse_manager import CursesManager
 
 
 class ConsoleManager:
-    def __init__(self, curses_manager: CursesManager = None):
+    def __init__(self, config=None, curses_manager: CursesManager = None):
+        self.config = config
         self.curses_manager = curses_manager
         ee.on(BotEvent.UPDATE_BATTERY_PERCENTAGE.name, self.update_battery_percentage)
         ee.on(BotEvent.UPDATE_MESSAGE_COUNTER.name, self.update_message_counter)
