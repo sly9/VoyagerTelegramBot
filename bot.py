@@ -6,14 +6,14 @@ import json
 import time
 import uuid
 from collections import deque
-from rich import pretty
 
 import websocket
+from rich import pretty
 
 from configs import ConfigBuilder
+from console import console
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
-from console import console
 
 pretty.install()
 

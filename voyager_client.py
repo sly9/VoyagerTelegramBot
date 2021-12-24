@@ -1,26 +1,22 @@
 #!/bin/env python3
-import traceback
 from collections import defaultdict
 from typing import Dict
 
+from console import console
 from curse_manager import CursesManager
+from destination.console_manager import ConsoleManager
+from destination.html_reporter import HTMLReporter
+from destination.telegram import Telegram
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
 from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 
-from destination.console_manager import ConsoleManager
-from destination.html_reporter import HTMLReporter
-from destination.telegram import Telegram
-from console import console
-
 
 class VoyagerClient:
     def __init__(self, config=None):
         self.config = config
-        self.telegram_bot = None
-        self.curses_manager = None
 
         if self.config.debugging:
             self.html_reporter = HTMLReporter()
@@ -33,17 +29,10 @@ class VoyagerClient:
         self.handler_dict = defaultdict(set)
         self.greedy_handler_set = set()
 
-        miscellaneous_event_handler = MiscellaneousEventHandler(config=config)
-        self.register_event_handler(miscellaneous_event_handler)
-
-        giant_handler = GiantEventHandler(config=config)
-        self.register_event_handler(giant_handler)
-
-        log_event_handler = LogEventHandler(config=config)
-        self.register_event_handler(log_event_handler)
-
-        client_status_event_handler = BatteryStatusEventHandler(config=config)
-        self.register_event_handler(client_status_event_handler)
+        self.register_event_handler(MiscellaneousEventHandler(config=config))
+        self.register_event_handler(GiantEventHandler(config=config))
+        self.register_event_handler(LogEventHandler(config=config))
+        self.register_event_handler(BatteryStatusEventHandler(config=config))
 
     def parse_message(self, event_name: str, message: Dict):
         if event_name in self.handler_dict:

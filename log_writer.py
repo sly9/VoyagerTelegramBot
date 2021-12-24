@@ -1,9 +1,9 @@
 #!/bin/env python3
-from configs import ConfigBuilder
-from datetime import timedelta
-from datetime import datetime
-import pytz
 import os
+from datetime import datetime
+from datetime import timedelta
+
+import pytz
 
 
 class LogWriter:

@@ -10,8 +10,7 @@ import requests
 from PIL import Image
 
 from configs import ConfigBuilder
-
-from deprecated import deprecated
+from data_structure.error_message_info import ErrorMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
 
@@ -32,12 +31,54 @@ class Telegram:
             'unpin_all_messages': f'https://api.telegram.org/bot{self.token}/unpinAllChatMessages',
         }
 
+        self.current_chat_id = None
+        self.current_sequence_stat_message_id = None
+
         ee.on(BotEvent.SEND_TEXT_MESSAGE.name, self.send_text_message)
         ee.on(BotEvent.SEND_IMAGE_MESSAGE.name, self.send_image_message)
         ee.on(BotEvent.EDIT_IMAGE_MESSAGE.name, self.edit_image_message)
+        ee.on(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, self.update_sequence_stat_image)
         ee.on(BotEvent.PIN_MESSAGE.name, self.pin_message)
         ee.on(BotEvent.UNPIN_MESSAGE.name, self.unpin_message)
         ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
+
+    def update_sequence_stat_image(self, base64_image: str, image_filename: str,
+                                   message: str, send_as_file: bool):
+
+        if not self.current_chat_id and not self.current_sequence_stat_message_id:
+            chat_id, message_id = self.send_image_message(base64_image=base64_image,
+                                                          image_filename='good_night_stats.jpg',
+                                                          message=f'Statistics for {self.running_seq}',
+                                                          send_as_file=False)
+            if chat_id and message_id:
+                self.current_chat_id = chat_id
+                self.current_sequence_stat_message_id = message_id
+                status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)
+                if status == 'ERROR':
+                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                            error=ErrorMessageInfo(code=info_dict["error_code"],
+                                                   message=info_dict["description"],
+                                                   error_module=self.get_name(),
+                                                   error_operation='UnpinAllMessage'))
+
+                status, info_dict = self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
+                if status == 'ERROR':
+                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                            error=ErrorMessageInfo(code=info_dict["error_code"],
+                                                   message=info_dict["description"],
+                                                   error_module=self.get_name(),
+                                                   error_operation='PinMessage'))
+        else:
+            status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
+                                                        message_id=self.current_sequence_stat_message_id,
+                                                        base64_encoded_image=base64_image,
+                                                        filename=self.running_seq + '_stat.jpg')
+            if status == 'ERROR':
+                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                        error=ErrorMessageInfo(code=info_dict["error_code"],
+                                               message=info_dict["description"],
+                                               error_module=self.get_name(),
+                                               error_operation='EditImageMessage'))
 
     def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
@@ -57,7 +98,7 @@ class Telegram:
     def send_image_message(self, base64_encoded_image,
                            filename: str = '',
                            caption: str = '',
-                           as_document: bool = True) -> Tuple[str, Dict[str, Any]]:
+                           send_as_file: bool = True) -> Tuple[str, Dict[str, Any]]:
         file_content = base64.b64decode(base64_encoded_image)
 
         with tempfile.TemporaryFile() as f, tempfile.TemporaryFile() as thumb_f:
@@ -70,7 +111,7 @@ class Telegram:
             img.save(thumb_f, "JPEG")
             thumb_f.seek(0)
 
-            if as_document:
+            if send_as_file:
                 payload = {'chat_id': self.chat_id, 'thumb': 'attach://preview_' + filename,
                            'caption': caption}
                 files = {'document': (filename, f, 'image/jpeg'),
@@ -163,7 +204,7 @@ class Telegram:
 
 if __name__ == '__main__':
     c = ConfigBuilder()
-    t = TelegramBot(config=c.build())
+    t = Telegram(config=c.build())
     response = t.send_text_message(message='hello world')
     print(response)
     the_chat_id = response[1]['chat_id']

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Tuple, Dict
 
 from PIL import Image
+
 from event_emitter import ee
 from event_names import BotEvent
 

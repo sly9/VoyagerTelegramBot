@@ -176,7 +176,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
-            self.send_image_message(base64_photo, new_filename, telegram_message)
+            ee.emit(BotEvent.SEND_IMAGE_MESSAGE.name, base64_photo, new_filename, telegram_message)
         else:
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
@@ -204,37 +204,3 @@ class GiantEventHandler(VoyagerEventHandler):
         sequence_stat = self.current_sequence_stat()
 
         base64_img = self.stat_plotter.plot(sequence_stat=sequence_stat)
-
-        if not self.current_sequence_stat_chat_id and not self.current_sequence_stat_message_id:
-            chat_id, message_id = self.send_image_message(base64_img=base64_img, image_fn='good_night_stats.jpg',
-                                                          msg_text=f'Statistics for {self.running_seq}',
-                                                          as_doc=False)
-            if chat_id and message_id:
-                self.current_sequence_stat_chat_id = chat_id
-                self.current_sequence_stat_message_id = message_id
-                status, info_dict = self.telegram_bot.unpin_all_messages(chat_id=chat_id)
-                if status == 'ERROR':
-                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                            error=ErrorMessageInfo(code=info_dict["error_code"],
-                                                   message=info_dict["description"],
-                                                   error_module=self.get_name(),
-                                                   error_operation='UnpinAllMessage'))
-
-                status, info_dict = self.telegram_bot.pin_message(chat_id=chat_id, message_id=message_id)
-                if status == 'ERROR':
-                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                            error=ErrorMessageInfo(code=info_dict["error_code"],
-                                                   message=info_dict["description"],
-                                                   error_module=self.get_name(),
-                                                   error_operation='PinMessage'))
-        else:
-            status, info_dict = self.telegram_bot.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
-                                                                     message_id=self.current_sequence_stat_message_id,
-                                                                     base64_encoded_image=base64_img,
-                                                                     filename=self.running_seq + '_stat.jpg')
-            if status == 'ERROR':
-                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                        error=ErrorMessageInfo(code=info_dict["error_code"],
-                                               message=info_dict["description"],
-                                               error_module=self.get_name(),
-                                               error_operation='EditImageMessage'))

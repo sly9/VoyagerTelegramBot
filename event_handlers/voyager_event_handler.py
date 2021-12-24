@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from typing import Dict
 
-from curse_manager import CursesManager
-
 
 class VoyagerEventHandler:
     """

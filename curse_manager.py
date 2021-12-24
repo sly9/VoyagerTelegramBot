@@ -2,14 +2,14 @@ import curses
 import time
 from collections import deque
 
+from deprecated import deprecated
+
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
 from data_structure.job_status_info import JobStatusInfo, GuideStatEnum, DitherStatEnum
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
 from version import bot_version_string
-
-from deprecated import deprecated
 
 
 @deprecated('This class will be refactored and moved to "destination" folder soon')

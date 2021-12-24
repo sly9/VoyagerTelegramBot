@@ -20,7 +20,7 @@ class DummyDebugger:
             self.connection_manager.on_message(ws=None, message_string=msg.strip())
 
     def good_night(self):
-        self.connection_manager.voyager_client.telegram_bot.write_footer()
+        self.connection_manager.voyager_client.html_reporter.write_footer()
 
 
 if __name__ == "__main__":
