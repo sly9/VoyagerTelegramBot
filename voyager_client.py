@@ -6,6 +6,7 @@ from console import console
 from curse_manager import CursesManager
 from destination.console_manager import ConsoleManager
 from destination.html_reporter import HTMLReporter
+from destination.rich_console_manager import RichConsoleManager
 from destination.telegram import Telegram
 from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
@@ -27,7 +28,7 @@ class VoyagerClient:
             curses_manager = CursesManager()
             self.console_manager = ConsoleManager(config=config, curses_manager=curses_manager)
         elif self.config.console_type == 'FULL':
-            print('A fancy full screen console powered by rich will be built')
+            self.console_manager = RichConsoleManager(config=config)
         else:
             print('Not planning to take over the console')
 
