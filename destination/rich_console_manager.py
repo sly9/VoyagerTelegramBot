@@ -4,7 +4,7 @@ import threading
 from collections import deque
 from datetime import datetime
 from time import sleep
-from version import bot_version_string
+
 from rich import box
 from rich.align import Align
 from rich.console import ConsoleOptions, RenderResult, Console
@@ -19,6 +19,7 @@ from data_structure.log_message_info import LogMessageInfo
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_names import BotEvent
+from version import bot_version_string
 
 
 class RichTextStylesEnum(enum.Enum):
@@ -205,7 +206,6 @@ class RichConsoleManager:
             except Exception as exception:
                 print(exception);
 
-
     def dummy_updater(self, layout: Layout = None):
         if not layout:
             return
@@ -285,6 +285,7 @@ class LogPanel:
 
 class RichConsoleHeader:
     """Display header with clock."""
+
     def __init__(self):
         self.toast_string = None
 
@@ -316,7 +317,7 @@ class RichConsoleHeader:
             )
         return grid
 
-    def show_action_toast(self, toast_string:str):
+    def show_action_toast(self, toast_string: str):
         self.toast_string = toast_string
 
     def hide_action_toast(self):
