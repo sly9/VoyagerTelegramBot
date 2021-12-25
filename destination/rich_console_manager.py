@@ -16,10 +16,12 @@ from data_structure.system_status_info import SystemStatusInfo, MountInfo, Guide
 from event_emitter import ee
 from event_names import BotEvent
 
+
 class RichTextStylesEnum(enum.Enum):
-    CRITICAL ='bold black on dark_red'
+    CRITICAL = 'bold black on dark_red'
     WARNING = 'bold black on gold3'
     SAFE = 'bold black on dark_sea_green4'
+
 
 class RichConsoleManager:
     """A console manager powered by rich"""
@@ -74,7 +76,7 @@ class RichConsoleManager:
 
         return layout
 
-    def update_status_panel(self, system_status_info: SystemStatusInfo=None):
+    def update_status_panel(self, system_status_info: SystemStatusInfo = None):
         if not system_status_info:
             # A dummy info object with default values
             system_status_info = SystemStatusInfo()
