@@ -7,9 +7,12 @@ from time import sleep
 
 from rich import box
 from rich.align import Align
+from rich.console import ConsoleOptions, RenderResult, Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
+from rich.pretty import Pretty
+from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
@@ -17,7 +20,7 @@ from data_structure.log_message_info import LogMessageInfo
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_names import BotEvent
-
+from console import console
 
 class RichTextStylesEnum(enum.Enum):
     CRITICAL = 'bold black on dark_red'
@@ -54,8 +57,9 @@ class RichConsoleManager:
 
         self.update_status_panel()
 
-        self.dummy_updater(self.layout['logs'])
+        #self.dummy_updater(self.layout['logs'])
         self.dummy_updater(self.layout['imaging'])
+        self.update_log(LogMessageInfo(type='WARNING', message='this is a test'))
 
         with Live(self.layout, refresh_per_second=4, screen=True):
             while True:
@@ -194,19 +198,21 @@ class RichConsoleManager:
 
     def update_log(self, log: LogMessageInfo):
         self.recent_logs.append(log)
-
         log_layout = self.layout['logs']
 
-        height = log_layout.height
+        log_layout.update(LogPanel(log_layout))
 
-        log_table = Table.grid(padding=(0, 1),expand=True)
-        log_table.add_column(justify='left', style='bold grey89', max_width=10)
-        log_table.add_column(justify='left', style='bold gold3')
-        for entry in self.recent_logs:
-            log_table.add_row(entry.type, entry.message)
-        log_layout.update(Panel(
-            log_table, title="Warnings and errors", border_style="red", padding=(0, 0)
-        ), )
+        # measure = console.measure(log_layout)
+        # height = log_layout.height
+
+        # log_table = Table.grid(padding=(0, 1),expand=True)
+        # log_table.add_column(justify='left', style='bold grey89', max_width=10)
+        # log_table.add_column(justify='left', style='bold gold3')
+        # for entry in self.recent_logs:
+        #     log_table.add_row(entry.type, entry.message)
+        # log_layout.update(Panel(
+        #     log_table, title="Warnings and errors", border_style="red", padding=(0, 0)
+        # ), )
 
     def dummy_updater(self, layout: Layout = None):
         if not layout:
@@ -235,6 +241,30 @@ class RichConsoleManager:
             border_style="bright_blue",
         )
         return message_panel
+
+
+class LogPanel:
+    def __init__(self, layout: "Layout", style: StyleType = "") -> None:
+        self.layout = layout
+        self.style = style
+
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        width = options.max_width
+        height = options.height or options.size.height
+        layout = self.layout
+        title = (
+            f"BBB{layout.name!r} ({width} x {height})BBB"
+            if layout.name
+            else f"(AAA{width} x {height}AAA)"
+        )
+        yield Panel(
+            Align.center(Pretty(layout), vertical="middle"),
+            style=self.style,
+            title=title,
+            border_style="blue",
+        )
 
 
 class RichConsoleHeader:
