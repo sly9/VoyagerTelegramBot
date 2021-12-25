@@ -28,7 +28,7 @@ class DummyDebugger:
             for line in infile:
                 self.connection_manager.on_message(ws=None, message_string=line.strip())
                 counter = counter + 1
-                if counter == 25:
+                if counter == 100:
                     time.sleep(0.01)
                     counter = 0
 

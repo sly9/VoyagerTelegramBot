@@ -5,6 +5,7 @@ from collections import deque
 from datetime import datetime
 from time import sleep
 
+import rich.text
 from rich import box
 from rich.align import Align
 from rich.console import ConsoleOptions, RenderResult, Console
@@ -277,14 +278,20 @@ class LogPanel:
     def visible_log_table(self, height: int):
         log_entry_list = self.visible_log_entry_list(height=height)
         log_table = Table.grid(padding=(0, 1), expand=True)
-        log_table.add_column(justify='left', style='bold grey89', max_width=8)
-        log_table.add_column(justify='left', style='bold gold3')
+        log_table.add_column(justify='left', style='bold', max_width=8)
+        log_table.add_column(justify='left', style='bold grey89')
         use_emoji = self.config.rich_console_config.use_emoji
         for entry in log_entry_list:
             if use_emoji:
                 log_table.add_row(entry.type_emoji, entry.message)
             else:
-                log_table.add_row(entry.type, entry.message)
+                style = ''
+                if entry.type == 'WARNING':
+                    style = RichTextStylesEnum.WARNING.value
+                elif entry.type == 'CRITICAL':
+                    style = RichTextStylesEnum.CRITICAL.value
+                type_text = rich.text.Text(entry.type, style=style)
+                log_table.add_row(type_text, entry.message)
         return log_table
 
     def __rich_console__(
