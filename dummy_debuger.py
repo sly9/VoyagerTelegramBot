@@ -26,14 +26,13 @@ class DummyDebugger:
             self.connection_manager.on_message(ws=None, message_string=msg.strip())
 
     def good_night(self):
-
         if self.connection_manager.voyager_client.html_reporter:
             self.connection_manager.voyager_client.html_reporter.write_footer()
 
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('2021_11_15__voyager_bot_log.txt')
+    dd.load_messages('2021_12_18__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
     console.console.save_html('./replay/stdout.html')

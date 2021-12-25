@@ -60,6 +60,7 @@ class RichConsoleManager:
         self.dummy_updater(self.layout['imaging'])
 
         self.log_panel = LogPanel(self.layout['logs'])
+        self.layout['logs'].update(self.log_panel)
 
         with Live(self.layout, refresh_per_second=4, screen=True):
             while True:
