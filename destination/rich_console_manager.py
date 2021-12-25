@@ -198,6 +198,13 @@ class RichConsoleManager:
     def update_log(self, log: LogMessageInfo):
         self.log_panel.append_log(log)
         self.layout['logs'].update(self.log_panel)
+        # if log.type == 'TITLE' or log.type == 'SUBTITLE':
+        #     try:
+        #         self.header.show_action_toast(log.message)
+        #         self.layout['header'].update(self.header)
+        #     except Exception as exception:
+        #         print(exception);
+
 
     def dummy_updater(self, layout: Layout = None):
         if not layout:
@@ -278,15 +285,28 @@ class LogPanel:
 
 class RichConsoleHeader:
     """Display header with clock."""
+    def __init__(self):
+        self.toast_string = None
 
-    def __rich__(self) -> Panel:
+    def __rich_console__(
+            self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        yield Panel(self.generate_grid(), style="white on blue")
+
+    def generate_grid(self):
         grid = Table.grid(expand=True)
         grid.add_column(justify='center', min_width=25)
-        grid.add_column(justify='left', ratio=1)
+        grid.add_column(justify='left', ratio=1, style=(RichTextStylesEnum.CRITICAL if self.toast_string else ''))
         grid.add_column(justify='right')
         grid.add_row(
             f'VogagerBot v{bot_version_string()}',
-            '127.0.0.1:5950 (Unknown Host)',
+            self.toast_string or '127.0.0.1:5950 (Unknown Host)' ,
             datetime.now().ctime().replace(":", "[blink]:[/]"),
         )
-        return Panel(grid, style="white on blue")
+        return grid
+
+    def show_action_toast(self, toast_string:str):
+        self.toast_string = toast_string
+
+    def hide_action_toast(self):
+        self.toast_string = None
