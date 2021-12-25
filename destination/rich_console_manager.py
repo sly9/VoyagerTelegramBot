@@ -76,7 +76,8 @@ class RichConsoleManager:
         layout.split(
             Layout(name='header', size=3),
             Layout(name='status', size=8),
-            Layout(name='main', ratio=1)
+            Layout(name='main', ratio=1),
+            Layout(name='footer', size=1)
         )
 
         layout['status'].split_row(
