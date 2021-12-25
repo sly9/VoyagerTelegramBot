@@ -198,12 +198,12 @@ class RichConsoleManager:
     def update_log(self, log: LogMessageInfo):
         self.log_panel.append_log(log)
         self.layout['logs'].update(self.log_panel)
-        # if log.type == 'TITLE' or log.type == 'SUBTITLE':
-        #     try:
-        #         self.header.show_action_toast(log.message)
-        #         self.layout['header'].update(self.header)
-        #     except Exception as exception:
-        #         print(exception);
+        if log.type == 'TITLE' or log.type == 'SUBTITLE':
+            try:
+                self.header.show_action_toast(log.message)
+                self.layout['header'].update(self.header)
+            except Exception as exception:
+                print(exception);
 
 
     def dummy_updater(self, layout: Layout = None):
@@ -296,13 +296,24 @@ class RichConsoleHeader:
     def generate_grid(self):
         grid = Table.grid(expand=True)
         grid.add_column(justify='center', min_width=25)
-        grid.add_column(justify='left', ratio=1, style=(RichTextStylesEnum.CRITICAL if self.toast_string else ''))
+
+        if self.toast_string:
+            grid.add_column(justify='center', ratio=1, style=RichTextStylesEnum.CRITICAL.value)
+        else:
+            grid.add_column(justify='left', ratio=1)
         grid.add_column(justify='right')
-        grid.add_row(
-            f'VogagerBot v{bot_version_string()}',
-            self.toast_string or '127.0.0.1:5950 (Unknown Host)' ,
-            datetime.now().ctime().replace(":", "[blink]:[/]"),
-        )
+        if self.toast_string:
+            grid.add_row(
+                f'VogagerBot v{bot_version_string()}',
+                self.toast_string,
+                datetime.now().ctime().replace(":", "[blink]:[/]"),
+            )
+        else:
+            grid.add_row(
+                f'VogagerBot v{bot_version_string()}',
+                '127.0.0.1:5950 (Unknown Host)',
+                datetime.now().ctime().replace(":", "[blink]:[/]"),
+            )
         return grid
 
     def show_action_toast(self, toast_string:str):
