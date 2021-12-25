@@ -1,6 +1,6 @@
 from typing import Dict
 
-from data_structure.system_status_info import SystemStatusInfo, MountInfo
+from data_structure.system_status_info import SystemStatusInfo, MountInfo, DeviceConnectedInfo
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
@@ -36,9 +36,19 @@ class SystemStatusEventHandler(VoyagerEventHandler):
             pier=message['MNTPIER'][4:]
         )
 
+        device_connection_info = DeviceConnectedInfo(
+            setup_connected=message['SETUPCONN'],
+            camera_connected=message['CCDCONN'],
+            mount_connected=message['MNTCONN'],
+            focuser_connected=message['AFCONN'],
+            guide_connected=message['GUIDECONN'],
+            planetarium_connected=message['PLACONN'],
+            rotator_connected=message['ROTCONN']
+        )
+
         ee.emit(BotEvent.UPDATE_SYSTEM_STATUS.name,
                 system_status_info=SystemStatusInfo(
                     drag_script_name=running_dragscript, sequence_name=running_seq,
                     guide_status=guide_status, dither_status=dither_status,
                     is_tracking=is_tracking, is_slewing=is_slewing,
-                    mount_info=mount_info))
+                    mount_info=mount_info, device_connection_info=device_connection_info))

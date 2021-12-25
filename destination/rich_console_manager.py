@@ -57,7 +57,7 @@ class RichConsoleManager:
         )
 
         layout['status'].split_row(
-            Layout(name='mount_info', ratio=3),  # DEC, RA, ALT, AZ, etc.
+            Layout(name='mount_info', size=45),  # DEC, RA, ALT, AZ, etc.
             Layout(name='operations', ratio=3),  # Slewing, guiding, parked, dithering, etc.
             Layout(name='stat', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
         )
@@ -76,7 +76,7 @@ class RichConsoleManager:
 
         # Update mount information sub-panel
         mount_info = system_status_info.mount_info
-        mount_table = Table.grid(padding=(0, 3))
+        mount_table = Table.grid(padding=(0, 1))
         mount_table.add_column(justify='right', style='bold grey89')
         mount_table.add_column(justify='left', style='bold gold3')
         mount_table.add_column(justify='right', style='bold grey89')
@@ -95,7 +95,61 @@ class RichConsoleManager:
         )
 
         self.layout['mount_info'].update(mount_info_panel)
-        self.dummy_updater(self.layout['operations'])
+
+        # Update operation and device connection status
+        operation_table = Table.grid(padding=(0, 1))
+        operation_table.add_column(justify='right', style='bold grey89')
+        operation_table.add_column(justify='left')
+
+        device_connection_info = system_status_info.device_connection_info
+        connection_text = Text()
+
+        if device_connection_info.setup_connected:
+            connection_text.append('S', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('S', style='bold black on dark_red')
+
+        if device_connection_info.camera_connected:
+            connection_text.append('C', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('C', style='bold black on dark_red')
+
+        if device_connection_info.mount_connected:
+            connection_text.append('M', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('M', style='bold black on dark_red')
+
+        if device_connection_info.focuser_connected:
+            connection_text.append('F', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('F', style='bold black on dark_red')
+
+        if device_connection_info.guide_connected:
+            connection_text.append('G', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('G', style='bold black on dark_red')
+
+        if device_connection_info.planetarium_connected:
+            connection_text.append('P', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('P', style='bold black on dark_red')
+
+        if device_connection_info.rotator_connected:
+            connection_text.append('R', style='bold black on dark_sea_green4')
+        else:
+            connection_text.append('R', style='bold black on dark_red')
+
+        operation_table.add_row('Device Connection:', connection_text)
+
+        operation_panel = Panel(
+            Align.center(operation_table, vertical='top'),
+            box=box.ROUNDED,
+            padding=(1, 2),
+            title="[b blue]Operations & Devices",
+            border_style='bright_blue',
+        )
+
+        self.layout['operations'].update(operation_panel)
         self.dummy_updater(self.layout['stat'])
 
     def dummy_updater(self, layout: Layout = None):
