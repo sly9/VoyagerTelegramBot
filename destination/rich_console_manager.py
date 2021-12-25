@@ -4,7 +4,7 @@ import threading
 from collections import deque
 from datetime import datetime
 from time import sleep
-
+from version import bot_version_string
 from rich import box
 from rich.align import Align
 from rich.console import ConsoleOptions, RenderResult, Console
@@ -285,7 +285,7 @@ class RichConsoleHeader:
         grid.add_column(justify='left', ratio=1)
         grid.add_column(justify='right')
         grid.add_row(
-            'VogagerBot v0.5',
+            f'VogagerBot v{bot_version_string()}',
             '127.0.0.1:5950 (Unknown Host)',
             datetime.now().ctime().replace(":", "[blink]:[/]"),
         )
