@@ -41,7 +41,7 @@ class CursesManager:
         self.host_info = HostInfo()
         self.log_queue = deque(maxlen=10)
         self.battery_percentage = 100
-        self.job_status_info = SystemStatusInfo()
+        self.system_status_info = SystemStatusInfo()
 
     def _update_whole_scr(self):
         self.stdscr.clear()
@@ -96,14 +96,14 @@ class CursesManager:
         line_pos += 1
 
         # Job Detail
-        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.job_status_info.drag_script_name:27} |',
+        self.stdscr.addstr(line_pos, 0, f'| DragScript | {self.system_status_info.drag_script_name:27} |',
                            self.normal_style)
-        self.stdscr.addstr(f' Sequence | {self.job_status_info.sequence_name:27} | ', self.normal_style)
+        self.stdscr.addstr(f' Sequence | {self.system_status_info.sequence_name:27} | ', self.normal_style)
 
-        if self.job_status_info.is_slewing:
+        if self.system_status_info.is_slewing:
             motion_str = 'SLEWING'
             self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
-        elif self.job_status_info.is_tracking:
+        elif self.system_status_info.is_tracking:
             motion_str = 'TRACKING'
             self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
         else:
@@ -111,17 +111,17 @@ class CursesManager:
             self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
 
         self.stdscr.addstr(' | ', self.normal_style)
-        if self.job_status_info.guide_status == GuideStatEnum.STOPPED:
+        if self.system_status_info.guide_status == GuideStatEnum.STOPPED:
             self.stdscr.addstr(f' STOPPED ', self.critical_style)
-        elif self.job_status_info.guide_status == GuideStatEnum.RUNNING:
+        elif self.system_status_info.guide_status == GuideStatEnum.RUNNING:
             self.stdscr.addstr(f' GUIDING ', self.safe_style)
         else:
             self.stdscr.addstr(f' WAITING ', self.warning_style)
         self.stdscr.addstr(' | ', self.normal_style)
 
-        if self.job_status_info.dither_status == DitherStatEnum.STOPPED:
+        if self.system_status_info.dither_status == DitherStatEnum.STOPPED:
             self.stdscr.addstr(f' STOPPED ', self.critical_style)
-        elif self.job_status_info.dither_status == DitherStatEnum.RUNNING:
+        elif self.system_status_info.dither_status == DitherStatEnum.RUNNING:
             self.stdscr.addstr(f'DITHERING', self.safe_style)
         else:
             self.stdscr.addstr(f' WAITING ', self.warning_style)
@@ -184,7 +184,7 @@ class CursesManager:
 
     def update_system_status_info(self, system_status_info: SystemStatusInfo = None):
         if system_status_info:
-            self.job_status_info = system_status_info
+            self.system_status_info = system_status_info
             self._update_whole_scr()
 
     def close(self):

@@ -43,10 +43,22 @@ class MountInfo:
     ra: str = '00:00:00'
     dec: str = '0°0\'0"'
     ra_j2000: str = '00:00:00'
-    dec_j2000: str = '0°0\'0"'
-    az: str = '0°0\'0"'
-    alt: str = '0°0\'0"'
+    dec_j2000: str = '0°00\'00"'
+    az: str = '0°00\'00"'
+    alt: str = '0°00\'00"'
     pier: str = 'N/A'
+    operation: str = ''
+
+
+@dataclass
+class DeviceConnectedInfo:
+    setup_connected: bool = False
+    camera_connected: bool = False
+    mount_connected: bool = False
+    focuser_connected: bool = False
+    guide_connected: bool = False
+    planetarium_connected: bool = False
+    rotator_connected: bool = False
 
 
 @dataclass
@@ -60,3 +72,4 @@ class SystemStatusInfo:
     is_tracking: bool = False
     is_slewing: bool = False
     mount_info: MountInfo = MountInfo()
+    device_connection_info: DeviceConnectedInfo = DeviceConnectedInfo()
