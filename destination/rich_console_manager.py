@@ -280,7 +280,7 @@ class LogPanel:
         log_table = Table.grid(padding=(0, 1), expand=True)
         log_table.add_column(justify='left', style='bold', max_width=8)
         log_table.add_column(justify='left', style='bold grey89')
-        use_emoji = self.config.rich_console_config.use_emoji
+        use_emoji = self.config.console_config.use_emoji
         for entry in log_entry_list:
             if use_emoji:
                 log_table.add_row(entry.type_emoji, entry.message)

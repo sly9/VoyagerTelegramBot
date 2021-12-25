@@ -35,12 +35,8 @@ sequence_stats_config:
       color: '#2196F3'
 
 ### Messages
-# A new config section for text message related features. This section is not being read by our bot yet.
-text_message_config:
-  send_image_msgs: 1  # Send jpeg images to chats
-  # Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
-  allowed_log_types: [ WARNING, CRITICAL, TITLE, EMERGENCY ]
-send_image_msgs: 1  # Send jpeg images to chats, will be deprecated soon, and moved to 'text_message_config' section.
+# Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
+allowed_log_types: [ WARNING, CRITICAL, TITLE, EMERGENCY, TITLE, SUBTITLE, REQUEST ]
 
 ### Software
 voyager_setting:
@@ -54,15 +50,13 @@ telegram_setting:
 
 ### Miscellaneous
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
-ignored_events: [ Polling, VikingManaged, RemoteActionResult, Signal, NewFITReady ]  # DO NOT CHANGE
 timezone: America/Los_Angeles
 should_dump_log: True  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
 monitor_battery: False
-debugging: False
 allow_auto_reconnect: True
 
-console_type: PLAIN # Whether you want an application like console or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
 telegram_enabled: True
 html_report_enabled: False
-rich_console_config:
+console_config:
   use_emoji: False
+  console_type: PLAIN # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'

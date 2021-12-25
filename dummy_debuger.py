@@ -11,7 +11,6 @@ class DummyDebugger:
 
         config_builder = ConfigBuilder()
         config = config_builder.build()
-        config.debugging = True
         config.telegram_enabled = False
         config.console_type = 'FULL'
         config.html_report_enabled = False
