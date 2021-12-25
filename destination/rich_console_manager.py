@@ -11,7 +11,6 @@ from rich.console import ConsoleOptions, RenderResult, Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
-from rich.pretty import Pretty
 from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
@@ -20,7 +19,7 @@ from data_structure.log_message_info import LogMessageInfo
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_names import BotEvent
-from console import console
+
 
 class RichTextStylesEnum(enum.Enum):
     CRITICAL = 'bold black on dark_red'
@@ -36,8 +35,7 @@ class RichConsoleManager:
         self.thread = None
         self.header = RichConsoleHeader()
         self.layout = None
-        # Caches data
-        self.recent_logs = deque(maxlen=100)
+        self.log_panel = None
 
         # Register events
         ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panel)
@@ -57,9 +55,10 @@ class RichConsoleManager:
 
         self.update_status_panel()
 
-        #self.dummy_updater(self.layout['logs'])
+        # self.dummy_updater(self.layout['logs'])
         self.dummy_updater(self.layout['imaging'])
-        self.update_log(LogMessageInfo(type='WARNING', message='this is a test'))
+
+        self.log_panel = LogPanel(self.layout['logs'])
 
         with Live(self.layout, refresh_per_second=4, screen=True):
             while True:
@@ -197,22 +196,8 @@ class RichConsoleManager:
         self.dummy_updater(self.layout['stat'])
 
     def update_log(self, log: LogMessageInfo):
-        self.recent_logs.append(log)
-        log_layout = self.layout['logs']
-
-        log_layout.update(LogPanel(log_layout))
-
-        # measure = console.measure(log_layout)
-        # height = log_layout.height
-
-        # log_table = Table.grid(padding=(0, 1),expand=True)
-        # log_table.add_column(justify='left', style='bold grey89', max_width=10)
-        # log_table.add_column(justify='left', style='bold gold3')
-        # for entry in self.recent_logs:
-        #     log_table.add_row(entry.type, entry.message)
-        # log_layout.update(Panel(
-        #     log_table, title="Warnings and errors", border_style="red", padding=(0, 0)
-        # ), )
+        self.log_panel.append_log(log)
+        self.layout['logs'].update(self.log_panel)
 
     def dummy_updater(self, layout: Layout = None):
         if not layout:
@@ -244,25 +229,49 @@ class RichConsoleManager:
 
 
 class LogPanel:
-    def __init__(self, layout: "Layout", style: StyleType = "") -> None:
+    def __init__(self, layout: Layout, style: StyleType = "") -> None:
         self.layout = layout
         self.style = style
+        self.table = None
+        self.recent_logs = deque(maxlen=500)
+
+    def append_log(self, log: LogMessageInfo):
+        log.message = log.message.replace('\r\n', '\n').replace('\n\n', '\n')
+        self.recent_logs.append(log)
+
+    def visible_log_entry_list(self, height: int):
+        result = []
+        used_height = 0
+        for i in range(len(self.recent_logs)):
+            log = self.recent_logs[-i - 1]
+            used_height += log.message.strip().count('\n') + 1
+            if used_height > height:
+                result.reverse()
+                return result
+            result.append(log)
+        result.reverse()
+        return result
+
+    def visible_log_table(self, height: int):
+        log_entry_list = self.visible_log_entry_list(height=height)
+        log_table = Table.grid(padding=(0, 1), expand=True)
+        log_table.add_column(justify='left', style='bold grey89', max_width=8, width=8)
+        log_table.add_column(justify='left', style='bold gold3')
+        for entry in log_entry_list:
+            log_table.add_row(entry.type, entry.message)
+        return log_table
 
     def __rich_console__(
-        self, console: Console, options: ConsoleOptions
+            self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
         width = options.max_width
         height = options.height or options.size.height
         layout = self.layout
-        title = (
-            f"BBB{layout.name!r} ({width} x {height})BBB"
-            if layout.name
-            else f"(AAA{width} x {height}AAA)"
-        )
+
         yield Panel(
-            Align.center(Pretty(layout), vertical="middle"),
+            Align.left(self.visible_log_table(height=height), vertical="top"),
             style=self.style,
-            title=title,
+            title=f'Important logs ({width}x{height})',
             border_style="blue",
         )
 

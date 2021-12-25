@@ -1,3 +1,6 @@
+import time
+
+import console
 from bot import VoyagerConnectionManager
 from configs import ConfigBuilder
 
@@ -10,7 +13,7 @@ class DummyDebugger:
         config.debugging = True
         config.telegram_enabled = False
         config.console_type = 'FULL'
-        config.html_report_enabled = True
+        config.html_report_enabled = False
         config.should_dump_log = False
         self.connection_manager = VoyagerConnectionManager(config=config)
 
@@ -23,7 +26,9 @@ class DummyDebugger:
             self.connection_manager.on_message(ws=None, message_string=msg.strip())
 
     def good_night(self):
-        self.connection_manager.voyager_client.html_reporter.write_footer()
+
+        if self.connection_manager.voyager_client.html_reporter:
+            self.connection_manager.voyager_client.html_reporter.write_footer()
 
 
 if __name__ == "__main__":
@@ -31,3 +36,4 @@ if __name__ == "__main__":
     dd.load_messages('2021_11_15__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
+    console.console.save_html('./replay/stdout.html')

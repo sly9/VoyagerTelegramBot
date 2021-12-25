@@ -3,8 +3,8 @@
 from curse_manager import CursesManager
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
-from data_structure.system_status_info import SystemStatusInfo
 from data_structure.log_message_info import LogMessageInfo
+from data_structure.system_status_info import SystemStatusInfo
 from event_emitter import ee
 from event_names import BotEvent
 

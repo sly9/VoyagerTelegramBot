@@ -115,9 +115,10 @@ Currently, we only provide a general installation steps which may require some *
    ```Shell
    pip3 install -r requirements.txt
    ```
-   
-   If you are using Windows, and want to look at our latest "dev" version, please install an extra package named `windows-curses`:
-   
+
+   If you are using Windows, and want to look at our latest "dev" version, please install an extra package
+   named `windows-curses`:
+
    ```Shell
    pip3 install windows-curses
    ```

@@ -3,7 +3,7 @@ from typing import Dict
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
-from data_structure.system_status_info import GuideStatEnum, DitherStatEnum, SystemStatusInfo
+from data_structure.system_status_info import GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent

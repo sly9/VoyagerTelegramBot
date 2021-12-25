@@ -202,7 +202,6 @@ class Telegram:
             return 'ERROR', response_json
 
 
-
 if __name__ == '__main__':
     c = ConfigBuilder()
     t = Telegram(config=c.build())

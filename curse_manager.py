@@ -6,9 +6,9 @@ from deprecated import deprecated
 
 from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
-from data_structure.system_status_info import SystemStatusInfo, GuideStatEnum, DitherStatEnum
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
+from data_structure.system_status_info import SystemStatusInfo, GuideStatEnum, DitherStatEnum
 from version import bot_version_string
 
 
