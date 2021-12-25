@@ -4,7 +4,6 @@ from collections import deque
 
 from deprecated import deprecated
 
-from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.host_info import HostInfo
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
@@ -36,7 +35,7 @@ class CursesManager:
         self.safe_style = curses.color_pair(4)
 
         # status information used to update info
-        self.last_error = ErrorMessageInfo()
+        self.last_error = LogMessageInfo()
         self.received_message_counter = 0
         self.host_info = HostInfo()
         self.log_queue = deque(maxlen=10)
@@ -163,7 +162,7 @@ class CursesManager:
         self.received_message_counter = counter_number
         self._update_whole_scr()
 
-    def update_lass_error(self, error_info: ErrorMessageInfo = None):
+    def update_lass_error(self, error_info: LogMessageInfo = None):
         if error_info:
             self.last_error = error_info
             self._update_whole_scr()
@@ -202,11 +201,11 @@ if __name__ == '__main__':
     time.sleep(2)
 
     curses_mgr.update_message_counter(99)
-    curses_mgr.update_lass_error(ErrorMessageInfo(code=999, message='Error 999'))
+    curses_mgr.update_lass_error(LogMessageInfo())
     time.sleep(2)
 
     curses_mgr.update_message_counter(99)
-    curses_mgr.update_lass_error(ErrorMessageInfo(code=0, message='No Error'))
+    curses_mgr.update_lass_error(LogMessageInfo())
     time.sleep(2)
 
     curses_mgr.close()

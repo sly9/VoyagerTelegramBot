@@ -1,8 +1,8 @@
 from typing import Dict
 
-from data_structure.error_message_info import ErrorMessageInfo
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
+from data_structure.log_message_info import LogMessageInfo
 from data_structure.system_status_info import GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
@@ -127,8 +127,7 @@ class GiantEventHandler(VoyagerEventHandler):
         last_error = message['LastError']
         if not done:
             ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                    error=ErrorMessageInfo(code=999, message=last_error, error_module=type(self),
-                                           error_operation='Focus'))
+                    error=LogMessageInfo(type='ERROR', message=f'Auto focusing failed with reason: {last_error}'))
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Auto focusing failed with reason: {last_error}')
             return
 

@@ -17,6 +17,7 @@ class BotEvent(Enum):
     UPDATE_HOST_INFO = 10
     UPDATE_SYSTEM_STATUS = 11
     UPDATE_SHOT_STATUS = 14
-    # APPEND_ERROR_LOG and APPEND_LOG should be merged.
+
+    # APPEND_ERROR_LOG is not used anymore, dont use it.
     APPEND_ERROR_LOG = 12
     APPEND_LOG = 13

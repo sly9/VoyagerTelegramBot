@@ -10,7 +10,7 @@ import requests
 from PIL import Image
 
 from configs import ConfigBuilder
-from data_structure.error_message_info import ErrorMessageInfo
+from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
 
@@ -56,29 +56,20 @@ class Telegram:
                 status, info_dict = self.unpin_all_messages(chat_id=chat_id)
                 if status == 'ERROR':
                     ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                            error=ErrorMessageInfo(code=info_dict["error_code"],
-                                                   message=info_dict["description"],
-                                                   error_module=type(self),
-                                                   error_operation='UnpinAllMessage'))
+                            error=LogMessageInfo(type='ERROR', message='UnpinAllMessage: ' + info_dict["description"]))
 
-                status, info_dict = self.pin_message(chat_id=chat_id, message_id=message_id)
-                if status == 'ERROR':
-                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                            error=ErrorMessageInfo(code=info_dict["error_code"],
-                                                   message=info_dict["description"],
-                                                   error_module=type(self),
-                                                   error_operation='PinMessage'))
-        else:
-            status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
-                                                        message_id=self.current_sequence_stat_message_id,
-                                                        base64_encoded_image=base64_image,
-                                                        filename=self.running_seq + '_stat.jpg')
-            if status == 'ERROR':
-                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                        error=ErrorMessageInfo(code=info_dict["error_code"],
-                                               message=info_dict["description"],
-                                               error_module=type(self),
-                                               error_operation='EditImageMessage'))
+                    status, info_dict = self.pin_message(chat_id=chat_id, message_id=message_id)
+                    if status == 'ERROR':
+                        ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                                error=LogMessageInfo(type='ERROR', message='PinMessage: ' + info_dict["description"]))
+                    else:
+                        status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
+                                                                    message_id=self.current_sequence_stat_message_id,
+                                                                    base64_encoded_image=base64_image,
+                                                                    filename=self.running_seq + '_stat.jpg')
+                    if status == 'ERROR':
+                        ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                                error=LogMessageInfo(type='ERROR', message='EditMessage: ' + info_dict["description"]))
 
     def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
