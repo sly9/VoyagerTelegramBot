@@ -8,7 +8,7 @@ from event_names import BotEvent
 
 class SystemStatusEventHandler(VoyagerEventHandler):
     def __init__(self, config):
-        super().__init__(config=config, handler_name='SystemStatusEventHandler')
+        super().__init__(config=config)
         self.message_counter = 0
 
     def interested_event_name(self):

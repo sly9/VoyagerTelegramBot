@@ -8,7 +8,7 @@ from event_names import BotEvent
 
 class MiscellaneousEventHandler(VoyagerEventHandler):
     def __init__(self, config):
-        super().__init__(config=config, handler_name='MiscellaneousEventHandler')
+        super().__init__(config=config)
         self.message_counter = 0
 
     def interested_in_all_events(self):

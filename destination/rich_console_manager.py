@@ -1,5 +1,6 @@
 #!/bin/env python3
 import threading
+from collections import deque
 from datetime import datetime
 from time import sleep
 
@@ -11,6 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from data_structure.log_message_info import LogMessageInfo
 from data_structure.system_status_info import SystemStatusInfo
 from event_emitter import ee
 from event_names import BotEvent
@@ -24,7 +26,12 @@ class RichConsoleManager:
         self.thread = None
         self.header = RichConsoleHeader()
         self.layout = None
+        # Caches data
+        self.recent_logs = deque(maxlen=100)
+
+        # Register events
         ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panel)
+        ee.on(BotEvent.APPEND_LOG.name, self.update_log)
 
     def run(self):
         if self.thread:
@@ -34,7 +41,7 @@ class RichConsoleManager:
         self.thread.start()
 
     def run_loop(self):
-        self.layout = self.make_layout()
+        self.make_layout()
 
         self.layout['header'].update(self.header)
 
@@ -43,9 +50,9 @@ class RichConsoleManager:
         self.dummy_updater(self.layout['logs'])
         self.dummy_updater(self.layout['imaging'])
 
-        with Live(self.layout, refresh_per_second=10, screen=True):
+        with Live(self.layout, refresh_per_second=4, screen=True):
             while True:
-                sleep(0.1)
+                sleep(0.25)
 
     def make_layout(self) -> Layout:
         """Define the layout."""
@@ -64,12 +71,12 @@ class RichConsoleManager:
 
         layout['main'].split_row(
             Layout(name='logs', ratio=1),  # general logs, last error etc
-            Layout(name='imaging')  # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
+            Layout(name='imaging', size=20)
+            # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
         )
+        self.layout = layout
 
-        return layout
-
-    def update_status_panel(self, system_status_info: SystemStatusInfo=None):
+    def update_status_panel(self, system_status_info: SystemStatusInfo = None):
         if not system_status_info:
             # A dummy info object with default values
             system_status_info = SystemStatusInfo()
@@ -98,10 +105,25 @@ class RichConsoleManager:
         self.dummy_updater(self.layout['operations'])
         self.dummy_updater(self.layout['stat'])
 
+    def update_log(self, log: LogMessageInfo):
+        self.recent_logs.append(log)
+
+        log_layout = self.layout['logs']
+
+        height = log_layout.height
+
+        log_table = Table.grid(padding=(0, 1),expand=True)
+        log_table.add_column(justify='left', style='bold grey89', max_width=10)
+        log_table.add_column(justify='left', style='bold gold3')
+        for entry in self.recent_logs:
+            log_table.add_row(entry.type, entry.message)
+        log_layout.update(Panel(
+            log_table, title="Warnings and errors", border_style="red", padding=(0, 0)
+        ), )
+
     def dummy_updater(self, layout: Layout = None):
         if not layout:
             return
-
         layout.update(self.dummy_maker())
 
     def dummy_maker(self) -> Panel:

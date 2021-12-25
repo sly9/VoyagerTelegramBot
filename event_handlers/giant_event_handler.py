@@ -12,7 +12,7 @@ from sequence_stat import StatPlotter, SequenceStat
 
 class GiantEventHandler(VoyagerEventHandler):
     def __init__(self, config):
-        super().__init__(config=config, handler_name='GiantEventHandler')
+        super().__init__(config=config)
 
         self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
 
@@ -127,7 +127,7 @@ class GiantEventHandler(VoyagerEventHandler):
         last_error = message['LastError']
         if not done:
             ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                    error=ErrorMessageInfo(code=999, message=last_error, error_module=self.get_name(),
+                    error=ErrorMessageInfo(code=999, message=last_error, error_module=type(self),
                                            error_operation='Focus'))
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Auto focusing failed with reason: {last_error}')
             return

@@ -9,9 +9,7 @@ class VoyagerEventHandler:
     To handle an incoming event from voyager application server, Most important method is the 'handle_event' method.
     """
 
-    def __init__(self, config,
-                 handler_name: str = 'DefaultHandler'):
-        self.name = handler_name
+    def __init__(self, config):
         self.config = config
 
     def interested_event_names(self):
@@ -31,12 +29,6 @@ class VoyagerEventHandler:
         :return: A boolean indicating whether this event handler wants to process all possible events.
         """
         return False
-
-    def get_name(self):
-        """
-        :return: The name of this event_handler
-        """
-        return self.name
 
     @abstractmethod
     def handle_event(self, event_name: str, message: Dict):

@@ -9,7 +9,7 @@ from event_names import BotEvent
 # This is just one of the event handlers which are interested in log events. You can write more
 class LogEventHandler(VoyagerEventHandler):
     def __init__(self, config):
-        super().__init__(config=config, handler_name='LogEventHandler')
+        super().__init__(config=config)
 
     def interested_event_name(self):
         return 'LogEvent'

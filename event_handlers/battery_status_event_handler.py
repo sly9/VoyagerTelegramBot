@@ -14,7 +14,7 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
     """
 
     def __init__(self, config):
-        super().__init__(config=config, handler_name='BatteryStatusEventHandler', )
+        super().__init__(config=config)
         self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
 
     def interested_event_names(self):
