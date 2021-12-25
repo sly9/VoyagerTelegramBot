@@ -7,7 +7,8 @@ from configs import ConfigBuilder
 
 class DummyDebugger:
     def __init__(self):
-        self.messages = None
+        self.file_name = None
+
         config_builder = ConfigBuilder()
         config = config_builder.build()
         config.debugging = True
@@ -15,23 +16,24 @@ class DummyDebugger:
         config.console_type = 'FULL'
         config.html_report_enabled = False
         config.should_dump_log = False
+
         self.connection_manager = VoyagerConnectionManager(config=config)
 
-    def load_messages(self, msg_fn: str = None):
-        with open(msg_fn, 'r') as msg_f:
-            self.messages = msg_f.readlines()
+    def load_messages(self, filename: str = None):
+        self.file_name = filename
 
     def dummy_send(self):
         counter = 0
-        for msg in self.messages:
-            self.connection_manager.on_message(ws=None, message_string=msg.strip())
-            counter = counter + 1
-            if counter == 25:
-                time.sleep(0.01)
-                counter = 0
+        with open(self.file_name, 'r') as infile:
+            for line in infile:
+                self.connection_manager.on_message(ws=None, message_string=line.strip())
+                counter = counter + 1
+                if counter == 25:
+                    time.sleep(0.01)
+                    counter = 0
 
     def good_night(self):
-        if hasattr(self.connection_manager.voyager_client,'html_reporter'):
+        if hasattr(self.connection_manager.voyager_client, 'html_reporter'):
             self.connection_manager.voyager_client.html_reporter.write_footer()
 
 
