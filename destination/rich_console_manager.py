@@ -41,22 +41,15 @@ class RichConsoleManager:
         self.log_panel = None
         self.progress_panel = None
 
+        self.setup()
         # Register events
         ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panel)
         ee.on(BotEvent.APPEND_LOG.name, self.update_log)
         ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status)
 
-    def run(self):
-        if self.thread:
-            return
-        self.thread = threading.Thread(target=self.run_loop)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def run_loop(self):
-
+    def setup(self):
         self.make_layout()
-        self.log_panel = LogPanel(self.layout['logs'])
+        self.log_panel = LogPanel(layout=self.layout['logs'], config=self.config)
         self.progress_panel = ProgressPanel()
 
         self.layout['header'].update(self.header)
@@ -66,6 +59,14 @@ class RichConsoleManager:
 
         self.layout['imaging'].update(self.progress_panel)
 
+    def run(self):
+        if self.thread:
+            return
+        self.thread = threading.Thread(target=self.run_loop)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def run_loop(self):
         with Live(self.layout, refresh_per_second=4, screen=True):
             while True:
                 sleep(0.25)
@@ -249,7 +250,8 @@ class RichConsoleManager:
 
 
 class LogPanel:
-    def __init__(self, layout: Layout, style: StyleType = "") -> None:
+    def __init__(self, config: object, layout: Layout, style: StyleType = "") -> None:
+        self.config = config
         self.layout = layout
         self.style = style
         self.table = None
@@ -275,10 +277,14 @@ class LogPanel:
     def visible_log_table(self, height: int):
         log_entry_list = self.visible_log_entry_list(height=height)
         log_table = Table.grid(padding=(0, 1), expand=True)
-        log_table.add_column(justify='left', style='bold grey89', max_width=8, width=8)
+        log_table.add_column(justify='left', style='bold grey89', max_width=8)
         log_table.add_column(justify='left', style='bold gold3')
+        use_emoji = self.config.rich_console_config.use_emoji
         for entry in log_entry_list:
-            log_table.add_row(entry.type, entry.message)
+            if use_emoji:
+                log_table.add_row(entry.type_emoji, entry.message)
+            else:
+                log_table.add_row(entry.type, entry.message)
         return log_table
 
     def __rich_console__(

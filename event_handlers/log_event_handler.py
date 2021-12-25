@@ -24,10 +24,10 @@ class LogEventHandler(VoyagerEventHandler):
         type_emoji = type_emoji_dict[message['Type']]
         type_name = type_dict[message['Type']]
 
-        telegram_message = f'{type_emoji}  <b><pre>{message["Text"]}</pre></b>'
+        telegram_message = f'<b><pre>{type_emoji}  {message["Text"]}</pre></b>'
         allowed_log_type_names = self.config.text_message_config.allowed_log_types
 
         if type_name in allowed_log_type_names:
             ee.emit(BotEvent.APPEND_LOG.name,
-                    log=LogMessageInfo(type=type_name, message=message['Text']))
+                    log=LogMessageInfo(type=type_name, type_emoji=type_emoji, message=message['Text']))
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
