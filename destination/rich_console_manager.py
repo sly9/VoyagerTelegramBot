@@ -1,4 +1,5 @@
 #!/bin/env python3
+import enum
 import threading
 from datetime import datetime
 from time import sleep
@@ -11,10 +12,14 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from data_structure.system_status_info import SystemStatusInfo
+from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_names import BotEvent
 
+class RichTextStylesEnum(enum.Enum):
+    CRITICAL ='bold black on dark_red'
+    WARNING = 'bold black on gold3'
+    SAFE = 'bold black on dark_sea_green4'
 
 class RichConsoleManager:
     """A console manager powered by rich"""
@@ -74,8 +79,14 @@ class RichConsoleManager:
             # A dummy info object with default values
             system_status_info = SystemStatusInfo()
 
+        device_connection_info = system_status_info.device_connection_info
+        if device_connection_info.mount_connected:
+            mount_info = system_status_info.mount_info
+        else:
+            # if mount is not connected, all info is not trustable.
+            mount_info = MountInfo()
+
         # Update mount information sub-panel
-        mount_info = system_status_info.mount_info
         mount_table = Table.grid(padding=(0, 1))
         mount_table.add_column(justify='right', style='bold grey89')
         mount_table.add_column(justify='left', style='bold gold3')
@@ -101,45 +112,65 @@ class RichConsoleManager:
         operation_table.add_column(justify='right', style='bold grey89')
         operation_table.add_column(justify='left')
 
-        device_connection_info = system_status_info.device_connection_info
+        # Connection status for setup, camera, mount, etc.
         connection_text = Text()
 
         if device_connection_info.setup_connected:
-            connection_text.append('S', style='bold black on dark_sea_green4')
+            connection_text.append('S', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('S', style='bold black on dark_red')
+            connection_text.append('S', style=RichTextStylesEnum.CRITICAL.value)
 
         if device_connection_info.camera_connected:
-            connection_text.append('C', style='bold black on dark_sea_green4')
+            connection_text.append('C', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('C', style='bold black on dark_red')
+            connection_text.append('C', style=RichTextStylesEnum.CRITICAL.value)
 
         if device_connection_info.mount_connected:
-            connection_text.append('M', style='bold black on dark_sea_green4')
+            connection_text.append('M', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('M', style='bold black on dark_red')
+            connection_text.append('M', style=RichTextStylesEnum.CRITICAL.value)
 
         if device_connection_info.focuser_connected:
-            connection_text.append('F', style='bold black on dark_sea_green4')
+            connection_text.append('F', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('F', style='bold black on dark_red')
+            connection_text.append('F', style=RichTextStylesEnum.CRITICAL.value)
 
         if device_connection_info.guide_connected:
-            connection_text.append('G', style='bold black on dark_sea_green4')
+            connection_text.append('G', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('G', style='bold black on dark_red')
+            connection_text.append('G', style=RichTextStylesEnum.CRITICAL.value)
 
         if device_connection_info.planetarium_connected:
-            connection_text.append('P', style='bold black on dark_sea_green4')
+            connection_text.append('P', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('P', style='bold black on dark_red')
+            connection_text.append('P', style=RichTextStylesEnum.CRITICAL.value)
 
         if device_connection_info.rotator_connected:
-            connection_text.append('R', style='bold black on dark_sea_green4')
+            connection_text.append('R', style=RichTextStylesEnum.SAFE.value)
         else:
-            connection_text.append('R', style='bold black on dark_red')
+            connection_text.append('R', style=RichTextStylesEnum.CRITICAL.value)
 
         operation_table.add_row('Device Connection:', connection_text)
+        if device_connection_info.mount_connected:
+            if mount_info.operation == '':
+                mount_operation = 'CONNECTED'
+            else:
+                mount_operation = mount_info.operation
+        else:
+            mount_operation = 'DISCONNECTED'
+
+        operation_table.add_row('Mount Operation:', mount_operation)
+        if system_status_info.guide_status == GuideStatEnum.RUNNING:
+            guide_text = Text('GUIDING', style=RichTextStylesEnum.SAFE.value)
+        else:
+            guide_text = Text('')
+
+        if system_status_info.dither_status == DitherStatEnum.RUNNING:
+            dither_text = Text('DITHERING', style=RichTextStylesEnum.SAFE.value)
+        else:
+            dither_text = Text('')
+
+        operation_table.add_row(guide_text, dither_text)
 
         operation_panel = Panel(
             Align.center(operation_table, vertical='top'),
