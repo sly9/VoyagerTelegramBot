@@ -64,3 +64,5 @@ allow_auto_reconnect: True
 console_type: PLAIN # Whether you want an application like console or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
 telegram_enabled: True
 html_report_enabled: False
+rich_console_config:
+  use_emoji: False
