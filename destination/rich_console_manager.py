@@ -11,11 +11,13 @@ from rich.console import ConsoleOptions, RenderResult, Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
+from rich.progress_bar import ProgressBar
 from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
 from data_structure.log_message_info import LogMessageInfo
+from data_structure.shot_running_info import ShotRunningInfo, ShotRunningStatus
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatEnum, DitherStatEnum
 from event_emitter import ee
 from event_names import BotEvent
@@ -23,7 +25,7 @@ from version import bot_version_string
 
 
 class RichTextStylesEnum(enum.Enum):
-    CRITICAL = 'bold black on dark_red'
+    CRITICAL = 'bold white on dark_red'
     WARNING = 'bold black on gold3'
     SAFE = 'bold black on dark_sea_green4'
 
@@ -37,10 +39,12 @@ class RichConsoleManager:
         self.header = RichConsoleHeader()
         self.layout = None
         self.log_panel = None
+        self.progress_panel = None
 
         # Register events
         ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panel)
         ee.on(BotEvent.APPEND_LOG.name, self.update_log)
+        ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status)
 
     def run(self):
         if self.thread:
@@ -50,17 +54,17 @@ class RichConsoleManager:
         self.thread.start()
 
     def run_loop(self):
+
         self.make_layout()
+        self.log_panel = LogPanel(self.layout['logs'])
+        self.progress_panel = ProgressPanel()
 
         self.layout['header'].update(self.header)
+        self.update_status_panel(SystemStatusInfo())
 
-        self.update_status_panel()
-
-        # self.dummy_updater(self.layout['logs'])
-        self.dummy_updater(self.layout['imaging'])
-
-        self.log_panel = LogPanel(self.layout['logs'])
         self.layout['logs'].update(self.log_panel)
+
+        self.layout['imaging'].update(self.progress_panel)
 
         with Live(self.layout, refresh_per_second=4, screen=True):
             while True:
@@ -78,21 +82,17 @@ class RichConsoleManager:
         layout['status'].split_row(
             Layout(name='mount_info', size=45),  # DEC, RA, ALT, AZ, etc.
             Layout(name='operations', ratio=3),  # Slewing, guiding, parked, dithering, etc.
-            Layout(name='stat', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
+            Layout(name='imaging', ratio=3),
+            # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
         )
 
         layout['main'].split_row(
             Layout(name='logs', ratio=1),  # general logs, last error etc
-            Layout(name='imaging', size=20)
-            # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
+            Layout(name='stat', size=20)  # guiding error, last focusing result, last image HFD, staridx,
         )
         self.layout = layout
 
     def update_status_panel(self, system_status_info: SystemStatusInfo = None):
-        if not system_status_info:
-            # A dummy info object with default values
-            system_status_info = SystemStatusInfo()
-
         device_connection_info = system_status_info.device_connection_info
         if device_connection_info.mount_connected:
             mount_info = system_status_info.mount_info
@@ -195,7 +195,12 @@ class RichConsoleManager:
         )
 
         self.layout['operations'].update(operation_panel)
-        self.dummy_updater(self.layout['stat'])
+
+        self.progress_panel.sequence_name = system_status_info.sequence_name
+        if system_status_info.sequence_total_time_in_sec > 0:
+            self.progress_panel.sequence_progress.update(
+                system_status_info.sequence_elapsed_time_in_sec * 100.0 / system_status_info.sequence_total_time_in_sec)
+        self.layout['imaging'].update(self.progress_panel)
 
     def update_log(self, log: LogMessageInfo):
         self.log_panel.append_log(log)
@@ -206,6 +211,12 @@ class RichConsoleManager:
                 self.layout['header'].update(self.header)
             except Exception as exception:
                 print(exception);
+
+    def update_shot_status(self, shot_running_info: ShotRunningInfo):
+        self.progress_panel.file_name = shot_running_info.filename
+        self.progress_panel.status = shot_running_info.status
+        self.progress_panel.image_progress.update(shot_running_info.elapsed_percentage)
+        self.layout['imaging'].update(self.progress_panel)
 
     def dummy_updater(self, layout: Layout = None):
         if not layout:
@@ -323,3 +334,27 @@ class RichConsoleHeader:
 
     def hide_action_toast(self):
         self.toast_string = None
+
+
+class ProgressPanel:
+    def __init__(self):
+        self.file_name = ''
+        self.status = ShotRunningStatus.IDLE
+        self.sequence_name = ''
+        self.image_progress = ProgressBar(total=100)
+        self.sequence_progress = ProgressBar(total=100)
+        self.image_progress.update(40)
+        self.sequence_progress.update(20)
+
+    def __rich_console__(
+            self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        progress_table = Table.grid(padding=(0, 1))
+        progress_table.add_column(justify='left', style='bold gold3')
+        progress_table.add_row(f'Status: {self.status.name}')
+        progress_table.add_row(f'Imaging: {self.file_name}')
+        progress_table.add_row(self.image_progress)
+        progress_table.add_row(f'Sequence: {self.sequence_name}')
+        progress_table.add_row(self.sequence_progress)
+
+        yield Panel(progress_table)

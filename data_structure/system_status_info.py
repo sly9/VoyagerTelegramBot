@@ -65,6 +65,8 @@ class DeviceConnectedInfo:
 class SystemStatusInfo:
     drag_script_name: str = ''
     sequence_name: str = ''
+    sequence_total_time_in_sec: int = 0
+    sequence_elapsed_time_in_sec: int = 0
     guide_status: int = GuideStatEnum.STOPPED
     dither_status: int = DitherStatEnum.STOPPED
     voyager_status: int = VoyagerStatEnum.STOPPED

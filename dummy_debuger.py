@@ -22,11 +22,16 @@ class DummyDebugger:
             self.messages = msg_f.readlines()
 
     def dummy_send(self):
+        counter = 0
         for msg in self.messages:
             self.connection_manager.on_message(ws=None, message_string=msg.strip())
+            counter = counter + 1
+            if counter == 25:
+                time.sleep(0.01)
+                counter = 0
 
     def good_night(self):
-        if self.connection_manager.voyager_client.html_reporter:
+        if hasattr(self.connection_manager.voyager_client,'html_reporter'):
             self.connection_manager.voyager_client.html_reporter.write_footer()
 
 
