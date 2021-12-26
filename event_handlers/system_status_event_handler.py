@@ -12,7 +12,6 @@ from event_names import BotEvent
 class SystemStatusEventHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)
-        self.message_counter = 0
 
     def interested_event_name(self):
         return 'ControlData'
@@ -22,9 +21,6 @@ class SystemStatusEventHandler(VoyagerEventHandler):
             self.handle_control_data_event(message)
 
     def handle_control_data_event(self, message: Dict):
-        timestamp = message['Timestamp']
-        guide_x = message['GUIDEX']
-        guide_y = message['GUIDEY']
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
 

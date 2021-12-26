@@ -99,7 +99,7 @@ class RichConsoleManager:
         )
         self.layout = layout
 
-    def update_mount_info_panel(self, mount_info: MountInfo = None):
+    def update_mount_info_panel(self, mount_info: MountInfo = MountInfo()):
         if not mount_info:
             return
 
@@ -127,7 +127,7 @@ class RichConsoleManager:
     def update_metrics_panel(self):
         return
 
-    def update_device_status_panel(self, system_status_info: SystemStatusInfo = None):
+    def update_device_status_panel(self, system_status_info: SystemStatusInfo = SystemStatusInfo()):
         status_table = Table.grid(padding=(0, 1))
         status_table.add_column(justify='left')
 
@@ -253,8 +253,8 @@ class RichConsoleManager:
 
         self.layout['device_status'].update(status_panel)
 
-    def update_status_panels(self, system_status_info: SystemStatusInfo = None):
         """Update 4 panels related to status of the system"""
+    def update_status_panels(self, system_status_info: SystemStatusInfo = SystemStatusInfo()):
         # Mount Info panel which includes the coordination of the mount pointing at
         if system_status_info.device_connection_info.mount_connected:
             mount_info = system_status_info.mount_info
@@ -274,7 +274,7 @@ class RichConsoleManager:
                 system_status_info.sequence_elapsed_time_in_sec * 100.0 / system_status_info.sequence_total_time_in_sec)
         self.layout['imaging'].update(self.progress_panel)
 
-    def update_log_panel(self, log: LogMessageInfo = None):
+    def update_log_panel(self, log: LogMessageInfo = LogMessageInfo()):
         if not log:
             return
 
@@ -287,7 +287,7 @@ class RichConsoleManager:
             except Exception as exception:
                 print(exception)
 
-    def update_shot_status_panel(self, shot_running_info: ShotRunningInfo = None):
+    def update_shot_status_panel(self, shot_running_info: ShotRunningInfo = ShotRunningInfo()):
         if not shot_running_info:
             return
 
@@ -296,7 +296,7 @@ class RichConsoleManager:
         self.progress_panel.image_progress.update(shot_running_info.elapsed_percentage)
         self.layout['imaging'].update(self.progress_panel)
 
-    def update_footer_panel(self, host_info: HostInfo = None):
+    def update_footer_panel(self, host_info: HostInfo = HostInfo()):
         self.footer_panel.host_info = host_info
         self.layout['footer'].update(self.footer_panel)
 
