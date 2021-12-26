@@ -100,6 +100,7 @@ class RichConsoleManager:
             Layout(name='logs', ratio=1),  # general logs
             Layout(name='device_status', size=20)  # status of all connected devices, etc.
         )
+
         self.layout = layout
 
     def update_mount_info_panel(self, mount_info: MountInfo = MountInfo()):
@@ -424,9 +425,15 @@ class FooterPanel:
     def __rich_console__(
             self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
-        footer_table = Table.grid(padding=(0, 1))
-        footer_table.add_column(justify='left', style='bold gold3')
-        footer_table.add_column(justify='right', style='bold gold3')
-        footer_table.add_row(f'{self.host_info.url}:{self.host_info.port} ({self.host_info.host_name})', '')
+        footer_table = Table.grid(expand=True)
+        footer_table.add_column(justify='center', min_width=4)
+        footer_table.add_column(justify='left', style='bold gold3', ratio=1)
+        footer_table.add_column(justify='right', style='bold gold3', min_width=40)
+        footer_table.add_column(justify='center', min_width=4)
+
+        footer_table.add_row('',
+                             f'{self.host_info.url}:{self.host_info.port} ({self.host_info.host_name})',
+                             '2021. Liuyi and Kun in California.',
+                             '')
 
         yield footer_table
