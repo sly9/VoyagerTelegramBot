@@ -1,5 +1,4 @@
 #!/bin/env python3
-import base64
 import gc
 import io
 from collections import defaultdict
@@ -148,6 +147,7 @@ class StatPlotter:
         ax_main.set_facecolor('#212121')
         ax_main.plot(sequence_stat.guide_x_error_list, color='#F44336', linewidth=2)
         ax_main.plot(sequence_stat.guide_y_error_list, color='#2196F3', linewidth=2)
+        ax_main.axhline(0, color='white')
 
         abs_x_list = list()
         abs_y_list = list()
@@ -157,6 +157,17 @@ class StatPlotter:
             abs_x_list.append(abs(x_error))
             abs_y_list.append(abs(y_error))
             distance_list.append(np.sqrt(x_error ** 2 + y_error ** 2))
+
+        smoothing_window_size = 10
+        if len(distance_list) > smoothing_window_size:
+            smooth_distance_array = np.convolve(np.array(distance_list), np.ones(smoothing_window_size),
+                                                'valid') / smoothing_window_size
+            smooth_distance_array_negative = [-x for x in smooth_distance_array]
+            ax_main.fill_between(
+                range(int(smoothing_window_size / 2), int(len(smooth_distance_array) + smoothing_window_size / 2)),
+                smooth_distance_array_negative,
+                smooth_distance_array,
+                alpha=0.4, color='green')
 
         unit = 'Pixel' if config['unit'] == 'PIXEL' else 'Arcsec'
         scale = 1.0 if config['unit'] == 'PIXEL' else float(config['scale'])
@@ -247,7 +258,6 @@ class StatPlotter:
         plt.savefig(img_bytes, format='jpg')
         img_bytes.seek(0)
         image_data = img_bytes.read()
-
 
         # Prevent RuntimeWarning 'More than 20 figures have been opened' from matplotlib
         plt.close('all')

@@ -21,7 +21,7 @@ class DummyDebugger:
                 config_builder.merge()
             sys.exit()
         config = config_builder.build()
-        config.telegram_enabled = True
+        config.telegram_enabled = False
         config.console_config.console_type = 'PLAIN'
         config.html_report_enabled = True
         config.should_dump_log = False
@@ -48,7 +48,7 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('2021_12_18__voyager_bot_log.txt')
+    dd.load_messages('2021_11_17__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
     console.console.save_html('./replay/stdout.html')
