@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['bot.py'],
-             pathex=[],
+             pathex=['./'],
              binaries=[],
              datas=[('config.yml.example','.')],
              hiddenimports=[],
