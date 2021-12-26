@@ -18,6 +18,7 @@ from rich.table import Table
 from rich.text import Text
 
 from data_structure.host_info import HostInfo
+from data_structure.imaging_metrics import ImagingMetrics
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.shot_running_info import ShotRunningInfo, ShotRunningStatus
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatusEnum, DitherStatusEnum, \
@@ -43,6 +44,7 @@ class RichConsoleManager:
         self.layout = None
         self.log_panel = None
         self.progress_panel = None
+
         self.footer_panel = None
 
         self.setup()
@@ -51,6 +53,7 @@ class RichConsoleManager:
         ee.on(BotEvent.APPEND_LOG.name, self.update_log_panel)
         ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status_panel)
         ee.on(BotEvent.UPDATE_HOST_INFO.name, self.update_footer_panel)
+        ee.on(BotEvent.UPDATE_METRICS, self.update_metrics_panel)
 
     def setup(self):
         self.make_layout()
@@ -124,7 +127,7 @@ class RichConsoleManager:
 
         self.layout['mount_info'].update(mount_info_panel)
 
-    def update_metrics_panel(self):
+    def update_metrics_panel(self, imaging_metircs: ImagingMetrics = ImagingMetrics()):
         return
 
     def update_device_status_panel(self, system_status_info: SystemStatusInfo = SystemStatusInfo()):
@@ -253,8 +256,8 @@ class RichConsoleManager:
 
         self.layout['device_status'].update(status_panel)
 
-        """Update 4 panels related to status of the system"""
     def update_status_panels(self, system_status_info: SystemStatusInfo = SystemStatusInfo()):
+        """Update 3 panels related to status of the system"""
         # Mount Info panel which includes the coordination of the mount pointing at
         if system_status_info.device_connection_info.mount_connected:
             mount_info = system_status_info.mount_info
@@ -265,8 +268,6 @@ class RichConsoleManager:
         self.update_mount_info_panel(mount_info=mount_info)
         # Device Status panel which shows status of all connected devices
         self.update_device_status_panel(system_status_info=system_status_info)
-        # Imaging Statistics panel which shows the guiding error and image quality metrics
-        self.update_metrics_panel()
         # Progress Panel which shows the progress of the imaging session
         self.progress_panel.sequence_name = system_status_info.sequence_name
         if system_status_info.sequence_total_time_in_sec > 0:
