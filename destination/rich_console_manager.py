@@ -17,6 +17,7 @@ from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
+from data_structure.host_info import HostInfo
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.shot_running_info import ShotRunningInfo, ShotRunningStatus
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatusEnum, DitherStatusEnum, \
@@ -42,17 +43,20 @@ class RichConsoleManager:
         self.layout = None
         self.log_panel = None
         self.progress_panel = None
+        self.footer_panel = None
 
         self.setup()
         # Register events
         ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panels)
         ee.on(BotEvent.APPEND_LOG.name, self.update_log_panel)
         ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status_panel)
+        ee.on(BotEvent.UPDATE_HOST_INFO.name, self.update_footer_panel)
 
     def setup(self):
         self.make_layout()
         self.log_panel = LogPanel(layout=self.layout['logs'], config=self.config)
         self.progress_panel = ProgressPanel()
+        self.footer_panel = FooterPanel(host_info=HostInfo())
 
         self.layout['header'].update(self.header)
         self.update_status_panels(SystemStatusInfo())
@@ -292,6 +296,10 @@ class RichConsoleManager:
         self.progress_panel.image_progress.update(shot_running_info.elapsed_percentage)
         self.layout['imaging'].update(self.progress_panel)
 
+    def update_footer_panel(self, host_info: HostInfo = None):
+        self.footer_panel.host_info = host_info
+        self.layout['footer'].update(self.footer_panel)
+
 
 class LogPanel:
     def __init__(self, config: object, layout: Layout, style: StyleType = "") -> None:
@@ -356,7 +364,7 @@ class RichConsoleHeader:
     """Display header with clock."""
 
     def __init__(self):
-        self.toast_string = None
+        self.toast_string = ''
 
     def __rich_console__(
             self, console: Console, options: ConsoleOptions
@@ -366,24 +374,15 @@ class RichConsoleHeader:
     def generate_grid(self):
         grid = Table.grid(expand=True)
         grid.add_column(justify='center', min_width=25)
+        grid.add_column(justify='center', ratio=1, style=RichTextStylesEnum.CRITICAL.value)
+        grid.add_column(justify='right', min_width=25)
 
-        if self.toast_string:
-            grid.add_column(justify='center', ratio=1, style=RichTextStylesEnum.CRITICAL.value)
-        else:
-            grid.add_column(justify='left', ratio=1)
-        grid.add_column(justify='right')
-        if self.toast_string:
-            grid.add_row(
-                f'VogagerBot v{bot_version_string()}',
-                self.toast_string,
-                datetime.now().ctime().replace(":", "[blink]:[/]"),
-            )
-        else:
-            grid.add_row(
-                f'VogagerBot v{bot_version_string()}',
-                '127.0.0.1:5950 (Unknown Host)',
-                datetime.now().ctime().replace(":", "[blink]:[/]"),
-            )
+        grid.add_row(
+            f'VogagerBot v{bot_version_string()}',
+            self.toast_string,
+            datetime.now().ctime().replace(":", "[blink]:[/]"),
+        )
+
         return grid
 
     def show_action_toast(self, toast_string: str):
@@ -415,3 +414,18 @@ class ProgressPanel:
         progress_table.add_row(self.sequence_progress)
 
         yield Panel(progress_table)
+
+
+class FooterPanel:
+    def __init__(self, host_info: HostInfo = HostInfo()):
+        self.host_info = host_info
+
+    def __rich_console__(
+            self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        footer_table = Table.grid(padding=(0, 1))
+        footer_table.add_column(justify='left', style='bold gold3')
+        footer_table.add_column(justify='right', style='bold gold3')
+        footer_table.add_row(f'{self.host_info.url}:{self.host_info.port} ({self.host_info.host_name})', '')
+
+        yield footer_table
