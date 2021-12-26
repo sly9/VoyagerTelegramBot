@@ -60,4 +60,4 @@ telegram_enabled: True
 html_report_enabled: False
 console_config:
   use_emoji: False
-  console_type: PLAIN # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
+  console_type: FULL # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
