@@ -1,3 +1,4 @@
+import sys
 import time
 
 import console
@@ -8,8 +9,17 @@ from configs import ConfigBuilder
 class DummyDebugger:
     def __init__(self):
         self.file_name = None
+        config_builder = ConfigBuilder(config_filename='config.yml')
+        if validate_result := config_builder.validate():
+            print(f'validation failed: {validate_result}')
+            if validate_result == 'NO_CONFIG_FILE':
+                config_builder.copy_template()
 
-        config_builder = ConfigBuilder()
+            elif validate_result == 'LOAD_CONFIG_FAILED':
+                print('Something is clearly wrong with the config!!')
+            elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
+                config_builder.merge()
+            sys.exit()
         config = config_builder.build()
         config.telegram_enabled = False
         config.console_type = 'FULL'
