@@ -53,7 +53,7 @@ class RichConsoleManager:
         ee.on(BotEvent.APPEND_LOG.name, self.update_log_panel)
         ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status_panel)
         ee.on(BotEvent.UPDATE_HOST_INFO.name, self.update_footer_panel)
-        ee.on(BotEvent.UPDATE_METRICS, self.update_metrics_panel)
+        ee.on(BotEvent.UPDATE_METRICS.name, self.update_metrics_panel)
 
     def setup(self):
         self.make_layout()

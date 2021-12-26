@@ -29,4 +29,4 @@ class ImagingMetricsEventHandler(VoyagerEventHandler):
             self.imaging_metrics.jpg_metrics.star_index = message['StarIndex']
             self.imaging_metrics.jpg_metrics.hfd = message['HFD']
 
-        ee.emit(BotEvent.UPDATE_METRICS, imaging_metrics_info=self.imaging_metrics)
+        ee.emit(BotEvent.UPDATE_METRICS.name, imaging_metrics_info=self.imaging_metrics)
