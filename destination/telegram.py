@@ -44,30 +44,34 @@ class Telegram:
     def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str):
 
         if not self.current_chat_id and not self.current_sequence_stat_message_id:
-            chat_id, message_id = self.send_image_message(image_data=sequence_stat_image,
-                                                          image_filename='good_night_stats.jpg',
-                                                          message=f'Statistics for {sequence_name}',
-                                                          send_as_file=False)
-            if chat_id and message_id:
+            status, info_dict = self.send_image_message(image_data=sequence_stat_image,
+                                                        filename='good_night_stats.jpg',
+                                                        caption=f'Statistics for {sequence_name}',
+                                                        send_as_file=False)
+            chat_id = info_dict.get('chat_id', '')
+            message_id = info_dict.get('message_id', '')
+            if status == 'OK' and chat_id and message_id:
                 self.current_chat_id = chat_id
                 self.current_sequence_stat_message_id = message_id
                 status, info_dict = self.unpin_all_messages(chat_id=chat_id)
                 if status == 'ERROR':
                     ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                             error=LogMessageInfo(type='ERROR', message='UnpinAllMessage: ' + info_dict["description"]))
-
-                    status, info_dict = self.pin_message(chat_id=chat_id, message_id=message_id)
-                    if status == 'ERROR':
-                        ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                                error=LogMessageInfo(type='ERROR', message='PinMessage: ' + info_dict["description"]))
-                    else:
-                        status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
-                                                                    message_id=self.current_sequence_stat_message_id,
-                                                                    image_data=sequence_stat_image,
-                                                                    filename=sequence_name + '_stat.jpg')
-                    if status == 'ERROR':
-                        ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                                error=LogMessageInfo(type='ERROR', message='EditMessage: ' + info_dict["description"]))
+                status, info_dict = self.pin_message(chat_id=chat_id, message_id=message_id)
+                if status == 'ERROR':
+                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                            error=LogMessageInfo(type='ERROR', message='PinMessage: ' + info_dict["description"]))
+            else:
+                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                        error=LogMessageInfo(type='ERROR', message='send_image_message: ' + info_dict["description"]))
+        else:
+            status, info_dict = self.edit_image_message(chat_id=self.current_chat_id,
+                                                        message_id=self.current_sequence_stat_message_id,
+                                                        image_data=sequence_stat_image,
+                                                        filename=sequence_name + '_stat.jpg')
+            if status == 'ERROR':
+                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                        error=LogMessageInfo(type='ERROR', message='EditMessage: ' + info_dict["description"]))
 
     def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
@@ -84,14 +88,11 @@ class Telegram:
             response_json.pop('ok')
             return 'ERROR', response_json
 
-    def send_image_message(self, image_data:bytes,
+    def send_image_message(self, image_data: bytes,
                            filename: str = '',
                            caption: str = '',
                            send_as_file: bool = True) -> Tuple[str, Dict[str, Any]]:
-
-
         with tempfile.TemporaryFile() as f, tempfile.TemporaryFile() as thumb_f:
-
             f.write(image_data)
             f.seek(0)
 
@@ -128,7 +129,7 @@ class Telegram:
 
     def edit_image_message(self, chat_id: str,
                            message_id: str,
-                           image_data:bytes,
+                           image_data: bytes,
                            filename: str = '') -> Tuple[str, Dict[str, Any]]:
 
         with tempfile.TemporaryFile() as f:
@@ -204,7 +205,6 @@ if __name__ == '__main__':
 
         response = t.pin_message(chat_id=the_chat_id, message_id=the_message_id)
         print(response)
-
 
         response = t.edit_image_message(chat_id=the_chat_id, message_id=the_message_id,
                                         image_data=second_image_file.read(),
