@@ -17,6 +17,11 @@ to [Telegram](https://telegram.org/).
 With `VoyagerTelegramBot`, you don't need to keep a dashboard open to monitor the imaging session for sub-images, system
 status, and critical warning and errors.
 
+## Non-Affiliation and Disclaimer
+
+This project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Voyager – Astrophotography Automation Software, or any of its subsidiaries or its affiliates. The official Voyager – Astrophotography Automation Software website can be found at https://software.starkeeper.it/.
+
+
 ## Features
 
 - Configurable for types of images and messages
