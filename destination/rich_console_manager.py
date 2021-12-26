@@ -35,7 +35,7 @@ class RichTextStylesEnum(enum.Enum):
 class RichConsoleManager:
     """A console manager powered by rich"""
 
-    def __init__(self, config):
+    def __init__(self, config=None):
         self.config = config
         self.thread = None
         self.header = RichConsoleHeader()
@@ -46,8 +46,8 @@ class RichConsoleManager:
         self.setup()
         # Register events
         ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panels)
-        ee.on(BotEvent.APPEND_LOG.name, self.update_log)
-        ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status)
+        ee.on(BotEvent.APPEND_LOG.name, self.update_log_panel)
+        ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status_panel)
 
     def setup(self):
         self.make_layout()
@@ -85,24 +85,19 @@ class RichConsoleManager:
 
         layout['status'].split_row(
             Layout(name='mount_info', size=45),  # DEC, RA, ALT, AZ, etc.
-            Layout(name='stat', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
-            Layout(name='imaging', ratio=3),
-            # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
+            Layout(name='metrics', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
+            Layout(name='imaging', ratio=3),  # current_img, sequence_%
         )
 
         layout['main'].split_row(
-            Layout(name='logs', ratio=1),  # general logs, last error etc
-            Layout(name='device_status', size=20)  # Slewing, guiding, parked, dithering, etc.
+            Layout(name='logs', ratio=1),  # general logs
+            Layout(name='device_status', size=20)  # status of all connected devices, etc.
         )
         self.layout = layout
 
-    def update_status_panels(self, system_status_info: SystemStatusInfo = None):
-        device_connection_info = system_status_info.device_connection_info
-        if device_connection_info.mount_connected:
-            mount_info = system_status_info.mount_info
-        else:
-            # if mount is not connected, all info is not trustable.
-            mount_info = MountInfo()
+    def update_mount_info_panel(self, mount_info: MountInfo = None):
+        if not mount_info:
+            return
 
         # Update mount information sub-panel
         mount_table = Table.grid(padding=(0, 1))
@@ -125,7 +120,10 @@ class RichConsoleManager:
 
         self.layout['mount_info'].update(mount_info_panel)
 
-        # Update operation and device connection status
+    def update_metrics_panel(self):
+        return
+
+    def update_device_status_panel(self, system_status_info: SystemStatusInfo = None):
         status_table = Table.grid(padding=(0, 1))
         status_table.add_column(justify='left')
 
@@ -169,7 +167,7 @@ class RichConsoleManager:
         #     connection_text.append('R', style=RichTextStylesEnum.CRITICAL.value)
         #
         # status_table.add_row(connection_text)
-
+        device_connection_info = system_status_info.device_connection_info
         device_status_info = system_status_info.device_status_info
         # CCD
         status_table.add_row('Main Camera')
@@ -251,13 +249,31 @@ class RichConsoleManager:
 
         self.layout['device_status'].update(status_panel)
 
+    def update_status_panels(self, system_status_info: SystemStatusInfo = None):
+        """Update 4 panels related to status of the system"""
+        # Mount Info panel which includes the coordination of the mount pointing at
+        if system_status_info.device_connection_info.mount_connected:
+            mount_info = system_status_info.mount_info
+        else:
+            # if mount is not connected, all info is not trustable.
+            mount_info = MountInfo()
+
+        self.update_mount_info_panel(mount_info=mount_info)
+        # Device Status panel which shows status of all connected devices
+        self.update_device_status_panel(system_status_info=system_status_info)
+        # Imaging Statistics panel which shows the guiding error and image quality metrics
+        self.update_metrics_panel()
+        # Progress Panel which shows the progress of the imaging session
         self.progress_panel.sequence_name = system_status_info.sequence_name
         if system_status_info.sequence_total_time_in_sec > 0:
             self.progress_panel.sequence_progress.update(
                 system_status_info.sequence_elapsed_time_in_sec * 100.0 / system_status_info.sequence_total_time_in_sec)
         self.layout['imaging'].update(self.progress_panel)
 
-    def update_log(self, log: LogMessageInfo):
+    def update_log_panel(self, log: LogMessageInfo = None):
+        if not log:
+            return
+
         self.log_panel.append_log(log)
         self.layout['logs'].update(self.log_panel)
         if log.type == 'TITLE' or log.type == 'SUBTITLE':
@@ -267,7 +283,10 @@ class RichConsoleManager:
             except Exception as exception:
                 print(exception)
 
-    def update_shot_status(self, shot_running_info: ShotRunningInfo):
+    def update_shot_status_panel(self, shot_running_info: ShotRunningInfo = None):
+        if not shot_running_info:
+            return
+
         self.progress_panel.file_name = shot_running_info.filename
         self.progress_panel.status = shot_running_info.status
         self.progress_panel.image_progress.update(shot_running_info.elapsed_percentage)
