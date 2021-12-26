@@ -1,6 +1,5 @@
 #!/bin/env python3
 
-import base64
 import io
 import json
 import tempfile
@@ -42,11 +41,10 @@ class Telegram:
         ee.on(BotEvent.UNPIN_MESSAGE.name, self.unpin_message)
         ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
 
-    def update_sequence_stat_image(self, base64_image: str, sequence_name: str,
-                                   ):
+    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str):
 
         if not self.current_chat_id and not self.current_sequence_stat_message_id:
-            chat_id, message_id = self.send_image_message(base64_image=base64_image,
+            chat_id, message_id = self.send_image_message(image_data=sequence_stat_image,
                                                           image_filename='good_night_stats.jpg',
                                                           message=f'Statistics for {sequence_name}',
                                                           send_as_file=False)
@@ -65,7 +63,7 @@ class Telegram:
                     else:
                         status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
                                                                     message_id=self.current_sequence_stat_message_id,
-                                                                    base64_encoded_image=base64_image,
+                                                                    image_data=sequence_stat_image,
                                                                     filename=sequence_name + '_stat.jpg')
                     if status == 'ERROR':
                         ee.emit(BotEvent.APPEND_ERROR_LOG.name,
@@ -86,18 +84,18 @@ class Telegram:
             response_json.pop('ok')
             return 'ERROR', response_json
 
-    def send_image_message(self, base64_encoded_image,
+    def send_image_message(self, image_data:bytes,
                            filename: str = '',
                            caption: str = '',
                            send_as_file: bool = True) -> Tuple[str, Dict[str, Any]]:
-        file_content = base64.b64decode(base64_encoded_image)
+
 
         with tempfile.TemporaryFile() as f, tempfile.TemporaryFile() as thumb_f:
 
-            f.write(file_content)
+            f.write(image_data)
             f.seek(0)
 
-            stream = io.BytesIO(file_content)
+            stream = io.BytesIO(image_data)
             img = Image.open(stream).resize((320, 214))
             img.save(thumb_f, "JPEG")
             thumb_f.seek(0)
@@ -130,12 +128,11 @@ class Telegram:
 
     def edit_image_message(self, chat_id: str,
                            message_id: str,
-                           base64_encoded_image,
+                           image_data:bytes,
                            filename: str = '') -> Tuple[str, Dict[str, Any]]:
-        file_content = base64.b64decode(base64_encoded_image)
 
         with tempfile.TemporaryFile() as f:
-            f.write(file_content)
+            f.write(image_data)
             f.seek(0)
 
             payload = {'chat_id': chat_id, 'message_id': message_id,
@@ -202,16 +199,15 @@ if __name__ == '__main__':
     the_message_id = response[1]['message_id']
 
     with open("tests/ic5070.jpg", "rb") as image_file, open("tests/m42.jpg", "rb") as second_image_file:
-        encoded_string = base64.b64encode(image_file.read())
-        response = t.send_image_message(encoded_string, 'ic5070.jpg')
+        response = t.send_image_message(image_file.read(), 'ic5070.jpg')
         print(response)
 
         response = t.pin_message(chat_id=the_chat_id, message_id=the_message_id)
         print(response)
 
-        encoded_string = base64.b64encode(second_image_file.read())
+
         response = t.edit_image_message(chat_id=the_chat_id, message_id=the_message_id,
-                                        base64_encoded_image=encoded_string,
+                                        image_data=second_image_file.read(),
                                         filename='m42.jpg')
         print(response)
 

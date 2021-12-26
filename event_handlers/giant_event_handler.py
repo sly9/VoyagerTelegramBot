@@ -1,6 +1,5 @@
+import base64
 from typing import Dict
-
-from memory_profiler import profile
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
@@ -169,10 +168,12 @@ class GiantEventHandler(VoyagerEventHandler):
             self.report_stats_for_current_sequence()
 
             base64_photo = message['Base64Data']
+            image_data = base64.b64decode(base64_photo)
 
             fit_filename = message['File']
             new_filename = fit_filename[fit_filename.rindex('\\') + 1: fit_filename.index('.')] + '.jpg'
-            ee.emit(BotEvent.SEND_IMAGE_MESSAGE.name, base64_photo, new_filename, telegram_message)
+            ee.emit(BotEvent.SEND_IMAGE_MESSAGE.name, image_data=image_data, filename=new_filename,
+                    caption=telegram_message)
         else:
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
@@ -199,6 +200,6 @@ class GiantEventHandler(VoyagerEventHandler):
             return
         sequence_stat = self.current_sequence_stat()
 
-        base64_img = self.stat_plotter.plot(sequence_stat=sequence_stat)
-        ee.emit(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, base64_img=base64_img, image_fn='good_night_stats.jpg',
-                sequence_name=self.running_seq, )
+        sequence_stat_image = self.stat_plotter.plot(sequence_stat=sequence_stat)
+        ee.emit(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, sequence_stat_image=sequence_stat_image,
+                sequence_name=self.running_seq)

@@ -246,11 +246,12 @@ class StatPlotter:
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='jpg')
         img_bytes.seek(0)
-        base64_img = base64.b64encode(img_bytes.read())
+        image_data = img_bytes.read()
+
 
         # Prevent RuntimeWarning 'More than 20 figures have been opened' from matplotlib
         plt.close('all')
         plt.close()
         img_bytes.close()
         gc.collect()
-        return base64_img
+        return image_data

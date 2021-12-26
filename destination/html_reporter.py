@@ -27,6 +27,7 @@ class HTMLReporter:
         ee.on(BotEvent.PIN_MESSAGE.name, self.pin_message)
         ee.on(BotEvent.UNPIN_MESSAGE.name, self.unpin_message)
         ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
+        ee.on(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, self.update_sequence_stat_image)
 
     def write_header(self):
         self.html_file.write('''<!DOCTYPE html>
@@ -67,13 +68,13 @@ class HTMLReporter:
         self.event_sequence += 1
 
     def edit_image_message(self, chat_id: str, message_id: str,
-                           base64_encoded_image, filename: str = '') -> Tuple[str, Dict]:
+                           image_data:bytes, filename: str = '') -> Tuple[str, Dict]:
         f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
-        file_content = base64.b64decode(base64_encoded_image)
-        f.write(file_content)
+
+        f.write(image_data)
         f.close()
 
-        stream = io.BytesIO(file_content)
+        stream = io.BytesIO(image_data)
         img = Image.open(stream)
         basewidth = 300
         wpercent = (basewidth / float(img.size[0]))
@@ -119,18 +120,17 @@ class HTMLReporter:
 
         return 'OK', dict()
 
-    def update_sequence_stat_image(self, base64_image: str, sequence_name: str, ):
-        self.send_image_message(base64_encoded_image=base64_image, filename='SequenceStats.jpg',
-                                caption='sequence_name', as_document=False)
+    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str):
+        self.send_image_message(image_data=sequence_stat_image, filename='SequenceStats.jpg',
+                                caption=sequence_name, as_document=False)
 
-    def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '',
+    def send_image_message(self, image_data: bytes, filename: str = '', caption: str = '',
                            as_document: bool = True) -> Tuple[str, Dict]:
         f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
-        file_content = base64.b64decode(base64_encoded_image)
-        f.write(file_content)
+        f.write(image_data)
         f.close()
 
-        stream = io.BytesIO(file_content)
+        stream = io.BytesIO(image_data)
         img = Image.open(stream)
         basewidth = 300
         wpercent = (basewidth / float(img.size[0]))
