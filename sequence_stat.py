@@ -1,16 +1,20 @@
 #!/bin/env python3
 import base64
+import gc
 import io
 from collections import defaultdict
 from statistics import mean, stdev
 from typing import Tuple
 
+import matplotlib
 import numpy as np
 from matplotlib import axes
 from matplotlib import pyplot as plt
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
+
+matplotlib.use('agg')
 
 
 class SequenceStat:
@@ -246,7 +250,7 @@ class StatPlotter:
 
         # Prevent RuntimeWarning 'More than 20 figures have been opened' from matplotlib
         plt.close('all')
-
+        plt.close()
         img_bytes.close()
-
+        gc.collect()
         return base64_img

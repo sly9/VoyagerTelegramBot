@@ -1,5 +1,7 @@
 from typing import Dict
 
+from memory_profiler import profile
+
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
 from data_structure.log_message_info import LogMessageInfo
@@ -198,3 +200,5 @@ class GiantEventHandler(VoyagerEventHandler):
         sequence_stat = self.current_sequence_stat()
 
         base64_img = self.stat_plotter.plot(sequence_stat=sequence_stat)
+        ee.emit(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, base64_img=base64_img, image_fn='good_night_stats.jpg',
+                sequence_name=self.running_seq, )

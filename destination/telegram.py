@@ -42,13 +42,13 @@ class Telegram:
         ee.on(BotEvent.UNPIN_MESSAGE.name, self.unpin_message)
         ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
 
-    def update_sequence_stat_image(self, base64_image: str, image_filename: str,
-                                   message: str, send_as_file: bool):
+    def update_sequence_stat_image(self, base64_image: str, sequence_name: str,
+                                   ):
 
         if not self.current_chat_id and not self.current_sequence_stat_message_id:
             chat_id, message_id = self.send_image_message(base64_image=base64_image,
                                                           image_filename='good_night_stats.jpg',
-                                                          message=f'Statistics for {self.running_seq}',
+                                                          message=f'Statistics for {sequence_name}',
                                                           send_as_file=False)
             if chat_id and message_id:
                 self.current_chat_id = chat_id
@@ -66,7 +66,7 @@ class Telegram:
                         status, info_dict = self.edit_image_message(chat_id=self.current_sequence_stat_chat_id,
                                                                     message_id=self.current_sequence_stat_message_id,
                                                                     base64_encoded_image=base64_image,
-                                                                    filename=self.running_seq + '_stat.jpg')
+                                                                    filename=sequence_name + '_stat.jpg')
                     if status == 'ERROR':
                         ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                                 error=LogMessageInfo(type='ERROR', message='EditMessage: ' + info_dict["description"]))
