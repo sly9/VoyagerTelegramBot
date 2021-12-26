@@ -74,8 +74,10 @@ Please refer to [Full Installation guide](doc/full_installation.md)
 
 ## Virus? Nah, you are safe(most likely)
 
-For easier distribution purpose, we used pyinstaller to create a standalone .exe file to save the hassle of unzipping the code, installing a compatible version of python, then install all the dependencies.
+For easier distribution purpose, we used [pyinstaller](https://github.com/pyinstaller/pyinstaller) to create a standalone .exe file to save the hassle of unzipping the code, installing a compatible version of python, then install all the dependencies.
 
 However, due to the fact that pyinstaller needs to extract all the content to a temporary folder and starts a python process, some antivirus programs might think it's an unsafe behavior, and blocks the app from running.
 
 We are confident that our releases are clean and don't contain malicious code. However, as a disclaimer, we are responsible for any possible harm and loss this bot might cause.
+
+The false alarms for exe files built by pyinstaller is a known issue, and there's no easy way to totally get rid of it -- see discussions [here](https://github.com/pyinstaller/pyinstaller/issues/5932) and [here](https://stackoverflow.com/questions/43777106/program-made-with-pyinstaller-now-seen-as-a-trojan-horse-by-avg)
