@@ -119,6 +119,10 @@ class HTMLReporter:
 
         return 'OK', dict()
 
+    def update_sequence_stat_image(self, base64_image: str, sequence_name: str, ):
+        self.send_image_message(base64_encoded_image=base64_image, filename='SequenceStats.jpg',
+                                caption='sequence_name', as_document=False)
+
     def send_image_message(self, base64_encoded_image, filename: str = '', caption: str = '',
                            as_document: bool = True) -> Tuple[str, Dict]:
         f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
