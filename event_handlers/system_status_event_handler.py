@@ -35,22 +35,25 @@ class SystemStatusEventHandler(VoyagerEventHandler):
         # sequence total time and elapsed time
 
         # "SEQSTART": "18:59:11", "SEQREMAIN": "00:47:33", "SEQEND": "20:04:07"
-        sequence_start_time = parse(message['SEQSTART']).time()
-        sequence_remaining_time = parse(message['SEQREMAIN']).time()
-        sequence_end_time = parse(message['SEQEND']).time()
-        sequence_start_time_in_sec = sequence_start_time.hour * 60 * 60 + \
-                                     sequence_start_time.minute * 60 + \
-                                     sequence_start_time.second
-        sequence_remaining_time_in_sec = sequence_remaining_time.hour * 60 * 60 + \
-                                         sequence_remaining_time.minute * 60 + \
-                                         sequence_remaining_time.second
-        sequence_end_time_in_sec = sequence_end_time.hour * 60 * 60 + \
-                                   sequence_end_time.minute * 60 + \
-                                   sequence_end_time.second
-        sequence_total_time_in_sec = sequence_end_time_in_sec - sequence_start_time_in_sec
-        if sequence_end_time_in_sec < sequence_start_time_in_sec:
-            sequence_total_time_in_sec += 86400
-        sequence_elapsed_time_in_sec = sequence_total_time_in_sec - sequence_remaining_time_in_sec
+        sequence_total_time_in_sec = 0
+        sequence_elapsed_time_in_sec = 0
+        if message['SEQSTART'] and message['SEQREMAIN'] and message['SEQEND']:
+            sequence_start_time = parse(message['SEQSTART']).time()
+            sequence_remaining_time = parse(message['SEQREMAIN']).time()
+            sequence_end_time = parse(message['SEQEND']).time()
+            sequence_start_time_in_sec = sequence_start_time.hour * 60 * 60 + \
+                                         sequence_start_time.minute * 60 + \
+                                         sequence_start_time.second
+            sequence_remaining_time_in_sec = sequence_remaining_time.hour * 60 * 60 + \
+                                             sequence_remaining_time.minute * 60 + \
+                                             sequence_remaining_time.second
+            sequence_end_time_in_sec = sequence_end_time.hour * 60 * 60 + \
+                                       sequence_end_time.minute * 60 + \
+                                       sequence_end_time.second
+            sequence_total_time_in_sec = sequence_end_time_in_sec - sequence_start_time_in_sec
+            if sequence_end_time_in_sec < sequence_start_time_in_sec:
+                sequence_total_time_in_sec += 86400
+            sequence_elapsed_time_in_sec = sequence_total_time_in_sec - sequence_remaining_time_in_sec
 
         if is_parked:
             mount_operation = 'PARKED'

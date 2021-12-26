@@ -26,10 +26,10 @@ class VoyagerClient:
         if self.config.telegram_enabled:
             self.telegram = Telegram(config=config)
 
-        if self.config.console_type == 'BASIC':
+        if self.config.console_config.console_type == 'BASIC':
             curses_manager = CursesManager()
             self.console_manager = ConsoleManager(config=config, curses_manager=curses_manager)
-        elif self.config.console_type == 'FULL':
+        elif self.config.console_config.console_type == 'FULL':
             self.console_manager = RichConsoleManager(config=config)
             self.console_manager.run()
         else:

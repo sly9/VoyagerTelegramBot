@@ -2,6 +2,7 @@
 
 import base64
 import json
+import sys
 import threading
 import time
 import uuid
@@ -145,6 +146,17 @@ class VoyagerConnectionManager:
 
 
 if __name__ == "__main__":
-    config_builder = ConfigBuilder()
+    config_builder = ConfigBuilder(config_filename='config.yml')
+    if validate_result := config_builder.validate():
+        print(f'validation failed: {validate_result}')
+        if validate_result == 'NO_CONFIG_FILE':
+            config_builder.copy_template()
+
+        elif validate_result == 'LOAD_CONFIG_FAILED':
+            print('Something is clearly wrong with the config!!')
+        elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
+            config_builder.merge()
+        sys.exit()
+
     connection_manager = VoyagerConnectionManager(config=config_builder.build())
     connection_manager.run_forever()

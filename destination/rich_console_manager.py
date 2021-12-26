@@ -357,8 +357,8 @@ class ProgressPanel:
         self.sequence_name = ''
         self.image_progress = ProgressBar(total=100)
         self.sequence_progress = ProgressBar(total=100)
-        self.image_progress.update(40)
-        self.sequence_progress.update(20)
+        self.image_progress.update(0)
+        self.sequence_progress.update(0)
 
     def __rich_console__(
             self, console: Console, options: ConsoleOptions

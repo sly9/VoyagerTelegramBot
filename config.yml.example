@@ -1,6 +1,7 @@
 # Note this file is a template, and also the place for default values. So keep it here, and make a copy of this file as
 # 'config.yml', then modify the values there. If a field is skipped in the config.yml, the default value defined in this
 # file will be used instead.
+config_template_version: 0.1
 
 ### Sequence Statistics
 sequence_stats_config:
@@ -51,7 +52,7 @@ telegram_setting:
 ### Miscellaneous
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
 timezone: America/Los_Angeles
-should_dump_log: True  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
+should_dump_log: False  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
 monitor_battery: False
 allow_auto_reconnect: True
 
