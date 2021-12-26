@@ -204,7 +204,7 @@ class RichConsoleManager:
             mount_status = device_status_info.mount_status
             if mount_status == MountStatusEnum.TRACKING:
                 mount_text = Text(mount_status.name, style=RichTextStylesEnum.SAFE.value)
-            elif mount_status == MountStatusEnum.PAKRED:
+            elif mount_status == MountStatusEnum.PARKED:
                 mount_text = Text(mount_status.name, style=RichTextStylesEnum.CRITICAL.value)
             elif mount_status == MountStatusEnum.SLEWING:
                 mount_text = Text(mount_status.name, style=RichTextStylesEnum.WARNING.value)

@@ -3,9 +3,11 @@
 by Liuyi Sun ([AstroBin](https://www.astrobin.com/users/liuyisun/)) and Kun
 Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
-Last updates: 12/16/2021
+Last updates: 12/26/2021
 
 > We just released `v0.2.2` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/0.2.2)!
+
+> Please visit our [discussion](https://github.com/sly9/VoyagerTelegramBot/discussions) page for any questions, suggestions, ideas and supports.
 
 ## Introduction
 
@@ -19,7 +21,9 @@ status, and critical warning and errors.
 
 ## Non-Affiliation and Disclaimer
 
-This project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Voyager – Astrophotography Automation Software, or any of its subsidiaries or its affiliates. The official Voyager – Astrophotography Automation Software website can be found at https://software.starkeeper.it/.
+This project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the `Voyager
+– Astrophotography Automation Software`, or any of its subsidiaries or its affiliates. The official `Voyager – 
+Astrophotography Automation Software` website can be found at https://software.starkeeper.it/.
 
 
 ## Features
@@ -74,10 +78,16 @@ Please refer to [Full Installation guide](doc/full_installation.md)
 
 ## Virus? Nah, you are safe(most likely)
 
-For easier distribution purpose, we used [pyinstaller](https://github.com/pyinstaller/pyinstaller) to create a standalone .exe file to save the hassle of unzipping the code, installing a compatible version of python, then install all the dependencies.
+For easier distribution purpose, we used [pyinstaller](https://github.com/pyinstaller/pyinstaller) to create a
+standalone .exe file to save the hassle of unzipping the code, installing a compatible version of python, then 
+install all the dependencies.
 
-However, due to the fact that pyinstaller needs to extract all the content to a temporary folder and starts a python process, some antivirus programs might think it's an unsafe behavior, and blocks the app from running.
+However, due to the fact that pyinstaller needs to extract all the content to a temporary folder and starts a python 
+process, some antivirus programs might think it's an unsafe behavior, and blocks the app from running.
 
-We are confident that our releases are clean and don't contain malicious code. However, as a disclaimer, we are responsible for any possible harm and loss this bot might cause.
+We are confident that our releases are clean and don't contain malicious code. However, as a disclaimer, we are **NOT** 
+responsible for any possible harm and loss this bot might cause.
 
-The false alarms for exe files built by pyinstaller is a known issue, and there's no easy way to totally get rid of it -- see discussions [here](https://github.com/pyinstaller/pyinstaller/issues/5932) and [here](https://stackoverflow.com/questions/43777106/program-made-with-pyinstaller-now-seen-as-a-trojan-horse-by-avg)
+The false alarms for exe files built by pyinstaller is a known issue, and there's no easy way to totally get rid of it
+-- see discussions [here](https://github.com/pyinstaller/pyinstaller/issues/5932) and 
+[here](https://stackoverflow.com/questions/43777106/program-made-with-pyinstaller-now-seen-as-a-trojan-horse-by-avg).
