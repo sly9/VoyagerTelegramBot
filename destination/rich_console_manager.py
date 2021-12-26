@@ -45,7 +45,7 @@ class RichConsoleManager:
 
         self.setup()
         # Register events
-        ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panel)
+        ee.on(BotEvent.UPDATE_SYSTEM_STATUS.name, self.update_status_panels)
         ee.on(BotEvent.APPEND_LOG.name, self.update_log)
         ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status)
 
@@ -55,7 +55,7 @@ class RichConsoleManager:
         self.progress_panel = ProgressPanel()
 
         self.layout['header'].update(self.header)
-        self.update_status_panel(SystemStatusInfo())
+        self.update_status_panels(SystemStatusInfo())
 
         self.layout['logs'].update(self.log_panel)
 
@@ -73,7 +73,7 @@ class RichConsoleManager:
             while True:
                 sleep(0.25)
 
-    def make_layout(self) -> Layout:
+    def make_layout(self):
         """Define the layout."""
         layout = Layout(name='root')
         layout.split(
@@ -96,7 +96,7 @@ class RichConsoleManager:
         )
         self.layout = layout
 
-    def update_status_panel(self, system_status_info: SystemStatusInfo = None):
+    def update_status_panels(self, system_status_info: SystemStatusInfo = None):
         device_connection_info = system_status_info.device_connection_info
         if device_connection_info.mount_connected:
             mount_info = system_status_info.mount_info
