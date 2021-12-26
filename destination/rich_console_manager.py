@@ -19,7 +19,8 @@ from rich.text import Text
 
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.shot_running_info import ShotRunningInfo, ShotRunningStatus
-from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatEnum, DitherStatEnum
+from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatusEnum, DitherStatusEnum, \
+    MountStatusEnum, CcdStatusEnum
 from event_emitter import ee
 from event_names import BotEvent
 from version import bot_version_string
@@ -84,14 +85,14 @@ class RichConsoleManager:
 
         layout['status'].split_row(
             Layout(name='mount_info', size=45),  # DEC, RA, ALT, AZ, etc.
-            Layout(name='operations', ratio=3),  # Slewing, guiding, parked, dithering, etc.
+            Layout(name='stat', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
             Layout(name='imaging', ratio=3),
             # Focuser status, ccd status(temp), current_img, sequence_%, rotator, filter
         )
 
         layout['main'].split_row(
             Layout(name='logs', ratio=1),  # general logs, last error etc
-            Layout(name='stat', size=20)  # guiding error, last focusing result, last image HFD, staridx,
+            Layout(name='device_status', size=20)  # Slewing, guiding, parked, dithering, etc.
         )
         self.layout = layout
 
@@ -125,79 +126,130 @@ class RichConsoleManager:
         self.layout['mount_info'].update(mount_info_panel)
 
         # Update operation and device connection status
-        operation_table = Table.grid(padding=(0, 1))
-        operation_table.add_column(justify='right', style='bold grey89')
-        operation_table.add_column(justify='left')
+        status_table = Table.grid(padding=(0, 1))
+        status_table.add_column(justify='left')
 
         # Connection status for setup, camera, mount, etc.
-        connection_text = Text()
+        # status_table.add_row('Device Connection')
+        # connection_text = Text()
+        #
+        # if device_connection_info.setup_connected:
+        #     connection_text.append('S', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('S', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # if device_connection_info.camera_connected:
+        #     connection_text.append('C', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('C', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # if device_connection_info.mount_connected:
+        #     connection_text.append('M', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('M', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # if device_connection_info.focuser_connected:
+        #     connection_text.append('F', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('F', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # if device_connection_info.guide_connected:
+        #     connection_text.append('G', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('G', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # if device_connection_info.planetarium_connected:
+        #     connection_text.append('P', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('P', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # if device_connection_info.rotator_connected:
+        #     connection_text.append('R', style=RichTextStylesEnum.SAFE.value)
+        # else:
+        #     connection_text.append('R', style=RichTextStylesEnum.CRITICAL.value)
+        #
+        # status_table.add_row(connection_text)
 
-        if device_connection_info.setup_connected:
-            connection_text.append('S', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('S', style=RichTextStylesEnum.CRITICAL.value)
-
+        device_status_info = system_status_info.device_status_info
+        # CCD
+        status_table.add_row('Main Camera')
         if device_connection_info.camera_connected:
-            connection_text.append('C', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('C', style=RichTextStylesEnum.CRITICAL.value)
-
-        if device_connection_info.mount_connected:
-            connection_text.append('M', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('M', style=RichTextStylesEnum.CRITICAL.value)
-
-        if device_connection_info.focuser_connected:
-            connection_text.append('F', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('F', style=RichTextStylesEnum.CRITICAL.value)
-
-        if device_connection_info.guide_connected:
-            connection_text.append('G', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('G', style=RichTextStylesEnum.CRITICAL.value)
-
-        if device_connection_info.planetarium_connected:
-            connection_text.append('P', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('P', style=RichTextStylesEnum.CRITICAL.value)
-
-        if device_connection_info.rotator_connected:
-            connection_text.append('R', style=RichTextStylesEnum.SAFE.value)
-        else:
-            connection_text.append('R', style=RichTextStylesEnum.CRITICAL.value)
-
-        operation_table.add_row('Device Connection:', connection_text)
-        if device_connection_info.mount_connected:
-            if mount_info.operation == '':
-                mount_operation = 'CONNECTED'
+            ccd_status_str = CcdStatusEnum(device_status_info.ccd_status.status)
+            ccd_temperature = device_status_info.ccd_status.temperature
+            ccd_power_percentage = device_status_info.ccd_status.power_percentage
+            if ccd_status_str == CcdStatusEnum.UNDEF:
+                ccd_text = Text('CONNECTED', style=RichTextStylesEnum.SAFE.value)
+            elif ccd_status_str == CcdStatusEnum.TIMEOUT_COOLING or ccd_status_str == CcdStatusEnum.ERROR:
+                ccd_text = Text(ccd_status_str.name, style=RichTextStylesEnum.CRITICAL.value)
+            elif ccd_status_str == CcdStatusEnum.COOLING or ccd_status_str == CcdStatusEnum.WARMUP_RUNNING:
+                ccd_text = Text(f'{ccd_temperature}°C | {ccd_status_str.name}', style=RichTextStylesEnum.WARNING.value)
+            elif ccd_status_str == CcdStatusEnum.COOLED or ccd_status_str == CcdStatusEnum.WARMUP_END:
+                ccd_text = Text(f'{ccd_temperature}°C | {ccd_power_percentage} %', style=RichTextStylesEnum.SAFE.value)
             else:
-                mount_operation = mount_info.operation
+                # CcdStatEnum.INIT, NO_COOLER, or OFF:
+                ccd_text = Text(ccd_status_str.name, style=RichTextStylesEnum.SAFE.value)
         else:
-            mount_operation = 'DISCONNECTED'
+            ccd_text = Text('DISCONNECTED', style=RichTextStylesEnum.CRITICAL.value)
 
-        operation_table.add_row('Mount Operation:', mount_operation)
-        if system_status_info.guide_status == GuideStatEnum.RUNNING:
-            guide_text = Text('GUIDING', style=RichTextStylesEnum.SAFE.value)
+        status_table.add_row(ccd_text)
+        # Mount
+        status_table.add_row('Mount')
+        if device_connection_info.mount_connected:
+            mount_status = device_status_info.mount_status
+            if mount_status == MountStatusEnum.TRACKING:
+                mount_text = Text(mount_status.name, style=RichTextStylesEnum.SAFE.value)
+            elif mount_status == MountStatusEnum.PAKRED:
+                mount_text = Text(mount_status.name, style=RichTextStylesEnum.CRITICAL.value)
+            elif mount_status == MountStatusEnum.SLEWING:
+                mount_text = Text(mount_status.name, style=RichTextStylesEnum.WARNING.value)
+            else:
+                # MountOperationEnum.UNDEF and invalid values
+                mount_text = Text('CONNECTED', style=RichTextStylesEnum.SAFE.value)
         else:
-            guide_text = Text('')
+            mount_text = Text('DISCONNECTED', style=RichTextStylesEnum.CRITICAL.value)
 
-        if system_status_info.dither_status == DitherStatEnum.RUNNING:
-            dither_text = Text('DITHERING', style=RichTextStylesEnum.SAFE.value)
+        status_table.add_row(mount_text)
+        # Auto Focuser
+        if device_connection_info.focuser_connected:
+            status_table.add_row('Focuser')
+            focuser_status = device_status_info.focuser_status
+            status_table.add_row(Text(f'{focuser_status.temperature}°C | {focuser_status.position}',
+                                      style=RichTextStylesEnum.SAFE.value))
+        # Rotator
+        if device_connection_info.rotator_connected:
+            status_table.add_row('Rotator')
+            rotator_status = device_status_info.rotator_status
+            if rotator_status.is_rotating:
+                status_table.add_row(Text('ROTATING', style=RichTextStylesEnum.WARNING.value))
+            else:
+                status_table.add_row(f'Sky PA: {rotator_status.sky_pa}°')
+                status_table.add_row(f'Rotator PA: {rotator_status.rotator_pa}°')
+
+        # Guiding
+        status_table.add_row('Guiding')
+        if device_status_info.guide_status == GuideStatusEnum.RUNNING:
+            guide_text = Text('ON', style=RichTextStylesEnum.SAFE.value)
         else:
-            dither_text = Text('')
+            guide_text = Text('OFF', style=RichTextStylesEnum.CRITICAL.value)
+        status_table.add_row(guide_text)
+        # Dithering
+        status_table.add_row('Dithering')
+        if device_status_info.dither_status == DitherStatusEnum.RUNNING:
+            dither_text = Text('ON', style=RichTextStylesEnum.SAFE.value)
+        else:
+            dither_text = Text('OFF', style=RichTextStylesEnum.CRITICAL.value)
 
-        operation_table.add_row(guide_text, dither_text)
+        status_table.add_row(dither_text)
 
-        operation_panel = Panel(
-            Align.center(operation_table, vertical='top'),
+        status_panel = Panel(
+            Align.center(status_table, vertical='top'),
             box=box.ROUNDED,
             padding=(1, 2),
-            title="[b blue]Operations & Devices",
+            title="[b blue]Device Status",
             border_style='bright_blue',
         )
 
-        self.layout['operations'].update(operation_panel)
+        self.layout['device_status'].update(status_panel)
 
         self.progress_panel.sequence_name = system_status_info.sequence_name
         if system_status_info.sequence_total_time_in_sec > 0:
@@ -213,41 +265,13 @@ class RichConsoleManager:
                 self.header.show_action_toast(log.message)
                 self.layout['header'].update(self.header)
             except Exception as exception:
-                print(exception);
+                print(exception)
 
     def update_shot_status(self, shot_running_info: ShotRunningInfo):
         self.progress_panel.file_name = shot_running_info.filename
         self.progress_panel.status = shot_running_info.status
         self.progress_panel.image_progress.update(shot_running_info.elapsed_percentage)
         self.layout['imaging'].update(self.progress_panel)
-
-    def dummy_updater(self, layout: Layout = None):
-        if not layout:
-            return
-        layout.update(self.dummy_maker())
-
-    def dummy_maker(self) -> Panel:
-        dummy_message = Text.from_markup(
-            '''
-            Dummy Message for Dummy Panel with love!
-            '''
-        )
-
-        message = Table(padding=1)
-        message.add_column()
-        message.add_row(dummy_message)
-
-        message_panel = Panel(
-            Align.center(
-                dummy_message,
-                vertical="middle",
-            ),
-            box=box.ROUNDED,
-            padding=(1, 2),
-            title="[b red]Dummy Panel",
-            border_style="bright_blue",
-        )
-        return message_panel
 
 
 class LogPanel:

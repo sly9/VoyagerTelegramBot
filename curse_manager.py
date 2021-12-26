@@ -7,7 +7,7 @@ from deprecated import deprecated
 from data_structure.host_info import HostInfo
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum
-from data_structure.system_status_info import SystemStatusInfo, GuideStatEnum, DitherStatEnum
+from data_structure.system_status_info import SystemStatusInfo, GuideStatusEnum, DitherStatusEnum
 from version import bot_version_string
 
 
@@ -110,17 +110,17 @@ class CursesManager:
             self.stdscr.addstr(f'{motion_str:8}', self.safe_style)
 
         self.stdscr.addstr(' | ', self.normal_style)
-        if self.system_status_info.guide_status == GuideStatEnum.STOPPED:
+        if self.system_status_info.guide_status == GuideStatusEnum.STOPPED:
             self.stdscr.addstr(f' STOPPED ', self.critical_style)
-        elif self.system_status_info.guide_status == GuideStatEnum.RUNNING:
+        elif self.system_status_info.guide_status == GuideStatusEnum.RUNNING:
             self.stdscr.addstr(f' GUIDING ', self.safe_style)
         else:
             self.stdscr.addstr(f' WAITING ', self.warning_style)
         self.stdscr.addstr(' | ', self.normal_style)
 
-        if self.system_status_info.dither_status == DitherStatEnum.STOPPED:
+        if self.system_status_info.dither_status == DitherStatusEnum.STOPPED:
             self.stdscr.addstr(f' STOPPED ', self.critical_style)
-        elif self.system_status_info.dither_status == DitherStatEnum.RUNNING:
+        elif self.system_status_info.dither_status == DitherStatusEnum.RUNNING:
             self.stdscr.addstr(f'DITHERING', self.safe_style)
         else:
             self.stdscr.addstr(f' WAITING ', self.warning_style)

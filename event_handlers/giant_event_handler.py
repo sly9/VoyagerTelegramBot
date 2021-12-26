@@ -4,7 +4,7 @@ from typing import Dict
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
 from data_structure.log_message_info import LogMessageInfo
-from data_structure.system_status_info import GuideStatEnum, DitherStatEnum
+from data_structure.system_status_info import GuideStatusEnum, DitherStatusEnum
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
@@ -88,7 +88,7 @@ class GiantEventHandler(VoyagerEventHandler):
         running_seq = message['RUNSEQ']
         running_dragscript = message['RUNDS']
 
-        if self.shot_running and guide_status == GuideStatEnum.RUNNING and dither_status == DitherStatEnum.STOPPED:
+        if self.shot_running and guide_status == GuideStatusEnum.RUNNING and dither_status == DitherStatusEnum.STOPPED:
             self.add_guide_error_stat(guide_x, guide_y)
 
         if running_dragscript != self.running_dragscript:
