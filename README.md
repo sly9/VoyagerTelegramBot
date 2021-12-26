@@ -5,7 +5,7 @@ Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
 Last updates: 12/16/2021
 
-> We just released `v0.1.1` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/V0.1.1)!
+> We just released `v0.2.2` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/0.2.2)!
 
 ## Introduction
 
@@ -71,3 +71,11 @@ If everything goes well, you should see the main window of `VoyagerTelegramBot`.
 ## Full Installation Guide
 
 Please refer to [Full Installation guide](doc/full_installation.md)
+
+## Virus? Nah, you are safe(most likely)
+
+For easier distribution purpose, we used pyinstaller to create a standalone .exe file to save the hassle of unzipping the code, installing a compatible version of python, then install all the dependencies.
+
+However, due to the fact that pyinstaller needs to extract all the content to a temporary folder and starts a python process, some antivirus programs might think it's an unsafe behavior, and blocks the app from running.
+
+We are confident that our releases are clean and don't contain malicious code. However, as a disclaimer, we are responsible for any possible harm and loss this bot might cause.
