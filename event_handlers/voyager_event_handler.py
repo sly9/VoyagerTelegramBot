@@ -39,4 +39,4 @@ class VoyagerEventHandler:
         :param message: A dictionary containing all messages
         :return: Nothing
         """
-        print('handling event', event_name, message)
+        console.print('handling event', event_name, message)

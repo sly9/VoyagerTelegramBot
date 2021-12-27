@@ -7,6 +7,8 @@ from shutil import copyfile
 import pyaml
 import yaml
 
+from console import console
+
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -57,7 +59,7 @@ class ConfigBuilder:
 
                 self.config_yaml.update(config_yaml)
             except Exception as exc:
-                print(exc)
+                console.print_exception(exc)
                 return 'LOAD_CONFIG_FAILED'
 
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
@@ -67,10 +69,10 @@ class ConfigBuilder:
         config_for_printing.pop('telegram_setting')
         config_for_printing.pop('voyager_setting')
 
-        print('Loaded configuration:\n')
-        print('<== Credentials for telegram and Voyager are hidden ==>')
+        console.print('Loaded configuration:\n')
+        console.print('<== Credentials for telegram and Voyager are hidden ==>')
         pyaml.p(config_for_printing)
-        print('<=====================================================>')
+        console.print('<=====================================================>')
         return 0
 
     def merge(self):
@@ -86,7 +88,7 @@ class ConfigBuilder:
 
                 self.config_yaml = config_yaml_template
             except Exception as exc:
-                print(exc)
+                console.print(exc)
                 raise 'MERGE_CONFIG_FAILED'
         with open(config_yml_path, 'w') as yaml_file:
             yaml.safe_dump(self.config_yaml, yaml_file)
@@ -98,7 +100,7 @@ class ConfigBuilder:
 
     def build(self):
         if self.already_built:
-            print('This is likely a bug -- building the configuration twice.')
+            console.print('This is likely a bug -- building the configuration twice.')
         self.already_built = True
         return class_from_dict('Configs', self.config_yaml.copy())()
 
@@ -157,5 +159,5 @@ def make_class(classname: str, **options):
 if __name__ == "__main__":
     c = ConfigBuilder()
     b = c.build()
-    print(b.telegram_setting.chat_id)
-    print(b.voyager_setting.domain)
+    console.print(b.telegram_setting.chat_id)
+    console.print(b.voyager_setting.domain)

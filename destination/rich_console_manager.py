@@ -287,7 +287,7 @@ class RichConsoleManager:
                 self.header.show_action_toast(log.message)
                 self.layout['header'].update(self.header)
             except Exception as exception:
-                print(exception)
+                console.print(exception)
 
     def update_shot_status_panel(self, shot_running_info: ShotRunningInfo = ShotRunningInfo()):
         if not shot_running_info:

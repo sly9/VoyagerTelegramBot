@@ -2,7 +2,7 @@
 from collections import defaultdict
 from typing import Dict
 
-from console import console, error_console
+from console import console
 from curse_manager import CursesManager
 from destination.console_manager import ConsoleManager
 from destination.html_reporter import HTMLReporter
@@ -33,7 +33,7 @@ class VoyagerClient:
             self.console_manager = RichConsoleManager(config=config)
             self.console_manager.run()
         else:
-            print('Not planning to take over the console')
+            console.print('Not planning to take over the console')
 
         # Event handlers for business logic:
         self.handler_dict = defaultdict(set)
@@ -55,7 +55,7 @@ class VoyagerClient:
                 except Exception as exception:
                     if 'Base64Data' in message:
                         message.pop('Base64Data')
-                    error_console.print_exception(show_locals=True)
+                    console.print_exception(show_locals=True)
 
         for handler in self.greedy_handler_set:
             try:
@@ -63,7 +63,7 @@ class VoyagerClient:
             except Exception as exception:
                 if 'Base64Data' in message:
                     message.pop('Base64Data')
-                error_console.print_exception(show_locals=True)
+                console.print_exception(show_locals=True)
 
     def register_event_handler(self, event_handler: VoyagerEventHandler):
         if event_handler.interested_event_name():

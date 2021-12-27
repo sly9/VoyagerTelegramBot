@@ -1,11 +1,11 @@
 import sys
 import time
 
-import console
+from rich.console import Console
+
+from console import console
 from bot import VoyagerConnectionManager
 from configs import ConfigBuilder
-
-sys.stderr = open('error_log.txt', 'a')
 
 
 class DummyDebugger:
@@ -13,16 +13,22 @@ class DummyDebugger:
         self.file_name = None
         config_builder = ConfigBuilder(config_filename='config.yml')
         if validate_result := config_builder.validate():
-            print(f'validation failed: {validate_result}')
+            console.print(f'validation failed: {validate_result}')
             if validate_result == 'NO_CONFIG_FILE':
                 config_builder.copy_template()
 
             elif validate_result == 'LOAD_CONFIG_FAILED':
-                print('Something is clearly wrong with the config!!')
+                console.print('Something is clearly wrong with the config!!')
             elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
                 config_builder.merge()
             sys.exit()
         config = config_builder.build()
+        if config.console_config.console_type == 'FULL':
+            sys.stderr = open('error_log.txt', 'a')
+            console = Console(stderr=True, color_system=None)
+        else:
+            console = Console()
+
         config.telegram_enabled = False
         config.console_config.console_type = 'FULL'
         config.html_report_enabled = True

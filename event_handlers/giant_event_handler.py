@@ -63,7 +63,7 @@ class GiantEventHandler(VoyagerEventHandler):
     def handle_remote_action_result(self, message: Dict):
         method_name = message['MethodName']
         if method_name == 'RemoteGetFilterConfiguration':
-            # print(message)
+            # console.print(message)
             params = message['ParamRet']
             filter_count = params['FilterNum']
             for i in range(0, filter_count):
