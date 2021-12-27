@@ -51,7 +51,7 @@ class SystemStatusEventHandler(VoyagerEventHandler):
             ra=message['MNTRA'], dec=message['MNTDEC'],
             ra_j2000=message['MNTRAJ2000'], dec_j2000=message['MNTDECJ2000'],
             az=message['MNTAZ'], alt=message['MNTALT'],
-            pier=message['MNTPIER'][4:]
+            pier=message['MNTPIER'][4:], time_to_flip=message['MNTTFLIP']
         )
 
         device_connection_info = DeviceConnectedInfo(

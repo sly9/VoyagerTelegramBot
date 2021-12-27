@@ -74,6 +74,8 @@ class MountInfo:
     az: str = '0°00\'00"'
     alt: str = '0°00\'00"'
     pier: str = 'N/A'
+    time_to_flip: str = '0°00\'00"'
+
 
 
 @dataclass

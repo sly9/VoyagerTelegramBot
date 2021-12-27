@@ -117,13 +117,13 @@ class RichConsoleManager:
         mount_table.add_row('RA', mount_info.ra, 'DEC', mount_info.dec)
         mount_table.add_row('RA J2K', mount_info.ra, 'DEC J2K', mount_info.dec_j2000)
         mount_table.add_row('AZ', mount_info.az, 'ALT', mount_info.alt)
-        mount_table.add_row('Pier', mount_info.pier, '', '')
+        mount_table.add_row('Pier', mount_info.pier, 'FLIP', mount_info.time_to_flip)
 
         mount_info_panel = Panel(
             Align.center(mount_table, vertical='top'),
             box=box.ROUNDED,
-            padding=(1, 2),
-            title="[b blue]Mount Info",
+            padding=(1, 1),
+            title="[bold blue]Mount Info",
             border_style='bright_blue',
         )
 
@@ -136,50 +136,10 @@ class RichConsoleManager:
         status_table = Table.grid(padding=(0, 1))
         status_table.add_column(justify='left')
 
-        # Connection status for setup, camera, mount, etc.
-        # status_table.add_row('Device Connection')
-        # connection_text = Text()
-        #
-        # if device_connection_info.setup_connected:
-        #     connection_text.append('S', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('S', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # if device_connection_info.camera_connected:
-        #     connection_text.append('C', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('C', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # if device_connection_info.mount_connected:
-        #     connection_text.append('M', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('M', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # if device_connection_info.focuser_connected:
-        #     connection_text.append('F', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('F', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # if device_connection_info.guide_connected:
-        #     connection_text.append('G', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('G', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # if device_connection_info.planetarium_connected:
-        #     connection_text.append('P', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('P', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # if device_connection_info.rotator_connected:
-        #     connection_text.append('R', style=RichTextStylesEnum.SAFE.value)
-        # else:
-        #     connection_text.append('R', style=RichTextStylesEnum.CRITICAL.value)
-        #
-        # status_table.add_row(connection_text)
         device_connection_info = system_status_info.device_connection_info
         device_status_info = system_status_info.device_status_info
         # CCD
-        status_table.add_row('Main Camera')
+        status_table.add_row('[bold]Main Camera[/bold]')
         if device_connection_info.camera_connected:
             ccd_status_str = CcdStatusEnum(device_status_info.ccd_status.status)
             ccd_temperature = device_status_info.ccd_status.temperature
@@ -293,10 +253,7 @@ class RichConsoleManager:
     def update_shot_status_panel(self, shot_running_info: ShotRunningInfo = ShotRunningInfo()):
         if not shot_running_info:
             return
-
-        self.progress_panel.file_name = shot_running_info.filename
-        self.progress_panel.status = shot_running_info.status
-        self.progress_panel.image_progress.update(shot_running_info.elapsed_percentage)
+        self.progress_panel.update_shot_running_info(shot_running_info=shot_running_info)
         self.layout['imaging'].update(self.progress_panel)
 
     def update_footer_panel(self, host_info: HostInfo = HostInfo()):
@@ -397,26 +354,38 @@ class RichConsoleHeader:
 
 class ProgressPanel:
     def __init__(self):
-        self.file_name = ''
-        self.status = ShotRunningStatus.IDLE
         self.sequence_name = ''
         self.image_progress = ProgressBar(total=100)
         self.sequence_progress = ProgressBar(total=100)
         self.image_progress.update(0)
         self.sequence_progress.update(0)
+        self.shot_running_info = None
 
     def __rich_console__(
             self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
         progress_table = Table.grid(padding=(0, 1))
         progress_table.add_column(justify='left', style='bold gold3')
-        progress_table.add_row(f'Status: {self.status.name}')
-        progress_table.add_row(f'Imaging: {self.file_name}')
-        progress_table.add_row(self.image_progress)
-        progress_table.add_row(f'Sequence: {self.sequence_name}')
-        progress_table.add_row(self.sequence_progress)
+        if self.shot_running_info:
+            if self.shot_running_info.status == ShotRunningStatus.EXPOSE:
+                progress_table.add_row(
+                    f'Status: {self.shot_running_info.status.name}    {self.shot_running_info.elapsed_exposure}s / {self.shot_running_info.total_exposure}s')
+            else:
+                progress_table.add_row(f'Status: {self.shot_running_info.status.name}')
+            progress_table.add_row(f'Imaging: {self.shot_running_info.filename}')
+            progress_table.add_row(self.image_progress)
+            progress_table.add_row(f'Sequence: {self.sequence_name}')
+            progress_table.add_row(self.sequence_progress)
 
-        yield Panel(progress_table)
+        yield Panel(Align.center(progress_table, vertical='top'),
+                    box=box.ROUNDED,
+                    padding=(1, 2, 0, 2),
+                    title="[bold blue]Progress",
+                    border_style='bright_blue', )
+
+    def update_shot_running_info(self, shot_running_info: ShotRunningInfo):
+        self.shot_running_info = shot_running_info
+        self.image_progress.update(shot_running_info.elapsed_percentage)
 
 
 class FooterPanel:
