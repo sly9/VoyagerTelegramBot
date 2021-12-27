@@ -24,10 +24,10 @@ status, and critical warning and errors.
 ## Non-Affiliation and Disclaimer
 
 This project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the `Voyager
-– Astrophotography Automation Software` or `Telegram`, or any of their subsidiaries or their affiliates. 
+– Astrophotography Automation Software` or `Telegram Messenger`, or any of their subsidiaries or their affiliates. 
 
  - The official `Voyager – Astrophotography Automation Software` website can be found at https://software.starkeeper.it/.
-
+ - The official `Telegram Messenger` website can be found at https://telegram.org/.
 
 ## Features
 
@@ -77,7 +77,7 @@ If everything goes well, you should see the main window of `VoyagerTelegramBot`.
 
 ## Full Installation Guide
 > Works for Windows, Linux as well as Mac OS
-> 
+
 Please refer to [Full Installation guide](doc/full_installation.md)
 
 ## Virus? Nah, you are safe(most likely)
@@ -86,10 +86,9 @@ For easier distribution purpose, we used [`pyinstaller`](https://github.com/pyin
 standalone .exe file to save the hassle of unzipping the code, installing a compatible version of python, then 
 install all the dependencies.
 
-However, due to the fact that `pyinstaller` needs to extract all the content to a temporary folder and starts a python 
-process, some antivirus programs might think it's an unsafe behavior, and blocks the app from running.
+However, due to the fact that `pyinstaller` needs to extract all the content to a temporary folder and starts a python process, some antivirus programs might think it's an unsafe behavior, and blocks the app from running.
 
-We are confident that our releases are clean and don't contain malicious code. However, as a disclaimer, we are **NOT** 
+We are confident that our releases are clean and don't contain malicious code. However, as a disclaimer, we are **NOT**
 responsible for any possible harm and loss this bot might cause.
 
 The false alarms for exe files built by `pyinstaller` is a known issue, and there's no easy way to totally get rid of it
