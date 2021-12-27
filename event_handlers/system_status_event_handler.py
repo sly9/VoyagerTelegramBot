@@ -48,9 +48,9 @@ class SystemStatusEventHandler(VoyagerEventHandler):
             sequence_elapsed_time_in_sec = sequence_total_time_in_sec - sequence_remaining_time_in_sec
 
         mount_info = MountInfo(
-            ra=message['MNTRA'], dec=message['MNTDEC'],
-            ra_j2000=message['MNTRAJ2000'], dec_j2000=message['MNTDECJ2000'],
-            az=message['MNTAZ'], alt=message['MNTALT'],
+            ra=message['MNTRA'], dec=message['MNTDEC'].replace(' ', ''),
+            ra_j2000=message['MNTRAJ2000'], dec_j2000=message['MNTDECJ2000'].replace(' ', ''),
+            az=message['MNTAZ'].replace(' ', ''), alt=message['MNTALT'].replace(' ', ''),
             pier=message['MNTPIER'][4:], time_to_flip=message['MNTTFLIP']
         )
 
