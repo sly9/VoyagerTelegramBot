@@ -76,7 +76,7 @@ class RichConsoleManager:
         self.thread.start()
 
     def run_loop(self):
-        with Live(self.layout, refresh_per_second=4, screen=True):
+        with Live(self.layout, refresh_per_second=4, screen=True, redirect_stderr=False):
             while True:
                 sleep(0.25)
 

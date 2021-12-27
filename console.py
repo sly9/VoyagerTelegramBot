@@ -1,3 +1,4 @@
 from rich.console import Console
 
-console = Console(record=True)
+console = Console()
+error_console = Console(stderr=True, color_system=None)

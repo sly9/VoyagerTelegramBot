@@ -5,6 +5,8 @@ import console
 from bot import VoyagerConnectionManager
 from configs import ConfigBuilder
 
+sys.stderr = open('error_log.txt', 'a')
+
 
 class DummyDebugger:
     def __init__(self):
@@ -22,7 +24,7 @@ class DummyDebugger:
             sys.exit()
         config = config_builder.build()
         config.telegram_enabled = False
-        config.console_config.console_type = 'PLAIN'
+        config.console_config.console_type = 'FULL'
         config.html_report_enabled = True
         config.should_dump_log = False
 

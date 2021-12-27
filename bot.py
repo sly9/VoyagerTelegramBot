@@ -18,6 +18,8 @@ from voyager_client import VoyagerClient
 
 pretty.install()
 
+sys.stderr = open('error_log.txt', 'a')
+
 
 class VoyagerConnectionManager:
     """

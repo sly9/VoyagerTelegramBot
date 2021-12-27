@@ -88,8 +88,8 @@ class ConfigBuilder:
             except Exception as exc:
                 print(exc)
                 raise 'MERGE_CONFIG_FAILED'
-        with open(config_yml_path,'w') as yaml_file:
-            yaml.safe_dump(self.config_yaml,yaml_file)
+        with open(config_yml_path, 'w') as yaml_file:
+            yaml.safe_dump(self.config_yaml, yaml_file)
 
     def copy_template(self):
         config_yml_path = os.path.abspath(self.config_filename)
