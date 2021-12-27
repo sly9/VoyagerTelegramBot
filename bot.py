@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 import base64
 import json
