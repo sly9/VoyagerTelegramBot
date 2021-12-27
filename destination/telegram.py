@@ -12,6 +12,7 @@ from configs import ConfigBuilder
 from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
+from console import console
 
 
 class Telegram:

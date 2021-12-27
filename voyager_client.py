@@ -46,7 +46,6 @@ class VoyagerClient:
         self.register_event_handler(SystemStatusEventHandler(config=config))
         self.register_event_handler(ShotRunningEventHandler(config=config))
 
-
     def parse_message(self, event_name: str, message: Dict):
         if event_name in self.handler_dict:
             for handler in self.handler_dict[event_name]:

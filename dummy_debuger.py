@@ -3,9 +3,9 @@ import time
 
 from rich.console import Console
 
-from console import console
 from bot import VoyagerConnectionManager
 from configs import ConfigBuilder
+from console import console
 
 
 class DummyDebugger:

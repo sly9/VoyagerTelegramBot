@@ -68,7 +68,7 @@ class HTMLReporter:
         self.event_sequence += 1
 
     def edit_image_message(self, chat_id: str, message_id: str,
-                           image_data:bytes, filename: str = '') -> Tuple[str, Dict]:
+                           image_data: bytes, filename: str = '') -> Tuple[str, Dict]:
         f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
 
         f.write(image_data)

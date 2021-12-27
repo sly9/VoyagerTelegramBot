@@ -11,6 +11,7 @@ from event_names import BotEvent
 from sequence_stat import StatPlotter, SequenceStat
 
 
+# noinspection SpellCheckingInspection
 class GiantEventHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)

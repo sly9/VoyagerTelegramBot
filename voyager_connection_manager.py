@@ -13,6 +13,7 @@ import websocket
 
 from configs import ConfigBuilder
 from log_writer import LogWriter
+from console import console
 
 
 class VoyagerConnectionManager(Thread):

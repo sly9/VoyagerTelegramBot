@@ -1,6 +1,5 @@
 from typing import Dict
 
-from data_structure.log_message_info import LogMessageInfo
 from data_structure.shot_running_info import ShotRunningInfo, ShotRunningStatus
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler

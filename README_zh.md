@@ -17,11 +17,12 @@ Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 如果您是中国大陆🇨🇳的用户，使用本软件可能需要一些科学上网的相关配置。
 
 ## 非从属关系和免责声明
-本软件开发完全出于个人的兴趣和爱好，我们与 `Voyager – Astrophotography Automation Software` 及其任何子公司或附属公司，或
-与 `Telegram Messenger` 及其任何子公司或附属公司不存在任何关联，授权，认可或以其他任何方式连接。
+
+本软件开发完全出于个人的兴趣和爱好，我们与 `Voyager – Astrophotography Automation Software` 及其任何子公司或附属公司，或 与 `Telegram Messenger`
+及其任何子公司或附属公司不存在任何关联，授权，认可或以其他任何方式连接。
+
 - 如果需要了解更多关于 `Voyager – Astrophotography Automation Software` 的相关信息，请访问其[官方网站](https://software.starkeeper.it/) ；
 - 如果需要了解更多关于 `Telegram Messenger` 的相关信息，请访问其[官方网站](https://telegram.org/) ；
-
 
 ## 主要功能
 
@@ -44,7 +45,7 @@ Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 1. 创建 `Telegram` 账户; ([请参考](https://telegram.org/))
 2. 为 `VoyagerTelegramBot` 创建 `Telegram` 消息机器人;
    ([请参考](https://forum.starkeeper.it/t/send-free-custom-telephone-notifications-to-your-telegram-from-voyager/1889)
-    `Send Telegram` 章节)
+   `Send Telegram` 章节)
    > **BOT TOKEN 是私人信息，请注意保密 !!!**
 3. 请确保新建立的消息机器人在群组中为`管理员`，以满足发送和置顶消息的权限需求。
 
@@ -79,14 +80,12 @@ Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
 ## 软件报毒？ 多半是误报，我们的软件很安全。
 
-为了方便没有软件开发经验 Windows 用户使用，我们使用 [pyinstaller](https://github.com/pyinstaller/pyinstaller) 来建立可直接运行
-的 exe 文件，免去下载解压代码，配置运行环境的繁琐流程。
+为了方便没有软件开发经验 Windows 用户使用，我们使用 [pyinstaller](https://github.com/pyinstaller/pyinstaller) 来建立可直接运行 的 exe
+文件，免去下载解压代码，配置运行环境的繁琐流程。
 
-然而，由于 `pyinstaller` 软件本身需要对资源库进行解压和 `python` 进程调用操作，一些杀毒软件会误认为是不安全的行为，误认为我们的软件包含
-病毒、木马或者其它恶意软件，阻止其运行。
+然而，由于 `pyinstaller` 软件本身需要对资源库进行解压和 `python` 进程调用操作，一些杀毒软件会误认为是不安全的行为，误认为我们的软件包含 病毒、木马或者其它恶意软件，阻止其运行。
 
-我们对自己开发和发布的软件代码充满欣喜，良心保证没有因任何不良企图加入恶意代码。作为免责声明的一部分，我们也**不**对本软件造成的任何伤害或
-数据丢失负责。
+我们对自己开发和发布的软件代码充满欣喜，良心保证没有因任何不良企图加入恶意代码。作为免责声明的一部分，我们也**不**对本软件造成的任何伤害或 数据丢失负责。
 
 通过 `pyinstaller` 生成的可执行文件会触发杀毒软件的虚假警报是一个已知的 `pyinstaller` 软件缺陷，现在也并没有一个完美的解决方案可以避开
 这个问题。详细信息请参考[这里](https://github.com/pyinstaller/pyinstaller/issues/5932) 和

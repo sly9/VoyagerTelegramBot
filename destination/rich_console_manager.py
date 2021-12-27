@@ -17,6 +17,7 @@ from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
+from console import console
 from data_structure.host_info import HostInfo
 from data_structure.imaging_metrics import ImagingMetrics
 from data_structure.log_message_info import LogMessageInfo
@@ -98,7 +99,7 @@ class RichConsoleManager:
 
         layout['main'].split_row(
             Layout(name='logs', ratio=1),  # general logs
-            Layout(name='device_status', size=20)  # status of all connected devices, etc.
+            Layout(name='device_status', size=24)  # status of all connected devices, etc.
         )
 
         self.layout = layout

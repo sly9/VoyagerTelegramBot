@@ -6,7 +6,7 @@ class BotEvent(Enum):
     # These telegram specific events should be merged into more 'logic' oriented names
     SEND_TEXT_MESSAGE = 1
     SEND_IMAGE_MESSAGE = 2
-    EDIT_IMAGE_MESSAGE = 3 # not needed
+    EDIT_IMAGE_MESSAGE = 3  # not needed
     UPDATE_SEQUENCE_STAT_IMAGE = 4
     PIN_MESSAGE = 5
     UNPIN_MESSAGE = 6
@@ -19,6 +19,6 @@ class BotEvent(Enum):
     UPDATE_SHOT_STATUS = 14
     UPDATE_METRICS = 15
 
-    # APPEND_ERROR_LOG is not used anymore, dont use it.
+    # APPEND_ERROR_LOG is not used anymore, don't use it.
     APPEND_ERROR_LOG = 12
     APPEND_LOG = 13
