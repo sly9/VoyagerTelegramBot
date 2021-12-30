@@ -204,8 +204,11 @@ class StatPlotter:
 
         ax_scatter.tick_params(axis="x", labelbottom=False, labeltop=True, width=5)
         ax_scatter.tick_params(axis="y", labelleft=True, width=5)
-        # ax_scatter.set_xlim([-2.5, 2.5])
-        # ax_scatter.set_ylim([-2.5, 2.5])
+        if hasattr(self.plotter_configs, 'guiding_error_plot') and \
+                self.plotter_configs.guiding_error_plot.get('error_boundary'):
+            boundary = self.plotter_configs.guiding_error_plot.get('error_boundary')
+            ax_scatter.set_xlim([-boundary, boundary])
+            ax_scatter.set_ylim([-boundary, boundary])
         # https://material.io/archive/guidelines/style/color.html#color-color-palette
         self._circle(ax=ax_scatter, origin=(0, 0), radius=2, linestyle='--', color='#66BB6A', linewidth=2)
         self._circle(ax=ax_scatter, origin=(0, 0), radius=1, linestyle='--', color='#66BB6A', linewidth=2)

@@ -12,6 +12,7 @@ sequence_stats_config:
     max_shots_count: -1 # The max number of data points on Guiding error plot. Old error data will be discarded when there's more exposure than this limit. -1 means no limit
     unit: PIXEL # Valid values are PIXEL, ARCSEC
     scale: 1.21 # Arcsec for each pixel of your guiding camera + OTA. Voyager doesn't know this, you have to update this yourself.
+    error_boundary: 2.5 # guiding error scatter chart will be limited to [-error_boundary, error_boundary] for both x and y axis. It doesn't care about unit (no auto converstion between pix and arcsec)
   filter_styles:
     Ha:
       marker: +
