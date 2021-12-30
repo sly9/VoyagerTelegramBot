@@ -1,3 +1,4 @@
+import re
 from typing import Dict
 
 from dateutil.parser import parse
@@ -30,9 +31,12 @@ class SystemStatusEventHandler(VoyagerEventHandler):
         sequence_total_time_in_sec = 0
         sequence_elapsed_time_in_sec = 0
         if message['SEQSTART'] and message['SEQREMAIN'] and message['SEQEND']:
-            sequence_start_time = parse(message['SEQSTART']).time()
-            sequence_remaining_time = parse(message['SEQREMAIN']).time()
-            sequence_end_time = parse(message['SEQEND']).time()
+            sequence_start_string = re.sub(r'[^0-9:]', '', message['SEQSTART'])
+            sequence_start_time = parse(sequence_start_string).time()
+            sequence_remaining_string = re.sub(r'[^0-9:]', '', message['SEQREMAIN'])
+            sequence_remaining_time = parse(sequence_remaining_string).time()
+            sequence_end_string = re.sub(r'[^0-9:]', '', message['SEQEND'])
+            sequence_end_time = parse(sequence_end_string).time()
             sequence_start_time_in_sec = sequence_start_time.hour * 60 * 60 + \
                                          sequence_start_time.minute * 60 + \
                                          sequence_start_time.second
