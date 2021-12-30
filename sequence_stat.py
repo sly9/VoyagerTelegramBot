@@ -99,17 +99,17 @@ class StatPlotter:
                 focus_hfd_value.append(focus_result.hfd)
                 focus_colors.append(focus_result.filter_color)
                 focus_index.append(focus_result.recommended_index)
-            ax.scatter(focus_index, focus_hfd_value, c=focus_colors, s=1000)
+            ax.scatter(focus_index, focus_hfd_value, c=focus_colors, s=1000, zorder=2)
 
         # hfd and star index
-        ax.scatter(img_ids, hfd_values, c=dot_colors, s=500)
-        ax.plot(img_ids, hfd_values, color='#FF9800', linewidth=10)
+        ax.scatter(img_ids, hfd_values, c=dot_colors, s=500, zorder=2)
+        ax.plot(img_ids, hfd_values, color='#FF9800', linewidth=10, zorder=1)
         ax.tick_params(axis='y', labelcolor='#FFB74D')
         ax.set_ylabel('HFD', color='#FFB74D')
 
         secondary_ax = ax.twinx()
-        secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500)
-        secondary_ax.plot(img_ids, star_indices, color='#9C27B0', linewidth=10)
+        secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500, zorder=2)
+        secondary_ax.plot(img_ids, star_indices, color='#9C27B0', linewidth=10, zorder=1)
         secondary_ax.tick_params(axis='y', labelcolor='#BA68C8')
         secondary_ax.set_ylabel('Star Index', color='#BA68C8')
 
@@ -158,13 +158,13 @@ class StatPlotter:
             abs_y_list.append(abs(y_error))
             distance_list.append(np.sqrt(x_error ** 2 + y_error ** 2))
 
-        smoothing_window_size = 10
+        smoothing_window_size = 50
         if len(distance_list) > smoothing_window_size:
-            smooth_distance_array = np.convolve(np.array(distance_list), np.ones(smoothing_window_size),
-                                                'valid') / smoothing_window_size
+            box = np.ones(smoothing_window_size) / smoothing_window_size
+            smooth_distance_array = np.convolve(distance_list, box, mode='same')
             smooth_distance_array_negative = [-x for x in smooth_distance_array]
             ax_main.fill_between(
-                range(int(smoothing_window_size / 2), int(len(smooth_distance_array) + smoothing_window_size / 2)),
+                range(len(smooth_distance_array)),
                 smooth_distance_array_negative,
                 smooth_distance_array,
                 alpha=0.4, color='green')
