@@ -100,8 +100,11 @@ class VoyagerConnectionManager:
 
     def on_error(self, ws, error):
         self.log_writer.maybe_flush()
-        main_console.print(f'Error: {error} ###')
-        main_console.print_exception(show_locals=True)
+        if isinstance(error, KeyboardInterrupt):
+            self.config.allow_auto_reconnect = False
+            main_console.print('Received KeyboardInterrupt, quit gracefully')
+        else:
+            main_console.print_exception(show_locals=True)
 
     def on_close(self, ws, close_status_code, close_msg):
         main_console.print(f'Closing connection, Code={close_status_code}, description= {close_msg}')
