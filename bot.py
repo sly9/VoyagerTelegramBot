@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 import base64
@@ -17,7 +18,7 @@ from rich import pretty
 from rich.console import Console
 
 from configs import ConfigBuilder
-from console import console
+import console
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
 
@@ -65,7 +66,7 @@ class VoyagerConnectionManager:
 
     def try_to_process_next_command(self):
         if self.ongoing_command is not None:
-            console.print('wait a while before sending out the second command.')
+            main_console.print('wait a while before sending out the second command.')
             # this command will be invoked later for sure
             return
 
@@ -99,11 +100,11 @@ class VoyagerConnectionManager:
 
     def on_error(self, ws, error):
         self.log_writer.maybe_flush()
-        console.print(f'Error: {error} ###')
-        console.print_exception(show_locals=True)
+        main_console.print(f'Error: {error} ###')
+        main_console.print_exception(show_locals=True)
 
     def on_close(self, ws, close_status_code, close_msg):
-        console.print(f'Closing connection, Code={close_status_code}, description= {close_msg}')
+        main_console.print(f'Closing connection, Code={close_status_code}, description= {close_msg}')
         # try to reconnect with an exponentially increasing delay
         if self.config.allow_auto_reconnect:
             time.sleep(self.reconnect_delay_sec)
@@ -152,13 +153,14 @@ class VoyagerConnectionManager:
 
 if __name__ == "__main__":
     config_builder = ConfigBuilder(config_filename='config.yml')
+
     if validate_result := config_builder.validate():
-        console.print(f'validation failed: {validate_result}')
+        console.main_console.print(f'validation failed: {validate_result}')
         if validate_result == 'NO_CONFIG_FILE':
             config_builder.copy_template()
 
         elif validate_result == 'LOAD_CONFIG_FAILED':
-            console.print('Something is clearly wrong with the config!!')
+            console.main_console.print('Something is clearly wrong with the config!!')
         elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
             config_builder.merge()
         sys.exit()
@@ -167,9 +169,9 @@ if __name__ == "__main__":
 
     if config.console_config.console_type == 'FULL':
         sys.stderr = open('error_log.txt', 'a')
-        console = Console(stderr=True, color_system=None)
+        console.main_console = Console(stderr=True, color_system=None)
     else:
-        console = Console()
+        console.main_console = Console()
 
     connection_manager = VoyagerConnectionManager(config=config)
     connection_manager.run_forever()

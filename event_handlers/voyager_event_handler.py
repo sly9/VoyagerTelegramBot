@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import Dict
-from console import console
+from console import main_console
 
 
 class VoyagerEventHandler:
@@ -40,4 +40,4 @@ class VoyagerEventHandler:
         :param message: A dictionary containing all messages
         :return: Nothing
         """
-        console.print('handling event', event_name, message)
+        main_console.print('handling event', event_name, message)

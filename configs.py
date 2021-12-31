@@ -7,7 +7,7 @@ from shutil import copyfile
 import pyaml
 import yaml
 
-from console import console
+from console import main_console
 
 
 def resource_path(relative_path):
@@ -59,7 +59,7 @@ class ConfigBuilder:
 
                 self.config_yaml.update(config_yaml)
             except Exception as exc:
-                console.print_exception(exc)
+                main_console.print_exception(exc)
                 return 'LOAD_CONFIG_FAILED'
 
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
@@ -69,10 +69,10 @@ class ConfigBuilder:
         config_for_printing.pop('telegram_setting')
         config_for_printing.pop('voyager_setting')
 
-        console.print('Loaded configuration:\n')
-        console.print('<== Credentials for telegram and Voyager are hidden ==>')
+        main_console.print('Loaded configuration:\n')
+        main_console.print('<== Credentials for telegram and Voyager are hidden ==>')
         pyaml.p(config_for_printing)
-        console.print('<=====================================================>')
+        main_console.print('<=====================================================>')
         return 0
 
     def merge(self):
@@ -88,7 +88,7 @@ class ConfigBuilder:
 
                 self.config_yaml = config_yaml_template
             except Exception as exc:
-                console.print(exc)
+                main_console.print(exc)
                 raise 'MERGE_CONFIG_FAILED'
         with open(config_yml_path, 'w') as yaml_file:
             yaml.safe_dump(self.config_yaml, yaml_file)
@@ -100,7 +100,7 @@ class ConfigBuilder:
 
     def build(self):
         if self.already_built:
-            console.print('This is likely a bug -- building the configuration twice.')
+            main_console.print('This is likely a bug -- building the configuration twice.')
         self.already_built = True
         return class_from_dict('Configs', self.config_yaml.copy())()
 
@@ -159,5 +159,5 @@ def make_class(classname: str, **options):
 if __name__ == "__main__":
     c = ConfigBuilder()
     b = c.build()
-    console.print(b.telegram_setting.chat_id)
-    console.print(b.voyager_setting.domain)
+    main_console.print(b.telegram_setting.chat_id)
+    main_console.print(b.voyager_setting.domain)

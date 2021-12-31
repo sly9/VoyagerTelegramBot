@@ -5,29 +5,29 @@ from rich.console import Console
 
 from bot import VoyagerConnectionManager
 from configs import ConfigBuilder
-from console import console
+import console
 
 
 class DummyDebugger:
     def __init__(self):
         self.file_name = None
         config_builder = ConfigBuilder(config_filename='config.yml')
+
         if validate_result := config_builder.validate():
-            console.print(f'validation failed: {validate_result}')
+            console.main_console.print(f'validation failed: {validate_result}')
             if validate_result == 'NO_CONFIG_FILE':
                 config_builder.copy_template()
 
             elif validate_result == 'LOAD_CONFIG_FAILED':
-                console.print('Something is clearly wrong with the config!!')
+                console.main_console.print('Something is clearly wrong with the config!!')
             elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
                 config_builder.merge()
             sys.exit()
+
         config = config_builder.build()
-        if config.console_config.console_type == 'FULL':
-            sys.stderr = open('error_log.txt', 'a')
-            console = Console(stderr=True, color_system=None)
-        else:
-            console = Console()
+
+        sys.stderr = open('error_log.txt', 'a')
+        console.main_console = Console(stderr=True, color_system=None)
 
         config.telegram_enabled = False
         config.console_config.console_type = 'FULL'
@@ -56,7 +56,7 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('2021_11_17__voyager_bot_log.txt')
+    dd.load_messages('2021_12_18__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
-    console.console.save_html('./replay/stdout.html')
+    console.main_console.main_console.save_html('./replay/stdout.html')

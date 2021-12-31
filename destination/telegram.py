@@ -12,7 +12,7 @@ from configs import ConfigBuilder
 from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
-from console import console
+from console import main_console
 
 
 class Telegram:
@@ -196,21 +196,21 @@ if __name__ == '__main__':
     c = ConfigBuilder()
     t = Telegram(config=c.build())
     response = t.send_text_message(message='hello world')
-    console.print(response)
+    main_console.print(response)
     the_chat_id = response[1]['chat_id']
     the_message_id = response[1]['message_id']
 
     with open("tests/ic5070.jpg", "rb") as image_file, open("tests/m42.jpg", "rb") as second_image_file:
         response = t.send_image_message(image_file.read(), 'ic5070.jpg')
-        console.print(response)
+        main_console.print(response)
 
         response = t.pin_message(chat_id=the_chat_id, message_id=the_message_id)
-        console.print(response)
+        main_console.print(response)
 
         response = t.edit_image_message(chat_id=the_chat_id, message_id=the_message_id,
                                         image_data=second_image_file.read(),
                                         filename='m42.jpg')
-        console.print(response)
+        main_console.print(response)
 
         response = t.unpin_message(chat_id=the_chat_id, message_id=the_message_id)
-        console.print(response)
+        main_console.print(response)

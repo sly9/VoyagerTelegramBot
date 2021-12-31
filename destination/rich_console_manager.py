@@ -17,7 +17,7 @@ from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
-from console import console
+from console import main_console
 from data_structure.host_info import HostInfo
 from data_structure.imaging_metrics import ImagingMetrics
 from data_structure.log_message_info import LogMessageInfo
@@ -167,7 +167,7 @@ class RichConsoleManager:
                 self.header.show_action_toast(log.message)
                 self.layout['header'].update(self.header)
             except Exception as exception:
-                console.print(exception)
+                main_console.print(exception)
 
     def update_shot_status_panel(self, shot_running_info: ShotRunningInfo = ShotRunningInfo()):
         if not shot_running_info:
