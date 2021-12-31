@@ -1,0 +1,64 @@
+allow_auto_reconnect: true
+allowed_log_types:
+- WARNING
+- CRITICAL
+- TITLE
+- EMERGENCY
+- TITLE
+- SUBTITLE
+- REQUEST
+config_template_version: 0.1
+console_config:
+  console_type: FULL
+  use_emoji: false
+exposure_limit: 30
+html_report_enabled: false
+monitor_battery: false
+observing_condition_config:
+  clear_dark_sky_key: RnhHdlAZkey
+  latitude: 100
+  longitude: 100
+sequence_stats_config:
+  filter_styles:
+    B:
+      color: '#2196F3'
+      marker: +
+    G:
+      color: '#4CAF50'
+      marker: +
+    Ha:
+      color: '#E53935'
+      marker: +
+    L:
+      color: '#9E9E9E'
+      marker: +
+    OIII:
+      color: '#3F51B5'
+      marker: o
+    R:
+      color: '#F44336'
+      marker: +
+    SII:
+      color: '#B71C1C'
+      marker: v
+  guiding_error_plot:
+    error_boundary: 2.5
+    max_shots_count: -1
+    scale: 1.21
+    unit: PIXEL
+  hfd_plot_max_shots_count: -1
+  types:
+  - HFDPlot
+  - ExposurePlot
+  - GuidingPlot
+should_dump_log: false
+telegram_enabled: true
+telegram_setting:
+  bot_token: asdf
+  chat_id: 123
+timezone: America/Los_Angeles
+voyager_setting:
+  domain: 127.0.0.1
+  password: <password>
+  port: 5950
+  username: <user_name>

@@ -8,6 +8,7 @@ import pyaml
 import yaml
 
 from console import main_console
+from utils.first_light_wizard import Wizard
 
 
 def resource_path(relative_path):
@@ -32,19 +33,8 @@ class ConfigBuilder:
         config_yml_path = os.path.abspath(self.config_filename)
         config_yml_example_path = resource_path('config.yml.example')
         if not exists(config_yml_path):
-            print('!!!!!!!!!!!!!!!!!Config file not set up!!!!!!!!!!!!!!!')
-            print('''You need a valid configuration file for bot to run. 
-        I just created a copy of configuration into the same directory as your executable.
-        Please open it up with any text editors, and modify at least these sections:
-          * telegram_setting
-          * voyager_setting
-        After fixing that, try to open the exe file again. 
-                    ''')
-            if platform.system() == 'Windows':
-                os.system('pause')
-            else:
-                input("Press Enter to exit...")
-            return 'NO_CONFIG_FILE'
+            w = Wizard()
+            w.go()
 
         print('Trying to load these config files: ', config_yml_path, config_yml_example_path)
 
