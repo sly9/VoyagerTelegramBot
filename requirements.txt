@@ -11,3 +11,4 @@ PyYAML~=6.0
 requests~=2.26.0
 rich~=10.16.1
 websocket-client~=1.2.1
+beautifulsoup4~=4.10.0
