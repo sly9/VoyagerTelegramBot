@@ -68,7 +68,7 @@ class RotatorStatus:
 @dataclass
 class MountInfo:
     ra: str = '00:00:00'
-    dec: str = '0°0\'0"'
+    dec: str = '0°00\'00"'
     ra_j2000: str = '00:00:00'
     dec_j2000: str = '0°00\'00"'
     az: str = '0°00\'00"'
