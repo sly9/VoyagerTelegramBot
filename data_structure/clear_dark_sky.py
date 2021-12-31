@@ -3,16 +3,16 @@ import enum
 from dataclasses import dataclass
 
 cloud_cover_color_map = {100: '#FBFBFB',
-                          90: '#EAEAEA',
-                          80: '#C2C2C2',
-                          70: '#AEEEEE',
-                          60: '#9ADADA',
-                          50: '#77B7F7',
-                          40: '#63A3E3',
-                          30: '#4F8FCF',
-                          20: '#2767A7',
-                          10: '#135393',
-                          0: '#003F7F'}
+                         90: '#EAEAEA',
+                         80: '#C2C2C2',
+                         70: '#AEEEEE',
+                         60: '#9ADADA',
+                         50: '#77B7F7',
+                         40: '#63A3E3',
+                         30: '#4F8FCF',
+                         20: '#2767A7',
+                         10: '#135393',
+                         0: '#003F7F'}
 seeing_color_map = {0: '#F9F9F9',
                     1: '#C7C7C7',
                     2: '#95D5D5',

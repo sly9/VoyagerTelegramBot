@@ -18,7 +18,7 @@ from rich import pretty
 from rich.console import Console
 
 from configs import ConfigBuilder
-import console
+from console import main_console
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
 
@@ -155,12 +155,12 @@ if __name__ == "__main__":
     config_builder = ConfigBuilder(config_filename='config.yml')
 
     if validate_result := config_builder.validate():
-        console.main_console.print(f'validation failed: {validate_result}')
+        main_console.print(f'validation failed: {validate_result}')
         if validate_result == 'NO_CONFIG_FILE':
             config_builder.copy_template()
 
         elif validate_result == 'LOAD_CONFIG_FAILED':
-            console.main_console.print('Something is clearly wrong with the config!!')
+            main_console.print('Something is clearly wrong with the config!!')
         elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
             config_builder.merge()
         sys.exit()
@@ -169,9 +169,9 @@ if __name__ == "__main__":
 
     if config.console_config.console_type == 'FULL':
         sys.stderr = open('error_log.txt', 'a')
-        console.main_console = Console(stderr=True, color_system=None)
+        main_console = Console(stderr=True, color_system=None)
     else:
-        console.main_console = Console()
+        main_console = Console()
 
     connection_manager = VoyagerConnectionManager(config=config)
     connection_manager.run_forever()

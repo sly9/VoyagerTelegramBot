@@ -9,10 +9,10 @@ import requests
 from PIL import Image
 
 from configs import ConfigBuilder
+from console import main_console
 from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
-from console import main_console
 
 
 class Telegram:

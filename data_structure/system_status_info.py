@@ -77,7 +77,6 @@ class MountInfo:
     time_to_flip: str = '00:00:00'
 
 
-
 @dataclass
 class DeviceConnectedInfo:
     setup_connected: bool = False

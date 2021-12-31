@@ -12,8 +12,8 @@ from threading import Thread
 import websocket
 
 from configs import ConfigBuilder
-from log_writer import LogWriter
 from console import main_console
+from log_writer import LogWriter
 
 
 class VoyagerConnectionManager(Thread):

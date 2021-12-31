@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Dict
+
 from console import main_console
 
 
