@@ -52,6 +52,8 @@ telegram_setting:
 
 ### Miscellaneous
 exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
+# The timezone of your observatory -- not necessary the computer running this bot. Valid timezone names can be found here:
+# https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: America/Los_Angeles
 should_dump_log: False  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
 monitor_battery: False
