@@ -1,4 +1,5 @@
 import datetime
+import re
 import time
 from collections import deque
 
@@ -11,10 +12,36 @@ from data_structure.clear_dark_sky import ClearDarkSkyDataPoint, Transparency, S
 
 
 class ClearDarkSkyForecast:
-    def __init__(self, timezone: str = 'America/Los_Angeles'):
+    def __init__(self, config: object):
         self.forecast = list()  # type: List[ClearDarkSkyDataPoint]
-        self.timezone = pytz.timezone(timezone)
+        self.config = config
+        self.timezone = pytz.timezone(self.config.timezone)
         self.last_updated_time = None  # type: datetime.datetime
+        self.key = 'RnhHdlAZkey'
+        self.determine_key()
+
+    def determine_key(self):
+        if not self.config.observing_condition_config:
+            self.key = 'RnhHdlAZkey'
+            return
+        config = self.config.observing_condition_config
+        if hasattr(config, 'clear_dark_sky_key'):
+            self.key = config.clear_dark_sky_key
+        elif hasattr(config, 'latitude') and hasattr(config, 'longitude'):
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+            }
+            find_result = requests.get(
+                f'http://www.cleardarksky.com/cgi-bin/find_chart.py?type=llmap&Mn=telescope%2520accessory&olat={config.latitude}&olong={config.longitude}&olatd=&olatm=&olongd=&olongm=&unit=1',
+                headers=headers)
+            if find_result.status_code != 200:
+                print(f'failed to search for {config.latitude}x{config.latitude}')
+            soup = BeautifulSoup(find_result.text, 'html.parser')
+            links = soup.select('tr td>a')
+            link = links[0].get('href').replace('../c/', '')
+            self.key = re.sub(r'\.html.*$', '', link)
+        else:
+            self.key = 'RnhHdlAZkey'
 
     def parse_html_response(self, html_string: str):
         soup = BeautifulSoup(html_string, 'html.parser')
@@ -132,31 +159,31 @@ class ClearDarkSkyForecast:
 
         return datapoint
 
-    def update_forecast_for_key(self, key: str = 'RnhHdlAZkey'):
+    def update_forecast(self):
         # http://www.cleardarksky.com/c/RnhHdlAZkey.html
 
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
         }
 
-        response = requests.get(f'http://www.cleardarksky.com/c/{key}.html', headers=headers)
+        response = requests.get(f'http://www.cleardarksky.com/c/{self.key}.html', headers=headers)
         if response.status_code != 200:
-            print(f'Failed to fetch clear dark sky page: http://www.cleardarksky.com/c/{key}.html')
+            print(f'Failed to fetch clear dark sky page: http://www.cleardarksky.com/c/{self.key}.html')
         self.parse_html_response(html_string=response.text)
         self.last_updated_time = datetime.datetime.now()
 
-    def maybe_update_forecast_for_key(self, key: str = 'RnhHdlAZkey'):
+    def maybe_update_forecast(self):
         if self.last_updated_time and (
                 datetime.datetime.now() - self.last_updated_time).total_seconds() < 3600:
             # recently updated, do nothing
             return
-        self.update_forecast_for_key(key=key)
+        self.update_forecast()
 
 
 if __name__ == '__main__':
     pretty.install()
     c = ClearDarkSkyForecast()
-    c.maybe_update_forecast_for_key()  # 'SanJoseCAkey')
+    c.maybe_update_forecast()  # 'SanJoseCAkey')
     print(c.forecast)
 
     timezone = pytz.timezone('America/New_York')

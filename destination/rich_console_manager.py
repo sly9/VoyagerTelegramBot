@@ -6,6 +6,7 @@ from collections import deque
 from datetime import datetime
 from time import sleep
 
+import pytz
 import rich.text
 from rich import box
 from rich.align import Align
@@ -366,15 +367,15 @@ class ForecastPanel:
         self.layout = layout
         self.style = style
         self.table = None
-        self.clear_dark_sky_forecast = ClearDarkSkyForecast(timezone=config.timezone)
-        self.clear_dark_sky_forecast.maybe_update_forecast_for_key()
+        self.clear_dark_sky_forecast = ClearDarkSkyForecast(config=config)
+        self.clear_dark_sky_forecast.maybe_update_forecast()
 
     def forecast_table(self, height: int = 8, width: int = 20):
-        self.clear_dark_sky_forecast.maybe_update_forecast_for_key()
-        forecast_table = Table.grid(padding=(0, 0), expand=True)
+        self.clear_dark_sky_forecast.maybe_update_forecast()
+        forecast_table = Table.grid(padding=(0, 0), expand=False)
         forecast_table.add_column(style='bold')
 
-        length = min(len(self.clear_dark_sky_forecast.forecast), int(math.floor((width - 2 - 2 - 7) / 2)))
+        length = min(len(self.clear_dark_sky_forecast.forecast), int(math.floor((width - 2 - 2 - 7) / 2)), 12)
 
         for i in range(length - 1):
             forecast_table.add_column(width=2, max_width=2)
@@ -382,12 +383,24 @@ class ForecastPanel:
         hour_list = ['Hour']
         seeing_list = ['Seeing']
         cloud_cover_list = ['Cloud']
-        transparency_list = ['Transp']
+        transparency_list = ['Transp ']
+
+        # find the right index to blink:
+        right_index_to_blink = 0
+        timezone = pytz.timezone(self.config.timezone)
+        now = datetime.now(tz=timezone)
+        for i in range(min(length, 23)):
+            forecast = self.clear_dark_sky_forecast.forecast[i]
+            if now.hour == forecast.local_hour:
+                right_index_to_blink = i
+
         for i in range(length):
             forecast = self.clear_dark_sky_forecast.forecast[i]
             style_string = 'grey62'
             if i % 2 == 0:
                 style_string = 'bright_white'
+            if i == right_index_to_blink:
+                style_string += ' blink'
             hour_list.append(Text(f'{forecast.local_hour:02}', style=style_string))
 
             color_string = seeing_color_map.get(forecast.seeing.value, 'white')
