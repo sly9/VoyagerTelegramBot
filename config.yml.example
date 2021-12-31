@@ -62,3 +62,7 @@ html_report_enabled: False
 console_config:
   use_emoji: False
   console_type: FULL # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
+observing_condition_config:
+  clear_dark_sky_key: RnhHdlAZkey # The string between the last slash and .html of a clear dark sky link, for example: http://www.cleardarksky.com/c/RnhHdlAZkey.html
+  latitude: 100
+  longitude: 100
