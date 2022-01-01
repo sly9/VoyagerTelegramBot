@@ -1,32 +1,20 @@
 #!/bin/env python3
-import enum
-import math
 import threading
-from collections import deque
-from datetime import datetime
 from time import sleep
 
-import pytz
-import rich.text
 from rich import box
 from rich.align import Align
-from rich.console import ConsoleOptions, RenderResult, Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
-from rich.progress_bar import ProgressBar
-from rich.style import StyleType
 from rich.table import Table
-from rich.text import Text
 
 from console import main_console
-from data_structure.clear_dark_sky import transparency_color_map, seeing_color_map, cloud_cover_color_map
 from data_structure.host_info import HostInfo
 from data_structure.imaging_metrics import ImagingMetrics
 from data_structure.log_message_info import LogMessageInfo
-from data_structure.shot_running_info import ShotRunningInfo, ShotRunningStatus
-from data_structure.system_status_info import SystemStatusInfo, MountInfo, GuideStatusEnum, DitherStatusEnum, \
-    MountStatusEnum, CcdStatusEnum
+from data_structure.shot_running_info import ShotRunningInfo
+from data_structure.system_status_info import SystemStatusInfo, MountInfo
 from destination.rich_console.device_status_panel import DeviceStatusPanel
 from destination.rich_console.footer_panel import FooterPanel
 from destination.rich_console.forecast_panel import ForecastPanel
@@ -35,9 +23,6 @@ from destination.rich_console.progress_panel import ProgressPanel
 from destination.rich_console.rich_console_header import RichConsoleHeader
 from event_emitter import ee
 from event_names import BotEvent
-from utils.clear_dark_sky_forecast import ClearDarkSkyForecast
-from version import bot_version_string
-
 
 
 class RichConsoleManager:
@@ -186,4 +171,3 @@ class RichConsoleManager:
     def update_footer_panel(self, host_info: HostInfo = HostInfo()):
         self.footer_panel.host_info = host_info
         self.layout['footer'].update(self.footer_panel)
-
