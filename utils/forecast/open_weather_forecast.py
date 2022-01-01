@@ -42,7 +42,13 @@ class OpenWeatherForecast(BaseForecast):
         return self.api_url
 
     def parse_response(self, raw_response: str = None):
+        if not raw_response:
+            return
         json_response = json.loads(raw_response)
+        if 'hourly' not in json_response:
+            # response is not from 'onecall' API
+            return
+
         hourly_forecast_records = json_response['hourly']
         for hourly_record in hourly_forecast_records:
             data_point = FreeWeatherDataPoint(
