@@ -132,7 +132,7 @@ class ClearDarkSkyForecast:
             datapoint.seeing = Seeing.AVERAGE
         elif seeing == 'good 4/5':
             datapoint.seeing = Seeing.GOOD
-        elif seeing == 'excellent  5/5':
+        elif seeing == 'excellent 5/5':
             datapoint.seeing = Seeing.EXCELLENT
         else:
             print(f'Failed to parse seeing string {seeing_string}')
