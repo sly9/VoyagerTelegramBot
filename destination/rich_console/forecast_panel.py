@@ -22,12 +22,14 @@ class ForecastPanel:
         self.style = style
         self.table = None
 
-        forecast_service_name = config.observing_condition_config.forecast_service[0]
-        if forecast_service_name == 'ClearSky':
+        if hasattr(config.observing_condition_config, 'forecast_service'):
+            self.service_name = config.observing_condition_config.forecast_service[0]
+        else:
             self.service_name = 'ClearSky'
+
+        if self.service_name == 'ClearSky':
             self.forecast_service = ClearDarkSkyForecast(config=config)
         else:
-            self.service_name = 'OpenWeather'
             self.forecast_service = OpenWeatherForecast(config=config)
 
         self.forecast_service.maybe_update_forecast()
