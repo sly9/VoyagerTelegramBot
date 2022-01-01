@@ -67,6 +67,6 @@ console_config:
 observing_condition_config:
   forecast_service: [ClearSky]  # Options are ClearSky, OpenWeather
   clear_dark_sky_key: RnhHdlAZkey # The string between the last slash and .html of a clear dark sky link, for example: http://www.cleardarksky.com/c/RnhHdlAZkey.html
-  open_weather_api_key: oPEn5WEaThER2aPI4Key
+  open_weather_api_key: FAKE_API_KEY_DONT_USE
   latitude: 100
   longitude: 100
