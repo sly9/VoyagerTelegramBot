@@ -9,13 +9,15 @@ from bs4 import BeautifulSoup
 from rich import pretty
 
 from configs import class_from_dict
-from data_structure.clear_dark_sky import ClearDarkSkyDataPoint, Transparency, Seeing, WindSpeed
+from data_structure.clear_dark_sky import ClearDarkSkyDataPoint, Transparency, Seeing, WindSpeed, CloudCover, \
+    Temperature
 from utils.forecast.base_forecast import BaseForecast, FORECAST_HEADER
 
 
 class ClearDarkSkyForecast(BaseForecast):
     def __init__(self, config: object):
         super().__init__(config=config)
+        self.title = ''
 
     def get_api_url(self) -> str:
         self.determine_key()
@@ -47,6 +49,13 @@ class ClearDarkSkyForecast(BaseForecast):
 
     def parse_response(self, raw_response: str = None):
         soup = BeautifulSoup(raw_response, 'html.parser')
+
+        header = soup.select('h1')
+        if len(header):
+            h1 = header[0]
+            if h1.contents:
+                self.title = h1.contents[0]
+
         areas = soup.select('map area')
         area_dict = dict()
         for area in areas:
@@ -65,8 +74,6 @@ class ClearDarkSkyForecast(BaseForecast):
         humidity_queue = area_dict.get(205)
         temperature_queue = area_dict.get(221)
 
-        current_hour_seen = False
-        now = datetime.datetime.now(tz=self.timezone)
         while cloud_cover_queue and transparency_queue and seeing_queue and smoke_queue and wind_queue and humidity_queue and temperature_queue:
             cloud_cover_string = cloud_cover_queue.popleft()[4]
             transparency_string = transparency_queue.popleft()[4]
@@ -79,9 +86,6 @@ class ClearDarkSkyForecast(BaseForecast):
                                           transparency_string=transparency_string, seeing_string=seeing_string,
                                           smoke_string=smoke_string, wind_string=wind_string,
                                           humidity_string=humidity_string, temperature_string=temperature_string)
-            # if not current_hour_seen and datapoint.local_hour == now.hour:
-            #     current_hour_seen = True
-            # if current_hour_seen:
             self.forecast.append(datapoint)
 
     def parse_record(self, cloud_cover_string: str, transparency_string: str,
@@ -97,12 +101,30 @@ class ClearDarkSkyForecast(BaseForecast):
         # parse cloud cover
         cloud_cover = cloud_cover_string[
                       cloud_cover_string.rindex(':') + 1: cloud_cover_string.index('(')].strip().lower()
-        if cloud_cover == 'clear':
-            datapoint.cloud_cover_percentage = 0
-        elif cloud_cover == 'overcast':
-            datapoint.cloud_cover_percentage = 100
+        if cloud_cover == 'overcast':
+            datapoint.cloud_cover_percentage = CloudCover.OVER_CAST
+        elif cloud_cover == '90% covered':
+            datapoint.cloud_cover_percentage = CloudCover.NINETY_PERCENT
+        elif cloud_cover == '80% covered':
+            datapoint.cloud_cover_percentage = CloudCover.EIGHTY_PERCENT
+        elif cloud_cover == '70% covered':
+            datapoint.cloud_cover_percentage = CloudCover.SEVENTY_PERCENT
+        elif cloud_cover == '60% covered':
+            datapoint.cloud_cover_percentage = CloudCover.SIXTY_PERCENT
+        elif cloud_cover == '50% covered':
+            datapoint.cloud_cover_percentage = CloudCover.FIFTY_PERCENT
+        elif cloud_cover == '40% covered':
+            datapoint.cloud_cover_percentage = CloudCover.FORTY_PERCENT
+        elif cloud_cover == '30% covered':
+            datapoint.cloud_cover_percentage = CloudCover.THIRTY_PERCENT
+        elif cloud_cover == '20% covered':
+            datapoint.cloud_cover_percentage = CloudCover.TWENTY_PERCENT
+        elif cloud_cover == '10% covered':
+            datapoint.cloud_cover_percentage = CloudCover.TEN_PERCENT
+        elif cloud_cover == 'clear':
+            datapoint.cloud_cover_percentage = CloudCover.CLEAR
         else:
-            datapoint.cloud_cover_percentage = int(cloud_cover[:2])
+            print(f'Failed to parse cloud cover string {cloud_cover_string}')
 
         # parse transparency '9:00: Below Average (12Z+4hr)'
         transparency = transparency_string[
@@ -156,9 +178,55 @@ class ClearDarkSkyForecast(BaseForecast):
             datapoint.wind_speed = WindSpeed.TWELVE_TO_SIXTEEN
         elif wind == '17 to 28 mph':
             datapoint.wind_speed = WindSpeed.SEVENTEEN_TO_TWENTY_EIGHT
+        elif wind == '29 to 45 mph':
+            datapoint.wind_speed = WindSpeed.TWENTY_NINE_TO_FORTY_FIVE
         elif wind == '>45 mph':
             datapoint.wind_speed = WindSpeed.LARGER_THAN_FORTY_FIVE
+        else:
+            print(f'Failed to parse wind string {wind_string}')
 
+        # temperature
+        temperature = temperature_string[temperature_string.rindex(':') + 1:temperature_string.index('(')].strip()
+        if temperature == '<-40F':
+            datapoint.temperature = Temperature.LESS_THAN_NEG_40
+        elif temperature == '-40F to -31F':
+            datapoint.temperature = Temperature.NEG_40_TO_NEG_31
+        elif temperature == '-30F to -21F':
+            datapoint.temperature = Temperature.NEG_30_TO_NEG_21
+        elif temperature == '-21F to -12F':
+            datapoint.temperature = Temperature.NEG_21_TO_NEG_12
+        elif temperature == '-12F to -3F':
+            datapoint.temperature = Temperature.NEG_12_TO_NEG_3
+        elif temperature == '-3F to 5F':
+            datapoint.temperature = Temperature.NEG_3_TO_5
+        elif temperature == '5F to 14F':
+            datapoint.temperature = Temperature.POS_5_TO_14
+        elif temperature == '14F to 23F':
+            datapoint.temperature = Temperature.POS_14_TO_23
+        elif temperature == '23F to 32F':
+            datapoint.temperature = Temperature.POS_23_TO_32
+        elif temperature == '32F to 41F':
+            datapoint.temperature = Temperature.POS_32_TO_41
+        elif temperature == '41F to 50F':
+            datapoint.temperature = Temperature.POS_41_TO_50
+        elif temperature == '50F to 59F':
+            datapoint.temperature = Temperature.POS_50_TO_59
+        elif temperature == '59F to 68F':
+            datapoint.temperature = Temperature.POS_59_TO_68
+        elif temperature == '68F to 77F':
+            datapoint.temperature = Temperature.POS_68_TO_77
+        elif temperature == '77F to 86F':
+            datapoint.temperature = Temperature.POS_77_TO_86
+        elif temperature == '86F to 95F':
+            datapoint.temperature = Temperature.POS_86_TO_95
+        elif temperature == '95F to 104F':
+            datapoint.temperature = Temperature.POS_95_TO_104
+        elif temperature == '104F to 113F':
+            datapoint.temperature = Temperature.POS_104_TO_113
+        elif temperature == '>113F':
+            datapoint.temperature = Temperature.LARGER_THAN_113
+        else:
+            print(f'Failed to parse temperature string {temperature_string}')
         return datapoint
 
 

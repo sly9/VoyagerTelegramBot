@@ -10,7 +10,6 @@ from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
-from data_structure.clear_dark_sky import seeing_color_map, cloud_cover_color_map, transparency_color_map
 from utils.forecast.clear_dark_sky_forecast import ClearDarkSkyForecast
 from utils.forecast.open_weather_forecast import OpenWeatherForecast
 
@@ -47,6 +46,8 @@ class ForecastPanel:
         seeing_list = ['Seeing']
         cloud_cover_list = ['Cloud']
         transparency_list = ['Transp ']
+        wind_list = ['Wind S']
+        temperature_list = ['Temp']
 
         # find the right index to blink:
         right_index_to_blink = 0
@@ -67,20 +68,18 @@ class ForecastPanel:
                 style_string += ' blink'
                 place_holder_string = '●'
             hour_list.append(Text(f'{forecast.local_hour:02}', style=style_string))
-
-            color_string = seeing_color_map.get(forecast.seeing.value, 'white')
-            seeing_list.append(Text(place_holder_string, style=f'red on {color_string}'))
-
-            color_string = cloud_cover_color_map.get(forecast.cloud_cover_percentage, 'white')
-            cloud_cover_list.append(Text(place_holder_string, style=f'red on {color_string}'))
-
-            color_string = transparency_color_map.get(forecast.transparency.value, 'white')
-            transparency_list.append(Text(place_holder_string, style=f'red on {color_string}'))
+            seeing_list.append(Text(place_holder_string, style=f'red on {forecast.seeing.value}'))
+            cloud_cover_list.append(Text(place_holder_string, style=f'red on {forecast.cloud_cover_percentage.value}'))
+            transparency_list.append(Text(place_holder_string, style=f'red on {forecast.transparency.value}'))
+            wind_list.append(Text(place_holder_string, style=f'red on {forecast.wind_speed.value}'))
+            temperature_list.append(Text(place_holder_string, style=f'red on {forecast.temperature.value}'))
 
         forecast_table.add_row(*hour_list)
         forecast_table.add_row(*seeing_list)
         forecast_table.add_row(*cloud_cover_list)
         forecast_table.add_row(*transparency_list)
+        forecast_table.add_row(*wind_list)
+        forecast_table.add_row(*temperature_list)
         return forecast_table
 
     def free_weather_table(self, height: int = 8, width: int = 20) -> Table:
@@ -141,10 +140,13 @@ class ForecastPanel:
         width = options.max_width
         height = options.height or options.size.height
         layout = self.layout
+        title = f'{self.service_name} Forecast ({width}x{height})'
+        if self.service_name == 'ClearSky' and self.forecast_service.title:
+            title = f'Forecast for {self.forecast_service.title}'
 
         yield Panel(
             Align.left(self.forecast_table(width=width, height=height), vertical="top"),
             style=self.style,
-            title=f'{self.service_name} Forecast ({width}x{height})',
+            title=title,
             border_style="blue",
         )
