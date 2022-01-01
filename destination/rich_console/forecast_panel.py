@@ -60,20 +60,22 @@ class ForecastPanel:
         for i in range(length):
             forecast = self.forecast_service.forecast[i]
             style_string = 'grey62'
+            place_holder_string = '  '
             if i % 2 == 0:
                 style_string = 'bright_white'
             if i == right_index_to_blink:
                 style_string += ' blink'
+                place_holder_string = '●'
             hour_list.append(Text(f'{forecast.local_hour:02}', style=style_string))
 
             color_string = seeing_color_map.get(forecast.seeing.value, 'white')
-            seeing_list.append(Text('  ', style=f'{color_string} on {color_string}'))
+            seeing_list.append(Text(place_holder_string, style=f'red on {color_string}'))
 
             color_string = cloud_cover_color_map.get(forecast.cloud_cover_percentage, 'white')
-            cloud_cover_list.append(Text('  ', style=f'{color_string} on {color_string}'))
+            cloud_cover_list.append(Text(place_holder_string, style=f'red on {color_string}'))
 
             color_string = transparency_color_map.get(forecast.transparency.value, 'white')
-            transparency_list.append(Text('  ', style=f'{color_string} on {color_string}'))
+            transparency_list.append(Text(place_holder_string, style=f'red on {color_string}'))
 
         forecast_table.add_row(*hour_list)
         forecast_table.add_row(*seeing_list)
