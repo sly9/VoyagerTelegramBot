@@ -108,7 +108,7 @@ class ForecastPanel:
             style_string = 'grey62'
             if i % 2 == 0:
                 style_string = 'bright_white'
-            hour = current_hour + i
+            hour = (current_hour + i) % 24
             hour_list.append(Text(f'{hour:02}', style=style_string))
 
             color_string = get_temperature_color(forecast.temperature)
