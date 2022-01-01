@@ -8,17 +8,20 @@ import requests
 from bs4 import BeautifulSoup
 from rich import pretty
 
+from configs import class_from_dict
 from data_structure.clear_dark_sky import ClearDarkSkyDataPoint, Transparency, Seeing, WindSpeed
+from utils.forecast.base_forecast import BaseForecast, FORECAST_HEADER
 
 
-class ClearDarkSkyForecast:
+class ClearDarkSkyForecast(BaseForecast):
     def __init__(self, config: object):
-        self.forecast = list()  # type: List[ClearDarkSkyDataPoint]
-        self.config = config
-        self.timezone = pytz.timezone(self.config.timezone)
-        self.last_updated_time = None  # type: datetime.datetime
-        self.key = 'RnhHdlAZkey'
+        super().__init__(config=config)
+
+    def get_api_url(self) -> str:
         self.determine_key()
+        self.api_url = f'http://www.cleardarksky.com/c/{self.key}.html'
+
+        return self.api_url
 
     def determine_key(self):
         if not self.config.observing_condition_config:
@@ -28,12 +31,11 @@ class ClearDarkSkyForecast:
         if hasattr(config, 'clear_dark_sky_key'):
             self.key = config.clear_dark_sky_key
         elif hasattr(config, 'latitude') and hasattr(config, 'longitude'):
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-            }
             find_result = requests.get(
-                f'http://www.cleardarksky.com/cgi-bin/find_chart.py?type=llmap&Mn=telescope%2520accessory&olat={config.latitude}&olong={config.longitude}&olatd=&olatm=&olongd=&olongm=&unit=1',
-                headers=headers)
+                f'http://www.cleardarksky.com/cgi-bin/find_chart.py?' + \
+                f'type=llmap&Mn=telescope%2520accessory&olat={config.latitude}&olong={config.longitude}' + \
+                f'&olatd=&olatm=&olongd=&olongm=&unit=1',
+                headers=FORECAST_HEADER)
             if find_result.status_code != 200:
                 print(f'failed to search for {config.latitude}x{config.latitude}')
             soup = BeautifulSoup(find_result.text, 'html.parser')
@@ -43,8 +45,8 @@ class ClearDarkSkyForecast:
         else:
             self.key = 'RnhHdlAZkey'
 
-    def parse_html_response(self, html_string: str):
-        soup = BeautifulSoup(html_string, 'html.parser')
+    def parse_response(self, raw_response: str = None):
+        soup = BeautifulSoup(raw_response, 'html.parser')
         areas = soup.select('map area')
         area_dict = dict()
         for area in areas:
@@ -159,30 +161,17 @@ class ClearDarkSkyForecast:
 
         return datapoint
 
-    def update_forecast(self):
-        # http://www.cleardarksky.com/c/RnhHdlAZkey.html
-
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-        }
-
-        response = requests.get(f'http://www.cleardarksky.com/c/{self.key}.html', headers=headers)
-        if response.status_code != 200:
-            print(f'Failed to fetch clear dark sky page: http://www.cleardarksky.com/c/{self.key}.html')
-        self.parse_html_response(html_string=response.text)
-        self.last_updated_time = datetime.datetime.now()
-
-    def maybe_update_forecast(self):
-        if self.last_updated_time and (
-                datetime.datetime.now() - self.last_updated_time).total_seconds() < 3600:
-            # recently updated, do nothing
-            return
-        self.update_forecast()
-
 
 if __name__ == '__main__':
+    config = {
+        'observing_condition_config': {
+            'clear_dark_sky_key': 'RssCrkObCAkey',
+            'latitude': 0,
+            'longitude': 0},
+        'timezone': 'America/Los_Angeles'}
+    config = class_from_dict('Configs', config)()
     pretty.install()
-    c = ClearDarkSkyForecast()
+    c = ClearDarkSkyForecast(config=config)
     c.maybe_update_forecast()  # 'SanJoseCAkey')
     print(c.forecast)
 

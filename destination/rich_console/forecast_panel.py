@@ -11,7 +11,7 @@ from rich.table import Table
 from rich.text import Text
 
 from data_structure.clear_dark_sky import seeing_color_map, cloud_cover_color_map, transparency_color_map
-from utils.clear_dark_sky_forecast import ClearDarkSkyForecast
+from utils.forecast.clear_dark_sky_forecast import ClearDarkSkyForecast
 from utils.forecast.open_weather_forecast import OpenWeatherForecast
 
 
