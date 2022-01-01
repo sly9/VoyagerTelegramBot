@@ -66,7 +66,6 @@ class VoyagerConnectionManager:
 
     def try_to_process_next_command(self):
         if self.ongoing_command is not None:
-            main_console.print('wait a while before sending out the second command.')
             # this command will be invoked later for sure
             return
 
