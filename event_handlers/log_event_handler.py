@@ -18,8 +18,8 @@ class LogEventHandler(VoyagerEventHandler):
         # dictionary of log level number to readable name.
         type_dict = {1: 'DEBUG', 2: 'INFO', 3: 'WARNING', 4: 'CRITICAL', 5: 'ACTION', 6: 'SUBTITLE', 7: 'EVENT',
                      8: 'REQUEST', 9: 'EMERGENCY'}
-        type_emoji_dict = {1: '🐞', 2: 'ℹ️', 3: '⚠️', 4: '⛔️', 5: '🔧', 6: '📢', 7: '📰',
-                           8: '🈸', 9: '☢️'}
+        type_emoji_dict = {1: '🐞', 2: 'ℹ', 3: '⚠', 4: '⛔', 5: '🔧', 6: '📢', 7: '📰',
+                           8: '🈸', 9: '☢'}
 
         type_emoji = type_emoji_dict[message['Type']]
         type_name = type_dict[message['Type']]
