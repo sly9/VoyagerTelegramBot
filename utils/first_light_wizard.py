@@ -1,11 +1,15 @@
+import base64
+import json
 import os
 import sys
+import uuid
 
+import requests
 import yaml
 from rich.prompt import Confirm, Prompt, IntPrompt
+from websocket import create_connection
 
 from console import main_console
-
 
 
 def resource_path(relative_path):
@@ -17,6 +21,7 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
 
 class Wizard:
     def __init__(self, config_yml_path: str = 'config.yml', config_yml_example_path: str = 'config.yml.example'):
@@ -40,6 +45,9 @@ class Wizard:
         self.write_to_file(domain=domain, port=port, username=username, password=password,
                            should_enable_telegram=should_enable_telegram, telegram_token=telegram_token,
                            telegram_chat_id=telegram_chat_id, enable_fancy_ui=enable_fancy_ui)
+        self.test_connection(domain=domain, port=port, username=username, password=password,
+                             should_enable_telegram=should_enable_telegram, telegram_token=telegram_token,
+                             telegram_chat_id=telegram_chat_id, enable_fancy_ui=enable_fancy_ui)
 
     def write_to_file(self, domain, port, username, password, should_enable_telegram, telegram_token, telegram_chat_id,
                       enable_fancy_ui):
@@ -95,7 +103,69 @@ class Wizard:
         main_console.print(token, chat_id, locals())
         return token, chat_id
 
+    def test_connection(self, domain, port, username, password, should_enable_telegram, telegram_token,
+                        telegram_chat_id, enable_fancy_ui):
+        if should_enable_telegram:
+            main_console.print('Validating telegram related settings...')
+            if not (telegram_token and telegram_chat_id):
+                main_console.print(
+                    'You want telegram messages, but your token or chat_id is empty, I can\'t work without both',
+                    locals())
+                return False
+            payload = {'chat_id': telegram_chat_id, 'text': 'Hello world!', 'parse_mode': 'html'}
+            send_text_message_response = requests.post(f'https://api.telegram.org/bot{telegram_token}/sendMessage',
+                                                       data=payload)
+            response_json = json.loads(send_text_message_response.text)
+            if response_json['ok']:
+                main_console.print('You should\'ve received a hello world message on your telegram now, check it out?')
+            else:
+                main_console.print(
+                    'I can\'t sent a message on your behalf.. here\'s some more details...',
+                    locals())
+                sys.exit(1)
+        main_console.print('Validating voyager connections..')
+        self.test_voyager_connection(domain=domain, port=port, username=username, password=password)
+        return True
+
+    def test_voyager_connection(self, domain, port, username, password):
+        try:
+            ws = create_connection(f'ws://{domain}:{port}/')
+            if username and password:
+                print("Send authentication")
+                auth_token = f'{username}:{password}'
+                encoded_token = base64.urlsafe_b64encode(auth_token.encode('ascii'))
+
+                command_uuid = str(uuid.uuid1())
+                command = {
+                    'method': 'AuthenticateUserBase',
+                    'params': {'Base': encoded_token.decode('ascii'), 'UID': command_uuid},
+                    'id': 1
+                }
+
+                ws.send(json.dumps(command) + '\r\n')
+                print("Sent")
+            print("Receiving...")
+            version_received = False
+            authentication_succeeded = False
+            if not (username and password):
+                authentication_succeeded = True
+            while not (version_received and authentication_succeeded):
+                result = ws.recv()
+                print("Received '%s'" % result)
+                result_json = json.loads(result)
+                if 'Event' in result_json and result_json['Event'] == 'Version':
+                    version_received = True
+                if 'jsonrpc' in result_json and 'authbase' in result_json:
+                    authentication_succeeded = True
+            ws.close()
+        except Exception as exception:
+            main_console.print_exception(exception)
+            return False
+        print('Validation succeeded!')
+        return True
+
 
 if __name__ == '__main__':
     w = Wizard(config_yml_path='test.yml', config_yml_example_path='../config.yml.example')
     w.go()
+    #w.test_voyager_connection('liuyi.us', 5950, 'admin', 'A.qW!7q7F$')
