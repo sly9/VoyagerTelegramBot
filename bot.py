@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-
-os.environ['PYTHONIOENCODING'] = 'utf-8'
-
 import base64
 import json
+import os
 import sys
 import threading
 import time
@@ -22,6 +19,7 @@ from console import main_console
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
 
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 pretty.install()
 
 

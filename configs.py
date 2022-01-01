@@ -1,5 +1,4 @@
 import os
-import platform
 import sys
 from os.path import exists
 from shutil import copyfile
