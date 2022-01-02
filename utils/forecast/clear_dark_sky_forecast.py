@@ -11,13 +11,14 @@ from rich import pretty
 from configs import class_from_dict
 from data_structure.clear_dark_sky import ClearDarkSkyDataPoint, Transparency, Seeing, WindSpeed, CloudCover, \
     Temperature
-from utils.forecast.base_forecast import BaseForecast, FORECAST_HEADER
+from utils.forecast.base_forecast import BaseHttpForecast, FORECAST_HEADER
 
 
-class ClearDarkSkyForecast(BaseForecast):
+class ClearDarkSkyForecast(BaseHttpForecast):
     def __init__(self, config: object):
         super().__init__(config=config)
         self.title = ''
+        self.service_name = 'ClearSky'
 
     def get_api_url(self) -> str:
         self.determine_key()

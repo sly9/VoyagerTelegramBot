@@ -7,10 +7,10 @@ from rich import pretty
 
 from configs import class_from_dict
 from data_structure.free_weather import FreeWeatherDataPoint
-from utils.forecast.base_forecast import BaseForecast
+from utils.forecast.base_forecast import BaseHttpForecast
 
 
-class OpenWeatherForecast(BaseForecast):
+class OpenWeatherForecast(BaseHttpForecast):
     def __init__(self, config: object):
         super().__init__(config=config)
 
@@ -52,6 +52,7 @@ class OpenWeatherForecast(BaseForecast):
         hourly_forecast_records = json_response['hourly']
         for hourly_record in hourly_forecast_records:
             data_point = FreeWeatherDataPoint(
+                dt=hourly_record['dt'],
                 temperature=hourly_record['temp'],
                 weather_id=hourly_record['weather'][0]['id'],
                 cloud_cover_percentage=hourly_record['clouds'],

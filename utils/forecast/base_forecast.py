@@ -9,8 +9,9 @@ FORECAST_HEADER = {
 }
 
 
-class BaseForecast:
+class BaseHttpForecast:
     def __init__(self, config: object):
+        self.service_name = ''
         self.forecast = list()
         self.config = config
         self.timezone = pytz.timezone(self.config.timezone)
@@ -35,6 +36,24 @@ class BaseForecast:
         if response.status_code != 200:
             print(f'Failed to fetch data from: {self.get_api_url()}')
         self.parse_response(raw_response=response.text)
+        self.last_updated_time = datetime.now()
+
+    def maybe_update_forecast(self):
+        if self.last_updated_time and (
+                datetime.now() - self.last_updated_time).total_seconds() < 3600:
+            # recently updated, do nothing
+            return
+        self.update_forecast()
+
+class BaseAlgorithmForecast:
+    def __init__(self, config: object):
+        self.service_name = ''
+        self.forecast = None
+        self.config = config
+        self.timezone = pytz.timezone(self.config.timezone)
+        self.last_updated_time = None  # type: datetime.datetime
+
+    def update_forecast(self):
         self.last_updated_time = datetime.now()
 
     def maybe_update_forecast(self):
