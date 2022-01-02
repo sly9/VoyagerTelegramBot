@@ -65,7 +65,7 @@ console_config:
   use_emoji: False
   console_type: FULL # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
 observing_condition_config:
-  forecast_service: [ClearSky]  # Options are ClearSky, OpenWeather
+  forecast_service: [ClearSky, SunAndMoon]  # Options are [ClearSky, OpenWeather, SunAndMoon]
   clear_dark_sky_key: RnhHdlAZkey # The string between the last slash and .html of a clear dark sky link, for example: http://www.cleardarksky.com/c/RnhHdlAZkey.html
   open_weather_api_key: <open_weather_api_key>  # Sign up your own free API key for OpenWeather API at https://home.openweathermap.org/users/sign_up
   latitude: 100
