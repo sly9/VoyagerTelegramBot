@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytz
 from rich.console import RenderResult, Console, ConsoleOptions
 from rich.panel import Panel
 from rich.table import Table
@@ -11,8 +12,10 @@ from version import bot_version_string
 class RichConsoleHeader:
     """Display header with clock."""
 
-    def __init__(self):
+    def __init__(self, config:object):
         self.toast_string = ''
+        self.config = config
+        self.timezone = pytz.timezone(config.timezone)
 
     def __rich_console__(
             self, console: Console, options: ConsoleOptions
@@ -28,7 +31,7 @@ class RichConsoleHeader:
         grid.add_row(
             f'VogagerBot v{bot_version_string()}',
             self.toast_string,
-            datetime.now().ctime().replace(":", "[blink]:[/]"),
+            datetime.now(tz=self.timezone).strftime('%m/%d/%Y %H[blink]:[/]%M[blink]:[/]%S'),
         )
 
         return grid

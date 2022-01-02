@@ -31,7 +31,7 @@ class RichConsoleManager:
     def __init__(self, config=None):
         self.config = config
         self.thread = None
-        self.header = RichConsoleHeader()
+        self.header = RichConsoleHeader(config=config)
         self.layout = None
         self.log_panel = None
         self.progress_panel = None
