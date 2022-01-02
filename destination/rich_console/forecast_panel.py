@@ -24,26 +24,27 @@ class ForecastPanel:
         self.style = style
         self.table = None
 
-        if hasattr(config.observing_condition_config, 'forecast_service'):
-            self.service_name = config.observing_condition_config.forecast_service[0]
-        else:
-            self.service_name = 'ClearSky'
+        self.clear_dark_sky_forecast = ClearDarkSkyForecast(config=config)
+        self.open_weather_forecast = None
 
-        if self.service_name == 'ClearSky':
-            self.forecast_service = ClearDarkSkyForecast(config=config)
-        else:
-            self.forecast_service = OpenWeatherForecast(config=config)
+        if hasattr(config.observing_condition_config, 'forecast_service') and 'OpenWeather' in config.observing_condition_config.forecast_service:
+            self.open_weather_forecast = OpenWeatherForecast(config=config)
 
-        self.forecast_service.maybe_update_forecast()
+        self.clear_dark_sky_forecast.maybe_update_forecast()
+        if self.open_weather_forecast:
+            self.open_weather_forecast.maybe_update_forecast()
 
         self.sun_moon = SunAndMoon(latitude=config.observing_condition_config.latitude,
                                    longitude=config.observing_condition_config.longitude)
+
+        self.current_service =  self.clear_dark_sky_forecast
+        self.timestamp_since_changing_table = datetime.now()
 
     def clear_sky_table(self, height: int = 8, width: int = 20) -> Table:
         forecast_table = Table.grid(padding=(0, 0), expand=False)
         forecast_table.add_column(style='bold')
 
-        length = min(len(self.forecast_service.forecast), int(math.floor((width - 2 - 2 - 7) / 2)), 12)
+        length = min(len(self.clear_dark_sky_forecast.forecast), int(math.floor((width - 2 - 2 - 7) / 2)), 12)
 
         for i in range(length - 1):
             forecast_table.add_column(width=2, max_width=2)
@@ -60,12 +61,12 @@ class ForecastPanel:
         timezone = pytz.timezone(self.config.timezone)
         now = datetime.now(tz=timezone)
         for i in range(min(length, 23)):
-            forecast = self.forecast_service.forecast[i]
+            forecast = self.clear_dark_sky_forecast.forecast[i]
             if now.hour == forecast.local_hour:
                 right_index_to_blink = i
 
         for i in range(length):
-            forecast = self.forecast_service.forecast[i]
+            forecast = self.clear_dark_sky_forecast.forecast[i]
             style_string = 'grey62'
             place_holder_string = '  '
             if i % 2 == 0:
@@ -88,11 +89,11 @@ class ForecastPanel:
         forecast_table.add_row(*temperature_list)
         return forecast_table
 
-    def free_weather_table(self, height: int = 8, width: int = 20) -> Table:
+    def open_weather_table(self, height: int = 8, width: int = 20) -> Table:
         forecast_table = Table.grid(padding=(0, 0), expand=False)
         forecast_table.add_column(style='bold')
 
-        length = min(len(self.forecast_service.forecast), 12)
+        length = min(len(self.open_weather_forecast.forecast), 12)
 
         for i in range(length):
             forecast_table.add_column(width=2, max_width=2)  # Fit -99 ~ 100
@@ -109,7 +110,7 @@ class ForecastPanel:
         current_hour = int(now.hour)
 
         for i in range(length):
-            forecast = self.forecast_service.forecast[i]
+            forecast = self.open_weather_forecast.forecast[i]
             style_string = 'grey62'
             if i % 2 == 0:
                 style_string = 'bright_white'
@@ -144,11 +145,24 @@ class ForecastPanel:
         return forecast_table
 
     def forecast_table(self, height: int = 8, width: int = 20) -> Table:
-        self.forecast_service.maybe_update_forecast()
-        if self.service_name == 'ClearSky':
-            return self.clear_sky_table(height=height, width=width)
+        if self.open_weather_forecast:
+            self.open_weather_forecast.maybe_update_forecast()
+        self.clear_dark_sky_forecast.maybe_update_forecast()
+
+        now = datetime.now()
+        if (now - self.timestamp_since_changing_table).total_seconds() < 8:
+            if self.current_service == self.clear_dark_sky_forecast:
+                return self.clear_sky_table(width=width, height=height)
+            else:
+                return self.open_weather_table(width=width, height=height)
+
+        self.timestamp_since_changing_table = now
+        if self.current_service == self.clear_dark_sky_forecast:
+            self.current_service = self.open_weather_forecast
+            return self.open_weather_table(width=width, height=height)
         else:
-            return self.free_weather_table(height=height, width=width)
+            self.current_service = self.clear_dark_sky_forecast
+            return self.clear_sky_table(width=width, height=height)
 
     def sun_moon_table(self):
         observation = self.sun_moon.observe()  # type : SunAndMoonDataPoint
@@ -174,9 +188,9 @@ class ForecastPanel:
         width = options.max_width
         height = options.height or options.size.height
         layout = self.layout
-        title = f'{self.service_name} Forecast ({width}x{height})'
-        if self.service_name == 'ClearSky' and self.forecast_service.title:
-            title = f'Forecast for {self.forecast_service.title}'
+        title = f'Forecast ({width}x{height})'
+        if self.current_service == self.clear_dark_sky_forecast and self.current_service.title:
+            title = f'Forecast for {self.current_service.title}'
 
         table = Table.grid(padding=(0, 2), expand=False)
         table.add_row(self.forecast_table(width=width, height=height), self.sun_moon_table())
