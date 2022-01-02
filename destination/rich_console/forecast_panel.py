@@ -60,7 +60,7 @@ class ForecastPanel:
             forecast_table.add_row(Text('Unable to execute ClearSky forecast service',
                                         style=RichTextStylesEnum.CRITICAL.value))
         else:
-            length = min(len(self.current_service.forecast), int(math.floor((width - 2 - 2 - 7) / 2)), 12)
+            length = min(len(self.current_service.forecast), int(math.floor((width - 2 - 2 - 7) / 2)))
 
             for i in range(length - 1):
                 forecast_table.add_column(width=2, max_width=2)
