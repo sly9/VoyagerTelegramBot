@@ -14,6 +14,7 @@ from data_structure.forecast_color_mapping import get_temperature_color, get_hum
     get_wind_speed_color
 from utils.forecast.clear_dark_sky_forecast import ClearDarkSkyForecast
 from utils.forecast.open_weather_forecast import OpenWeatherForecast
+from utils.sun_and_moon import SunAndMoon
 
 
 class ForecastPanel:
@@ -34,6 +35,9 @@ class ForecastPanel:
             self.forecast_service = OpenWeatherForecast(config=config)
 
         self.forecast_service.maybe_update_forecast()
+
+        self.sun_moon = SunAndMoon(latitude=config.observing_condition_config.latitude,
+                                   longitude=config.observing_condition_config.longitude)
 
     def clear_sky_table(self, height: int = 8, width: int = 20) -> Table:
         forecast_table = Table.grid(padding=(0, 0), expand=False)
@@ -146,6 +150,24 @@ class ForecastPanel:
         else:
             return self.free_weather_table(height=height, width=width)
 
+    def sun_moon_table(self):
+        observation = self.sun_moon.observe()  # type : SunAndMoonDataPoint
+        table = Table.grid(padding=(0, 2), expand=False)
+
+        def readable_time(time):
+            return f'{time.hour}:{time.minute}'
+
+        table.add_row('Summary', Text('Clear', style='white on green'), Text('Calm', style='white on green'),
+                      Text('Dry', style='white on green'), Text('Dark', style='white on green'))
+        table.add_row('☀', f'Alt {observation.sun_altitude:.1f}°', 'Set ' + readable_time(observation.sunset_localtime),
+                      'Rise ' + readable_time(observation.sunrise_localtime))
+        table.add_row(observation.moon_phase_emoji, f'Illum {observation.moon_phase * 100:0.0f}%',
+                      f'Set {readable_time(observation.moonset_localtime)}',
+                      f'Rise {readable_time(observation.moonrise_localtime)}')
+        table.add_row('Astro Twi', 'Start', f'{readable_time(observation.astro_twilight_start_localtime)}', 'End',
+                      f'{readable_time(observation.astro_twilight_end_localtime)}')
+        return table
+
     def __rich_console__(
             self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
@@ -156,8 +178,11 @@ class ForecastPanel:
         if self.service_name == 'ClearSky' and self.forecast_service.title:
             title = f'Forecast for {self.forecast_service.title}'
 
+        table = Table.grid(padding=(0, 2), expand=False)
+        table.add_row(self.forecast_table(width=width, height=height), self.sun_moon_table())
+
         yield Panel(
-            Align.left(self.forecast_table(width=width, height=height), vertical="top"),
+            Align.left(table, vertical="top"),
             style=self.style,
             title=title,
             border_style="blue",
