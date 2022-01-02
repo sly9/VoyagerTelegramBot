@@ -1,5 +1,5 @@
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytz
 from rich.align import Align
@@ -58,8 +58,8 @@ class ForecastPanel:
 
         # find the right index to blink:
         right_index_to_blink = 0
-        timezone = pytz.timezone(self.config.timezone)
-        now = datetime.now(tz=timezone)
+        time_zone = pytz.timezone(self.config.timezone)
+        now = datetime.now(tz=time_zone)
         for i in range(min(length, 23)):
             forecast = self.clear_dark_sky_forecast.forecast[i]
             if now.hour == forecast.local_hour:
@@ -95,8 +95,12 @@ class ForecastPanel:
 
         length = min(len(self.open_weather_forecast.forecast), 12)
 
-        for i in range(length):
+        if length > 0:
+            # Column to explicitly show current condition
+            forecast_table.add_column(justify='right')
+        for i in range(1, length):
             forecast_table.add_column(width=2, max_width=2)  # Fit -99 ~ 100
+
         hour_list = ['Hour']
         temperature_list = ['Temperature ']
         dew_list = ['Dew Point']
@@ -105,16 +109,39 @@ class ForecastPanel:
         wind_speed_list = ['Wind']
         # weather_list = ['Weather ']
 
-        timezone = pytz.timezone(self.config.timezone)
-        now = datetime.now(tz=timezone)
-        current_hour = int(now.hour)
+        if length > 0:
+            forecast = self.forecast_service.forecast[0]
+            # Explicitly show current condition
 
+            hour_list.append(Text('Now ', style='white on black'))
+
+            color_string = get_temperature_color(forecast.temperature)
+            temperature_list.append(Text(str(forecast.temperature) + '°C', style=f'black on {color_string}'))
+
+            color_string = get_temperature_color(forecast.dew_point)
+            dew_list.append(Text(str(forecast.dew_point) + '°C', style=f'black on {color_string}'))
+
+            color_string = get_humidity_color(forecast.humidity)
+            humidity_list.append(Text(str(forecast.humidity) + '%', style=f'black on {color_string}'))
+
+            color_string = get_cloud_cover_color(forecast.cloud_cover_percentage)
+            cloud_cover_list.append(Text(str(forecast.cloud_cover_percentage) + '%', style=f'black on {color_string}'))
+
+            # weather_list.append(Text(str(forecast.weather_id), style=style_string))
+
+            color_string = get_wind_speed_color(forecast.wind_speed)
+            wind_speed_list.append(Text(str(forecast.wind_speed) + 'm/s', style=f'black on {color_string}'))
+
+        time_zone = pytz.timezone(self.config.timezone)
         for i in range(length):
             forecast = self.open_weather_forecast.forecast[i]
             style_string = 'grey62'
             if i % 2 == 0:
                 style_string = 'bright_white'
-            hour = (current_hour + i) % 24
+            dt_object = datetime.utcfromtimestamp(forecast.dt)
+            dt_object = dt_object.replace(tzinfo=timezone.utc).astimezone(tz=time_zone)
+
+            hour = (dt_object.hour + i) % 24
             hour_list.append(Text(f'{hour:02}', style=style_string))
 
             color_string = get_temperature_color(forecast.temperature)

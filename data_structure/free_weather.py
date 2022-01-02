@@ -9,6 +9,7 @@ weather_id_text_mapping = {
 
 @dataclass
 class FreeWeatherDataPoint:
+    dt: int = 0
     temperature: int = 0
     weather_id: int = 0
     cloud_cover_percentage: int = -1
