@@ -110,7 +110,7 @@ class ForecastPanel:
         # weather_list = ['Weather ']
 
         if length > 0:
-            forecast = self.forecast_service.forecast[0]
+            forecast = self.open_weather_forecast.forecast[0]
             # Explicitly show current condition
 
             hour_list.append(Text('Now ', style='white on black'))
