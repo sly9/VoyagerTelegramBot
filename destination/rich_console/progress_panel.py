@@ -4,6 +4,7 @@ from rich.console import RenderResult, Console, ConsoleOptions
 from rich.panel import Panel
 from rich.progress_bar import ProgressBar
 from rich.table import Table
+from rich.text import Text
 
 from data_structure.shot_running_info import ShotRunningStatus, ShotRunningInfo
 
@@ -28,7 +29,8 @@ class ProgressPanel:
                     f'Status: {self.shot_running_info.status.name}    {self.shot_running_info.elapsed_exposure}s / {self.shot_running_info.total_exposure}s')
             else:
                 progress_table.add_row(f'Status: {self.shot_running_info.status.name}')
-            progress_table.add_row(f'Imaging: {self.shot_running_info.filename}')
+            imaging_text = Text(f'Imaging: {self.shot_running_info.filename}', overflow='ellipsis', no_wrap=True)
+            progress_table.add_row(imaging_text)
             progress_table.add_row(self.image_progress)
             progress_table.add_row(f'Sequence: {self.sequence_name}')
             progress_table.add_row(self.sequence_progress)
