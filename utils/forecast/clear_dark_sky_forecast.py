@@ -18,6 +18,7 @@ class ClearDarkSkyForecast(BaseHttpForecast):
     def __init__(self, config: object):
         super().__init__(config=config)
         self.title = ''
+        self.service_name = 'ClearSky'
 
     def get_api_url(self) -> str:
         self.determine_key()

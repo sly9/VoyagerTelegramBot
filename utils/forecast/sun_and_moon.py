@@ -38,6 +38,7 @@ moon_phase_emoji_map = {
 class SunAndMoon(BaseAlgorithmForecast):
     def __init__(self, config: object):
         super().__init__(config=config)
+        self.service_name = 'Sun & Moon'
         self.observer = ephem.Observer()
         self.observer.lat = str(self.config.observing_condition_config.latitude)
         self.observer.lon = str(self.config.observing_condition_config.longitude)

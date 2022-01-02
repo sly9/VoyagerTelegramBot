@@ -11,6 +11,7 @@ FORECAST_HEADER = {
 
 class BaseHttpForecast:
     def __init__(self, config: object):
+        self.service_name = ''
         self.forecast = list()
         self.config = config
         self.timezone = pytz.timezone(self.config.timezone)
@@ -46,7 +47,8 @@ class BaseHttpForecast:
 
 class BaseAlgorithmForecast:
     def __init__(self, config: object):
-        self.forecast = list()
+        self.service_name = ''
+        self.forecast = None
         self.config = config
         self.timezone = pytz.timezone(self.config.timezone)
         self.last_updated_time = None  # type: datetime.datetime

@@ -239,9 +239,9 @@ class ForecastPanel:
         width = options.max_width
         height = options.height or options.size.height
         layout = self.layout
-        title = f'Forecast ({width}x{height})'
+        title = f'{self.current_service.service_name}'
         if self.current_service and hasattr(self.current_service, 'title'):
-            title = f'Forecast for {self.current_service.title}'
+            title = f'{self.current_service.service_name} for {self.current_service.title}'
 
         table = self.forecast_table(width=width, height=height)
         yield Panel(
