@@ -22,6 +22,18 @@ class SunAndMoonDataPoint:
     moon_phase_emoji: str = '🌙'
 
 
+moon_phase_emoji_map = {
+    'Full': '🌕',
+    'New': '🌑',
+    'First Quarter': '🌓',
+    'Last Full Quarter': '🌗',
+    'Waxing Crescent': '🌒',
+    'Waxing Gibbous': '🌔',
+    'Waning Gibbous': '🌖',
+    'Waning Crescent': '🌘'
+}
+
+
 class SunAndMoon:
     def __init__(self, latitude: float = 0, longitude: float = 0, elevation: float = 0,
                  timezone_name: str = 'US/Mountain'):
@@ -33,6 +45,38 @@ class SunAndMoon:
         self.observer.horizon = '-0:34'
 
         self.timezone = pytz.timezone(timezone_name)
+
+    def human_moon(self):
+        target_date_utc = self.observer.date
+        target_date_local = ephem.localtime(target_date_utc).date()
+        next_full = ephem.localtime(ephem.next_full_moon(target_date_utc)).date()
+        next_new = ephem.localtime(ephem.next_new_moon(target_date_utc)).date()
+        next_last_quarter = ephem.localtime(ephem.next_last_quarter_moon(target_date_utc)).date()
+        next_first_quarter = ephem.localtime(ephem.next_first_quarter_moon(target_date_utc)).date()
+        previous_full = ephem.localtime(ephem.previous_full_moon(target_date_utc)).date()
+        previous_new = ephem.localtime(ephem.previous_new_moon(target_date_utc)).date()
+        previous_last_quarter = ephem.localtime(ephem.previous_last_quarter_moon(target_date_utc)).date()
+        previous_first_quarter = ephem.localtime(ephem.previous_first_quarter_moon(target_date_utc)).date()
+        if target_date_local in (next_full, previous_full):
+            return 'Full'
+        elif target_date_local in (next_new, previous_new):
+            return 'New'
+        elif target_date_local in (next_first_quarter, previous_first_quarter):
+            return 'First Quarter'
+        elif target_date_local in (next_last_quarter, previous_last_quarter):
+            return 'Last Full Quarter'
+        elif previous_new < next_first_quarter < next_full < next_last_quarter < next_new:
+            return 'Waxing Crescent'
+        elif previous_first_quarter < next_full < next_last_quarter < next_new < next_first_quarter:
+            return 'Waxing Gibbous'
+        elif previous_full < next_last_quarter < next_new < next_first_quarter < next_full:
+            return 'Waning Gibbous'
+        elif previous_last_quarter < next_new < next_first_quarter < next_full < next_last_quarter:
+            return 'Waning Crescent'
+
+    def moon_emoji(self):
+        human_readable_moon_phase = self.human_moon()
+        return moon_phase_emoji_map[human_readable_moon_phase]
 
     def localtime_from_ephem_date(self, date: ephem.Date):
         utc_date_string = date.datetime().isoformat() + '+00:00'
@@ -62,13 +106,17 @@ class SunAndMoon:
         moon_altitude = moon.alt
         moonrise = self.localtime_from_ephem_date(self.observer.next_rising(moon))
         moonset = self.localtime_from_ephem_date(self.observer.next_setting(moon))
+        moon_phase_string = self.human_moon()
+        moon_phase_emoji = self.moon_emoji()
 
         return SunAndMoonDataPoint(sun_altitude=sun_altitude * 180 / math.pi, sunrise_localtime=sunrise,
                                    sunset_localtime=sunset,
                                    astro_twilight_start_localtime=astro_twilight_start,
                                    astro_twilight_end_localtime=astro_twilight_end,
                                    moon_altitude=moon_altitude * 180 / math.pi,
-                                   moon_phase=moon.moon_phase, moonset_localtime=moonset, moonrise_localtime=moonrise)
+                                   moon_phase=moon.moon_phase, moon_phase_string=moon_phase_string,
+                                   moon_phase_emoji=moon_phase_emoji,
+                                   moonset_localtime=moonset, moonrise_localtime=moonrise)
 
 
 if __name__ == '__main__':
@@ -78,5 +126,5 @@ if __name__ == '__main__':
     now = datetime.datetime.now()
     for i in range(100):
         o = s.observe(dt=now)
-        print(o.moon_phase)
+        print(now, o.moon_phase_emoji, o.moon_phase_string)
         now = now + datetime.timedelta(days=1)
