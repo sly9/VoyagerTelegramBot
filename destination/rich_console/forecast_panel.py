@@ -44,7 +44,7 @@ class ForecastPanel:
         forecast_table = Table.grid(padding=(0, 0), expand=False)
         forecast_table.add_column(style='bold')
 
-        length = min(len(self.clear_dark_sky_forecast.forecast), int(math.floor((width - 2 - 2 - 7) / 2)), 12)
+        length = min(len(self.clear_dark_sky_forecast.forecast), int(math.floor((width - 2 - 2 - 7) / 2)), 24)
 
         for i in range(length - 1):
             forecast_table.add_column(width=2, max_width=2)
