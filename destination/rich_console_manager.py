@@ -19,6 +19,7 @@ from destination.rich_console.device_status_panel import DeviceStatusPanel
 from destination.rich_console.footer_panel import FooterPanel
 from destination.rich_console.forecast_panel import ForecastPanel
 from destination.rich_console.log_panel import LogPanel
+from destination.rich_console.mount_panel import MountPanel
 from destination.rich_console.progress_panel import ProgressPanel
 from destination.rich_console.rich_console_header import RichConsoleHeader
 from event_emitter import ee
@@ -31,8 +32,9 @@ class RichConsoleManager:
     def __init__(self, config=None):
         self.config = config
         self.thread = None
-        self.header = RichConsoleHeader()
+        self.header = RichConsoleHeader(config=config)
         self.layout = None
+        self.mount_panel = None
         self.log_panel = None
         self.progress_panel = None
         self.device_status_panel = None
@@ -51,13 +53,16 @@ class RichConsoleManager:
     def setup(self):
         self.make_layout()
         self.log_panel = LogPanel(layout=self.layout['logs'], config=self.config)
+
+        self.mount_panel = MountPanel(config=self.config)
         self.progress_panel = ProgressPanel()
         self.footer_panel = FooterPanel(host_info=HostInfo())
         self.device_status_panel = DeviceStatusPanel(layout=self.layout['logs'])
         self.forecast_panel = ForecastPanel(layout=self.layout['logs'], config=self.config)
         self.layout['forecast'].update(self.forecast_panel)
         self.layout['header'].update(self.header)
-        self.update_status_panels(SystemStatusInfo())
+        self.update_status_panels()
+        self.update_mount_info_panel()
 
         self.layout['logs'].update(self.log_panel)
 
@@ -99,29 +104,9 @@ class RichConsoleManager:
         self.layout = layout
 
     def update_mount_info_panel(self, mount_info: MountInfo = MountInfo()):
-        if not mount_info:
-            return
-
         # Update mount information sub-panel
-        mount_table = Table.grid(padding=(0, 2))
-        mount_table.add_column(justify='right', style='bold grey89')
-        mount_table.add_column(justify='left', style='bold gold3')
-        mount_table.add_column(justify='right', style='bold grey89')
-        mount_table.add_column(justify='left', style='bold gold3')
-        mount_table.add_row('RA', mount_info.ra, 'RA J2K', mount_info.ra_j2000)
-        mount_table.add_row('DEC', mount_info.dec, 'DEC J2K', mount_info.dec_j2000)
-        mount_table.add_row('AZ', mount_info.az, 'ALT', mount_info.alt)
-        mount_table.add_row('Pier', mount_info.pier, 'FLIP', mount_info.time_to_flip)
-
-        mount_info_panel = Panel(
-            Align.center(mount_table, vertical='top'),
-            box=box.ROUNDED,
-            padding=(1, 1),
-            title="[bold blue]Mount Info",
-            border_style='bright_blue',
-        )
-
-        self.layout['mount_info'].update(mount_info_panel)
+        self.mount_panel.mount_info = mount_info
+        self.layout['mount_info'].update(self.mount_panel)
 
     def update_metrics_panel(self, imaging_metircs: ImagingMetrics = ImagingMetrics()):
         return
