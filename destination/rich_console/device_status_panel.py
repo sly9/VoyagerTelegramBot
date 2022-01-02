@@ -90,9 +90,8 @@ class DeviceStatusPanel:
             rotator_status = device_status_info.rotator_status
             if rotator_status.is_rotating:
                 status_table.add_row(Text('ROTATING', style=RichTextStylesEnum.WARNING.value))
-            else:
-                status_table.add_row(f'Sky PA: {rotator_status.sky_pa}°')
-                status_table.add_row(f'Rotator PA: {rotator_status.rotator_pa}°')
+            status_table.add_row(f'Sky PA: {rotator_status.sky_pa}°')
+            status_table.add_row(f'Rotator PA: {rotator_status.rotator_pa}°')
         if height > 22:
             status_table.add_row(end_section=True)
 
