@@ -57,6 +57,11 @@ class SunAndMoon:
         previous_new = ephem.localtime(ephem.previous_new_moon(target_date_utc)).date()
         previous_last_quarter = ephem.localtime(ephem.previous_last_quarter_moon(target_date_utc)).date()
         previous_first_quarter = ephem.localtime(ephem.previous_first_quarter_moon(target_date_utc)).date()
+
+        waxing, waning = 'Waxing', 'Waning'
+        if self.observer.lat < 0:
+            waxing, waning = 'Waning', 'Waxing'
+
         if target_date_local in (next_full, previous_full):
             return 'Full'
         elif target_date_local in (next_new, previous_new):
@@ -66,13 +71,13 @@ class SunAndMoon:
         elif target_date_local in (next_last_quarter, previous_last_quarter):
             return 'Last Full Quarter'
         elif previous_new < next_first_quarter < next_full < next_last_quarter < next_new:
-            return 'Waxing Crescent'
+            return waxing + ' Crescent'
         elif previous_first_quarter < next_full < next_last_quarter < next_new < next_first_quarter:
-            return 'Waxing Gibbous'
+            return waxing + ' Gibbous'
         elif previous_full < next_last_quarter < next_new < next_first_quarter < next_full:
-            return 'Waning Gibbous'
+            return waning + ' Gibbous'
         elif previous_last_quarter < next_new < next_first_quarter < next_full < next_last_quarter:
-            return 'Waning Crescent'
+            return waning + ' Crescent'
 
     def moon_emoji(self):
         human_readable_moon_phase = self.human_moon()
@@ -120,11 +125,14 @@ class SunAndMoon:
 
 
 if __name__ == '__main__':
-    s = SunAndMoon(latitude=31.947208, longitude=-108.898106)
+    s0 = SunAndMoon(latitude=31.947208, longitude=-108.898106)
+    s1 = SunAndMoon(latitude=-10.947208, longitude=-58.898106)
 
-    o = s.observe()
+    o0 = s0.observe()
+    o1 = s1.observe()
     now = datetime.datetime.now()
     for i in range(100):
-        o = s.observe(dt=now)
-        print(now, o.moon_phase_emoji, o.moon_phase_string)
+        o0 = s0.observe(dt=now)
+        o1 = s1.observe(dt=now)
+        print(now, o0.moon_phase_emoji, o0.moon_phase_string, o1.moon_phase_emoji, o1.moon_phase_string)
         now = now + datetime.timedelta(days=1)
