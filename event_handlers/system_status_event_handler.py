@@ -4,7 +4,8 @@ from typing import Dict
 from dateutil.parser import parse
 
 from data_structure.system_status_info import SystemStatusInfo, MountInfo, DeviceConnectedInfo, DeviceStatusInfo, \
-    FocuserStatus, RotatorStatus, MountStatusEnum, CcdStatus
+    FocuserStatus, RotatorStatus, MountStatusEnum, CcdStatus, DitherStatusEnum, GuideStatusEnum, CcdStatusEnum, \
+    VoyagerStatusEnum
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
@@ -81,15 +82,15 @@ class SystemStatusEventHandler(VoyagerEventHandler):
         else:
             mount_status = MountStatusEnum.UNDEFINED
 
-        ccd_status = CcdStatus(status=message['CCDSTAT'], temperature=message['CCDTEMP'],
+        ccd_status = CcdStatus(status=CcdStatusEnum(message['CCDSTAT']), temperature=message['CCDTEMP'],
                                power_percentage=message['CCDPOW'])
         focuser_status = FocuserStatus(temperature=message['AFTEMP'], position=message['AFPOS'])
         rotator_status = RotatorStatus(sky_pa=message['ROTSKYPA'], rotator_pa=message['ROTPA'],
                                        is_rotating=message['ROTISROT'])
 
         device_status_info = DeviceStatusInfo(
-            guide_status=message['GUIDESTAT'], dither_status=message['DITHSTAT'],
-            voyager_status=message['VOYSTAT'], ccd_status=ccd_status,
+            guide_status=GuideStatusEnum(message['GUIDESTAT']), dither_status=DitherStatusEnum(message['DITHSTAT']),
+            voyager_status=VoyagerStatusEnum(message['VOYSTAT']), ccd_status=ccd_status,
             mount_status=mount_status, focuser_status=focuser_status,
             rotator_status=rotator_status
         )

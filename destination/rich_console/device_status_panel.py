@@ -14,7 +14,7 @@ class DeviceStatusPanel:
     """Display header with clock."""
 
     def __init__(self, layout: Layout):
-        self.system_status_info = None
+        self.system_status_info = None  # type: SystemStatusInfo
         self.layout = layout
 
     def __rich_console__(
@@ -33,20 +33,20 @@ class DeviceStatusPanel:
         # CCD
         status_table.add_row('[bold]Main Camera[/bold]')
         if device_connection_info.camera_connected:
-            ccd_status_str = CcdStatusEnum(device_status_info.ccd_status.status)
+            ccd_status = device_status_info.ccd_status.status
             ccd_temperature = device_status_info.ccd_status.temperature
             ccd_power_percentage = device_status_info.ccd_status.power_percentage
-            if ccd_status_str == CcdStatusEnum.UNDEF:
+            if ccd_status == CcdStatusEnum.UNDEF:
                 ccd_text = Text('CONNECTED', style=RichTextStylesEnum.SAFE.value)
-            elif ccd_status_str == CcdStatusEnum.TIMEOUT_COOLING or ccd_status_str == CcdStatusEnum.ERROR:
-                ccd_text = Text(ccd_status_str.name, style=RichTextStylesEnum.CRITICAL.value)
-            elif ccd_status_str == CcdStatusEnum.COOLING or ccd_status_str == CcdStatusEnum.WARMUP_RUNNING:
-                ccd_text = Text(f'{ccd_temperature}°C | {ccd_status_str.name}', style=RichTextStylesEnum.WARNING.value)
-            elif ccd_status_str == CcdStatusEnum.COOLED or ccd_status_str == CcdStatusEnum.WARMUP_END:
+            elif ccd_status == CcdStatusEnum.TIMEOUT_COOLING or ccd_status == CcdStatusEnum.ERROR:
+                ccd_text = Text(ccd_status.name, style=RichTextStylesEnum.CRITICAL.value)
+            elif ccd_status == CcdStatusEnum.COOLING or ccd_status == CcdStatusEnum.WARMUP_RUNNING:
+                ccd_text = Text(f'{ccd_temperature}°C | {ccd_status.name}', style=RichTextStylesEnum.WARNING.value)
+            elif ccd_status == CcdStatusEnum.COOLED or ccd_status == CcdStatusEnum.WARMUP_END:
                 ccd_text = Text(f'{ccd_temperature}°C | {ccd_power_percentage} %', style=RichTextStylesEnum.SAFE.value)
             else:
                 # CcdStatEnum.INIT, NO_COOLER, or OFF:
-                ccd_text = Text(ccd_status_str.name, style=RichTextStylesEnum.SAFE.value)
+                ccd_text = Text(ccd_status.name, style=RichTextStylesEnum.SAFE.value)
         else:
             ccd_text = Text('DISCONNECTED', style=(RichTextStylesEnum.CRITICAL.value + ' blink'))
 
@@ -90,9 +90,8 @@ class DeviceStatusPanel:
             rotator_status = device_status_info.rotator_status
             if rotator_status.is_rotating:
                 status_table.add_row(Text('ROTATING', style=RichTextStylesEnum.WARNING.value))
-            else:
-                status_table.add_row(f'Sky PA: {rotator_status.sky_pa}°')
-                status_table.add_row(f'Rotator PA: {rotator_status.rotator_pa}°')
+            status_table.add_row(f'Sky PA: {rotator_status.sky_pa}°')
+            status_table.add_row(f'Rotator PA: {rotator_status.rotator_pa}°')
         if height > 22:
             status_table.add_row(end_section=True)
 
@@ -107,10 +106,13 @@ class DeviceStatusPanel:
             status_table.add_row(end_section=True)
         # Dithering
         status_table.add_row('Dithering')
-        if device_status_info.dither_status == DitherStatusEnum.RUNNING:
-            dither_text = Text('ON', style=RichTextStylesEnum.SAFE.value)
+        if device_status_info.dither_status == DitherStatusEnum.RUNNING or \
+                device_status_info.dither_status == DitherStatusEnum.WAITING_SETTLE:
+            dither_text = Text(device_status_info.dither_status.name, style=RichTextStylesEnum.SAFE.value)
+        elif device_status_info.dither_status == DitherStatusEnum.STOPPED:
+            dither_text = Text(device_status_info.dither_status.name)
         else:
-            dither_text = Text('OFF', style=RichTextStylesEnum.CRITICAL.value)
+            dither_text = Text(device_status_info.dither_status.name, style=RichTextStylesEnum.CRITICAL.value)
 
         status_table.add_row(dither_text)
 
@@ -123,4 +125,3 @@ class DeviceStatusPanel:
         )
 
         return status_panel
-
