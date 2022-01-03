@@ -59,8 +59,8 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
 
     def maybe_add_memory_datapoint(self):
         # Iterate over the list
-        voyager_usage = None
-        bot_usage = None
+        voyager_usage = 0
+        bot_usage = 0
         bot_pid = os.getpid()
         for proc in psutil.process_iter():
             try:

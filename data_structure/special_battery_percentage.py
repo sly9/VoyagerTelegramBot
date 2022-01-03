@@ -11,5 +11,5 @@ class SpecialBatteryPercentageEnum(enum.IntEnum):
 @dataclass
 class MemoryUsage:
     timestamp: float = 0  # timestamp in seconds since epoch
-    voyager_vms: float = -1  # Memory used by voyager in mega bytes.
-    bot_vms: float = -1  # Memory used by bot in mega bytes
+    voyager_vms: float = 0  # Memory used by voyager in mega bytes.
+    bot_vms: float = 0  # Memory used by bot in mega bytes
