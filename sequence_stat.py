@@ -54,8 +54,8 @@ class SequenceStat:
 
 
 class StatPlotter:
-    def __init__(self, plotter_configs: dict = None):
-        self.plotter_configs = plotter_configs
+    def __init__(self, config: dict = None):
+        self.plotter_configs = config.sequence_stats_config
 
         plt.ioff()
         plt.rcParams.update({'text.color': '#F5F5F5', 'font.size': 40, 'font.weight': 'bold',

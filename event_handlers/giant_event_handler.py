@@ -18,7 +18,7 @@ class GiantEventHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)
 
-        self.stat_plotter = StatPlotter(plotter_configs=self.config.sequence_stats_config)
+        self.stat_plotter = StatPlotter(config=self.config)
 
         self.running_seq = ''
         self.running_dragscript = ''
