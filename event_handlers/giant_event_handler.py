@@ -1,8 +1,10 @@
 import base64
+import os
 from typing import Dict
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
+from data_structure.image_types import ImageTypeEnum, FitTypeEnum
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.system_status_info import GuideStatusEnum, DitherStatusEnum
 from event_emitter import ee
@@ -30,9 +32,11 @@ class GiantEventHandler(VoyagerEventHandler):
         self.current_sequence_stat_message_id = None
 
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
+        self.image_type_dictionary = dict()
 
     def interested_event_names(self):
         return ['NewJPGReady',
+                'NewFITReady',
                 'AutoFocusResult',
                 'ShotRunning',
                 'ControlData',
@@ -41,6 +45,8 @@ class GiantEventHandler(VoyagerEventHandler):
     def handle_event(self, event_name: str, message: Dict):
         if event_name == 'NewJPGReady':
             self.handle_jpg_ready(message)
+        elif event_name == 'NewFITReady':
+            self.handle_fit_ready(message)
         elif event_name == 'AutoFocusResult':
             self.handle_focus_result(message)
         elif event_name == 'ShotRunning':
@@ -151,6 +157,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
     def handle_jpg_ready(self, message: Dict):
         expo = message['Expo']
+        file_name = message['File']
         filter_name = message['Filter']
         hfd = message['HFD']
         star_index = message['StarIndex']
@@ -160,7 +167,18 @@ class GiantEventHandler(VoyagerEventHandler):
         telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
                            + f'HFD: {hfd}, StarIndex: {star_index}'
 
-        if expo >= self.config.exposure_limit:
+        file_identifier = self.get_image_identifier(raw_path=file_name)
+        should_send_image = False
+
+        if file_identifier in self.image_type_dictionary:
+            if self.image_type_dictionary[file_identifier] == str(ImageTypeEnum.LIGHT.value) + FitTypeEnum.SHOT.value:
+                # FIT file has been generated and image type is '0SHOT' (LIGHT frame in shooting precedure)
+                should_send_image = True
+
+            # Remove key-value to reduce the usage of memory
+            self.image_type_dictionary.pop(file_identifier)
+
+        if expo >= self.config.exposure_limit or should_send_image:
             # new stat code
             exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
                                     timestamp=timestamp)
@@ -178,6 +196,14 @@ class GiantEventHandler(VoyagerEventHandler):
         else:
             ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
+    def handle_fit_ready(self, message: Dict):
+        file_name = message['File']
+        image_type = message['Type']
+        fit_type = message['VoyType']
+
+        image_identifier = self.get_image_identifier(file_name)
+        self.image_type_dictionary[image_identifier] = str(image_type) + fit_type  # '0SHOT', '0SYNC', etc
+
     # Helper methods
 
     def current_sequence_stat(self) -> SequenceStat:
@@ -193,6 +219,17 @@ class GiantEventHandler(VoyagerEventHandler):
     def add_focus_result(self, focus_result: FocusResult):
         self.current_sequence_stat().add_focus_result(focus_result)
 
+    @staticmethod
+    def get_image_identifier(raw_path: str = '') -> str:
+        if not raw_path:
+            return ''
+
+        raw_file_name = os.path.basename(raw_path)
+        if '.' in raw_file_name:
+            return raw_file_name[:raw_file_name.rindex('.')]
+
+        return raw_file_name
+
     # Reporting methods
 
     def report_stats_for_current_sequence(self):
@@ -204,3 +241,17 @@ class GiantEventHandler(VoyagerEventHandler):
         sequence_stat_image = self.stat_plotter.plot(sequence_stat=sequence_stat)
         ee.emit(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, sequence_stat_image=sequence_stat_image,
                 sequence_name=self.running_seq)
+
+
+def main():
+    fns = ['C:\\Users\\bigpi\\Documents\\GitHub\\VoyagerTelegramBot.fit',
+           'VoyagerTelegramBot.fit',
+           'VoyagerTelegramBot',
+           'C:\\Users\\bigpi\\Documents\\GitHub\\VoyagerTelegramBot']
+
+    for fn in fns:
+        print(fn, GiantEventHandler.get_image_identifier(fn))
+
+
+if __name__ == '__main__':
+    main()
