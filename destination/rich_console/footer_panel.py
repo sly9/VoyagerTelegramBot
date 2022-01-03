@@ -19,7 +19,7 @@ class FooterPanel:
 
         footer_table.add_row('',
                              f'{self.host_info.url}:{self.host_info.port} ({self.host_info.host_name})',
-                             '2021. Liuyi and Kun in California.',
+                             '2021-2022. Liuyi and Kun in California.',
                              '')
 
         yield footer_table
