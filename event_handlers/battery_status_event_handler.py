@@ -59,21 +59,26 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
 
     def maybe_add_memory_datapoint(self):
         # Iterate over the list
-        voyager_usage = 0
-        bot_usage = 0
+        voyager_vms_usage = 0
+        voyager_rss_usage = 0
+        bot_vms_usage = 0
+        bot_rss_usage = 0
         bot_pid = os.getpid()
         for proc in psutil.process_iter():
             try:
                 # Fetch process details as dict
                 pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
                 if pinfo['name'] == 'Voyager2.exe':
-                    voyager_usage = proc.memory_info().vms / (1024 * 1024)
+                    voyager_vms_usage = proc.memory_info().vms / (1024 * 1024)
+                    voyager_rss_usage = proc.memory_info().rss / (1024 * 1024)
                 if pinfo['pid'] == bot_pid:
-                    bot_usage = proc.memory_info().vms / (1024 * 1024)
+                    bot_vms_usage = proc.memory_info().vms / (1024 * 1024)
+                    bot_rss_usage = proc.memory_info().rss / (1024 * 1024)
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
         timestamp = datetime.datetime.now().timestamp()
-        memory_usage = MemoryUsage(timestamp=timestamp, voyager_vms=voyager_usage, bot_vms=bot_usage)
+        memory_usage = MemoryUsage(timestamp=timestamp, voyager_vms=voyager_vms_usage, voyager_rss=voyager_rss_usage,
+                                   bot_vms=bot_vms_usage, bot_rss=bot_rss_usage)
         self.memory_usage_history.append(memory_usage)
         ee.emit(BotEvent.UPDATE_MEMORY_USAGE.name,
                 memory_history=self.memory_usage_history, memory_usage=memory_usage)

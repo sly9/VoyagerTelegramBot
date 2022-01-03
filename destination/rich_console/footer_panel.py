@@ -30,7 +30,7 @@ class FooterPanel:
                 battery_row = f'🔋{self.battery_percentage}%'
             memory_row = ''
             if self.memory_usage:
-                memory_row = f'Voyager {self.memory_usage.voyager_vms:0.0f}MB Bot {self.memory_usage.bot_vms:0.0f}MB'
+                memory_row = f'Voyager {self.memory_usage.voyager_rss:0.0f}/{self.memory_usage.voyager_vms:0.0f}MB Bot {self.memory_usage.bot_rss:0.0f}/{self.memory_usage.bot_vms:0.0f}MB'
             host_name = memory_row
 
 
