@@ -1,19 +1,17 @@
 #!/bin/env python3
 import threading
+from collections import deque
 from time import sleep
 
-from rich import box
-from rich.align import Align
 from rich.layout import Layout
 from rich.live import Live
-from rich.panel import Panel
-from rich.table import Table
 
 from console import main_console
 from data_structure.host_info import HostInfo
 from data_structure.imaging_metrics import ImagingMetrics
 from data_structure.log_message_info import LogMessageInfo
 from data_structure.shot_running_info import ShotRunningInfo
+from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum, MemoryUsage
 from data_structure.system_status_info import SystemStatusInfo, MountInfo
 from destination.rich_console.device_status_panel import DeviceStatusPanel
 from destination.rich_console.footer_panel import FooterPanel
@@ -48,6 +46,8 @@ class RichConsoleManager:
         ee.on(BotEvent.APPEND_LOG.name, self.update_log_panel)
         ee.on(BotEvent.UPDATE_SHOT_STATUS.name, self.update_shot_status_panel)
         ee.on(BotEvent.UPDATE_HOST_INFO.name, self.update_footer_panel)
+        ee.on(BotEvent.UPDATE_BATTERY_PERCENTAGE.name, self.update_footer_panel)
+        ee.on(BotEvent.UPDATE_MEMORY_USAGE.name, self.update_footer_panel)
         ee.on(BotEvent.UPDATE_METRICS.name, self.update_metrics_panel)
 
     def setup(self):
@@ -56,7 +56,7 @@ class RichConsoleManager:
 
         self.mount_panel = MountPanel(config=self.config)
         self.progress_panel = ProgressPanel()
-        self.footer_panel = FooterPanel(host_info=HostInfo())
+        self.footer_panel = FooterPanel(config=self.config,host_info=HostInfo())
         self.device_status_panel = DeviceStatusPanel(layout=self.layout['logs'])
         self.forecast_panel = ForecastPanel(layout=self.layout['logs'], config=self.config)
         self.layout['forecast'].update(self.forecast_panel)
@@ -153,6 +153,14 @@ class RichConsoleManager:
         self.progress_panel.update_shot_running_info(shot_running_info=shot_running_info)
         self.layout['imaging'].update(self.progress_panel)
 
-    def update_footer_panel(self, host_info: HostInfo = HostInfo()):
+    def update_footer_panel(self, host_info: HostInfo = HostInfo(),
+                            battery_percentage: int = SpecialBatteryPercentageEnum.NOT_MONITORED.value,
+                            update: bool = False, memory_history: deque = None,
+                            memory_usage: MemoryUsage = None):
         self.footer_panel.host_info = host_info
+        if update:
+            self.footer_panel.battery_percentage = battery_percentage
+        if memory_usage:
+            self.footer_panel.memory_usage = memory_usage
+
         self.layout['footer'].update(self.footer_panel)
