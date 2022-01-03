@@ -13,6 +13,7 @@ from utils.forecast.base_forecast import BaseHttpForecast
 class OpenWeatherForecast(BaseHttpForecast):
     def __init__(self, config: object):
         super().__init__(config=config)
+        self.service_name = 'OpenWeather'
 
     def get_api_url(self) -> str:
         if not self.api_url:
@@ -48,6 +49,18 @@ class OpenWeatherForecast(BaseHttpForecast):
         if 'hourly' not in json_response:
             # response is not from 'onecall' API
             return
+
+        current_forecast = json_response['current']
+        data_point = FreeWeatherDataPoint(
+            dt=current_forecast['dt'],
+            temperature=current_forecast['temp'],
+            weather_id=current_forecast['weather'][0]['id'],
+            cloud_cover_percentage=current_forecast['clouds'],
+            humidity=current_forecast['humidity'],
+            dew_point=current_forecast['dew_point'],
+            wind_speed=current_forecast['wind_speed']
+        )
+        self.forecast.append(data_point)
 
         hourly_forecast_records = json_response['hourly']
         for hourly_record in hourly_forecast_records:
