@@ -1,7 +1,8 @@
 #!/bin/env python3
 import gc
 import io
-from collections import defaultdict
+from collections import defaultdict, deque
+from datetime import datetime
 from statistics import mean, stdev
 from typing import Tuple
 
@@ -9,9 +10,11 @@ import matplotlib
 import numpy as np
 from matplotlib import axes
 from matplotlib import pyplot as plt
+from matplotlib.dates import ConciseDateFormatter, HourLocator
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
+from data_structure.special_battery_percentage import MemoryUsage
 
 matplotlib.use('agg')
 
@@ -63,7 +66,6 @@ class StatPlotter:
                              'xtick.color': '#F5F5F5', 'ytick.color': '#F5F5F5'})
 
         self.figure_count = len(self.plotter_configs.types)
-
         self.filter_meta = self.plotter_configs.filter_styles
 
     def _circle(self, ax: axes.Axes = None, origin: Tuple[float, float] = (0, 0), radius: float = 1.0, **kwargs):
@@ -140,6 +142,34 @@ class StatPlotter:
         ax.set_ylabel('Exposure Time(s)')
         ax.yaxis.label.set_color('#F5F5F5')
         ax.set_title('Cumulative Exposure Time by Filter ({target})'.format(target=target_name))
+
+    def memory_history_plot(self, ax: axes.Axes = None, memory_history: deque[MemoryUsage] = deque()):
+        voyager_physical_memory = [x.voyager_rss for x in memory_history]
+        voyager_virtual_memory = [x.voyager_vms for x in memory_history]
+        bot_physical_memory = [x.bot_rss for x in memory_history]
+        bot_virtual_memory = [x.bot_vms for x in memory_history]
+
+        time_series = [datetime.fromtimestamp(x.timestamp) for x in memory_history]
+        ax.set_facecolor('#212121')
+
+        locator = HourLocator()
+        formatter = ConciseDateFormatter(locator=locator)
+
+        ax.xaxis.set_major_formatter(formatter)
+        ax.xaxis.set_major_locator(locator)
+
+        # hfd and star index
+        ax.plot(time_series, voyager_physical_memory, color='#F44336', linewidth=10, zorder=1)
+        ax.plot(time_series, voyager_virtual_memory, color='#B71C1C', linewidth=10, zorder=1)
+        #ax.plot(time_series, bot_virtual_memory, color='#2196F3', linewidth=10, zorder=1)
+        ax.plot(time_series, bot_physical_memory, color='#3F51B5', linewidth=10, zorder=1)
+
+        ax.tick_params(axis='y', labelcolor='#F44336')
+        ax.set_ylabel('Memory(MB)', color='#F44336')
+
+        ax.set_xlabel('Time')
+        ax.xaxis.label.set_color('#F5F5F5')
+        ax.set_title('Physical and virtual memory usage for voyager and bot')
 
     def guiding_plot(self, ax_main: axes.Axes = None, ax_scatter: axes.Axes = None, sequence_stat: SequenceStat = None,
                      target_name: str = ''):
@@ -223,7 +253,7 @@ class StatPlotter:
 
         ax_scatter.scatter(x=guide_x_error_list, y=guide_y_error_list, color='#26C6DA')
 
-    def plot(self, sequence_stat: SequenceStat = None):
+    def plot(self, sequence_stat: SequenceStat = None, memory_history: deque = deque()):
         if sequence_stat is None:
             return
 
@@ -247,6 +277,11 @@ class StatPlotter:
             self.exposure_plot(ax=ax, sequence_stat=sequence_stat, target_name=sequence_stat.name)
             figure_index += 1
 
+        if 'MemoryHistoryPlot' in self.plotter_configs.types:
+            ax = fig.add_subplot(gridspec[figure_index, :])
+            self.memory_history_plot(ax=ax, memory_history=memory_history)
+            figure_index += 1
+
         if 'GuidingPlot' in self.plotter_configs.types and len(sequence_stat.guide_x_error_list) > 0:
             ax_main = fig.add_subplot(gridspec[figure_index:figure_index + 2, 0])
             ax_scatter = fig.add_subplot(gridspec[figure_index, 1])
@@ -254,6 +289,7 @@ class StatPlotter:
             self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=sequence_stat,
                               target_name=sequence_stat.name)
             figure_index += 1
+
 
         # fig.tight_layout()
 

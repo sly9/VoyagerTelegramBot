@@ -4,6 +4,7 @@
 import base64
 import codecs
 import io
+import shutil
 import webbrowser
 from pathlib import Path
 from typing import Tuple, Dict
@@ -16,7 +17,9 @@ from event_names import BotEvent
 
 class HTMLReporter:
     def __init__(self):
+        shutil.rmtree("./replay/images")
         Path("./replay/images").mkdir(parents=True, exist_ok=True)
+
         self.html_file = codecs.open('./replay/index1.html', 'w', encoding='utf-8')
         self.write_header()
         self.image_count = 0
@@ -120,7 +123,7 @@ class HTMLReporter:
 
         return 'OK', dict()
 
-    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str):
+    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str, sequence_stat_message:str):
         self.send_image_message(image_data=sequence_stat_image, filename='SequenceStats.jpg',
                                 caption=sequence_name, as_document=False)
 

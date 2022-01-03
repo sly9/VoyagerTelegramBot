@@ -42,7 +42,7 @@ class Telegram:
         ee.on(BotEvent.UNPIN_MESSAGE.name, self.unpin_message)
         ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
 
-    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str):
+    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str, sequence_stat_message: str):
 
         if not self.current_chat_id and not self.current_sequence_stat_message_id:
             status, info_dict = self.send_image_message(image_data=sequence_stat_image,

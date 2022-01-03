@@ -1,11 +1,13 @@
 import base64
 import os
+from collections import deque
 from typing import Dict
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
 from data_structure.image_types import ImageTypeEnum, FitTypeEnum
 from data_structure.log_message_info import LogMessageInfo
+from data_structure.special_battery_percentage import MemoryUsage
 from data_structure.system_status_info import GuideStatusEnum, DitherStatusEnum
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
@@ -33,6 +35,8 @@ class GiantEventHandler(VoyagerEventHandler):
 
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
         self.image_type_dictionary = dict()
+        self.memory_history = deque()
+        ee.on(BotEvent.UPDATE_MEMORY_USAGE.name, self.update_memory_usage)
 
     def interested_event_names(self):
         return ['NewJPGReady',
@@ -219,6 +223,9 @@ class GiantEventHandler(VoyagerEventHandler):
     def add_focus_result(self, focus_result: FocusResult):
         self.current_sequence_stat().add_focus_result(focus_result)
 
+    def update_memory_usage(self, memory_history: deque, memory_usage: MemoryUsage):
+        self.memory_history = memory_history
+
     @staticmethod
     def get_image_identifier(raw_path: str = '') -> str:
         if not raw_path:
@@ -238,9 +245,9 @@ class GiantEventHandler(VoyagerEventHandler):
             return
         sequence_stat = self.current_sequence_stat()
 
-        sequence_stat_image = self.stat_plotter.plot(sequence_stat=sequence_stat)
+        sequence_stat_image = self.stat_plotter.plot(sequence_stat=sequence_stat, memory_history=self.memory_history)
         ee.emit(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, sequence_stat_image=sequence_stat_image,
-                sequence_name=self.running_seq)
+                sequence_name=self.running_seq, sequence_stat_message='This is a test message')
 
 
 def main():
