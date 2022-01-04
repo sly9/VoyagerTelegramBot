@@ -30,7 +30,7 @@ class ForecastPanel:
         self.enabled_tables = list()
 
         if hasattr(config.observing_condition_config, 'forecast_service'):
-            if 'ClearSky' in config.observing_condition_config.forecast_service:
+            if 'ClearDarkSky' in config.observing_condition_config.forecast_service:
                 clear_dark_sky_forecast = ClearDarkSkyForecast(config=config)
                 clear_dark_sky_forecast.maybe_update_forecast()
                 self.enabled_services.append(clear_dark_sky_forecast)
@@ -57,7 +57,7 @@ class ForecastPanel:
         forecast_table.add_column(style='bold')
 
         if not self.current_service:
-            forecast_table.add_row(Text('Unable to execute ClearSky forecast service',
+            forecast_table.add_row(Text('Unable to execute ClearDarkSky forecast service',
                                         style=RichTextStylesEnum.CRITICAL.value))
         else:
             length = min(len(self.current_service.forecast), int(math.floor((width - 2 - 2 - 7) / 2)))
@@ -112,7 +112,7 @@ class ForecastPanel:
         forecast_table.add_column(style='bold')
 
         if not self.current_service:
-            forecast_table.add_row(Text('Unable to execute ClearSky forecast service',
+            forecast_table.add_row(Text('Unable to execute ClearDarkSky forecast service',
                                         style=RichTextStylesEnum.CRITICAL.value))
         else:
             length = min(len(self.current_service.forecast), 12)
@@ -198,7 +198,7 @@ class ForecastPanel:
         table = Table.grid(padding=(0, 2), expand=False)
 
         if not self.current_service:
-            table.add_row(Text('Unable to execute ClearSky forecast service',
+            table.add_row(Text('Unable to execute ClearDarkSky forecast service',
                                style=RichTextStylesEnum.CRITICAL.value))
         else:
             observation = self.current_service.forecast
