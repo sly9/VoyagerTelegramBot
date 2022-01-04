@@ -228,7 +228,7 @@ class ForecastPanel:
             self.timestamp_since_changing_table = now
 
             self.current_service = self.enabled_services[self.current_service_idx]
-            self.current_service.update_forecast()
+            self.current_service.maybe_update_forecast()
 
         current_table = self.enabled_tables[self.current_service_idx](height=height, width=width)
         return current_table
