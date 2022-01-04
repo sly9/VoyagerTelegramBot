@@ -178,7 +178,7 @@ class GiantEventHandler(VoyagerEventHandler):
             should_send_image = True
             self.image_type_set.remove(file_identifier)
 
-        if expo >= self.config.exposure_limit or should_send_image:
+        if should_send_image:
             # new stat code
             exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
                                     timestamp=timestamp)

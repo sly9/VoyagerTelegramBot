@@ -51,13 +51,10 @@ telegram_setting:
   chat_id: <chat_id>
 
 ### Miscellaneous
-exposure_limit: 30 # The preview image will not be generated if exposure is less than 'exposure_limit'.
 # The timezone of your observatory -- not necessary the computer running this bot. Valid timezone names can be found here:
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: America/Los_Angeles
 should_dump_log: False  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
-# Deprecated, use monitor_local_computer instead. Will be removed no later than 0.2.8
-monitor_battery: False
 # Whether bot should try to monitor the system status of the computer it's running on. Useful when bot and voyager is running on the same computer
 monitor_local_computer: False
 allow_auto_reconnect: True
@@ -65,7 +62,7 @@ allow_auto_reconnect: True
 telegram_enabled: True
 html_report_enabled: False
 console_config:
-  use_emoji: False
+  use_emoji: True
   console_type: FULL # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
 observing_condition_config:
   forecast_service: [ClearSky, SunAndMoon]  # Options are [ClearSky, OpenWeather, SunAndMoon]
