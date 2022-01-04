@@ -45,6 +45,7 @@ class BaseHttpForecast:
             return
         self.update_forecast()
 
+
 class BaseAlgorithmForecast:
     def __init__(self, config: object):
         self.service_name = ''

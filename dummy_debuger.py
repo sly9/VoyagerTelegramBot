@@ -30,7 +30,7 @@ class DummyDebugger:
         console.main_console = Console(stderr=True, color_system=None)
 
         config.telegram_enabled = False
-        config.console_config.console_type = 'FULL'
+        config.console_config.console_type = 'PLAIN'
         config.html_report_enabled = True
         config.should_dump_log = False
 
@@ -56,7 +56,7 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('2021_12_07__voyager_bot_log.txt')
+    dd.load_messages('2021_11_14__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
     console.main_console.main_console.save_html('./replay/stdout.html')

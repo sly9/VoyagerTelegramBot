@@ -34,7 +34,7 @@ class GiantEventHandler(VoyagerEventHandler):
         self.current_sequence_stat_message_id = None
 
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
-        self.image_type_dictionary = dict()
+        self.image_type_set = set()
         self.memory_history = deque()
         ee.on(BotEvent.UPDATE_MEMORY_USAGE.name, self.update_memory_usage)
 
@@ -174,13 +174,9 @@ class GiantEventHandler(VoyagerEventHandler):
         file_identifier = self.get_image_identifier(raw_path=file_name)
         should_send_image = False
 
-        if file_identifier in self.image_type_dictionary:
-            if self.image_type_dictionary[file_identifier] == str(ImageTypeEnum.LIGHT.value) + FitTypeEnum.SHOT.value:
-                # FIT file has been generated and image type is '0SHOT' (LIGHT frame in shooting precedure)
-                should_send_image = True
-
-            # Remove key-value to reduce the usage of memory
-            self.image_type_dictionary.pop(file_identifier)
+        if file_identifier in self.image_type_set:
+            should_send_image = True
+            self.image_type_set.remove(file_identifier)
 
         if expo >= self.config.exposure_limit or should_send_image:
             # new stat code
@@ -206,7 +202,8 @@ class GiantEventHandler(VoyagerEventHandler):
         fit_type = message['VoyType']
 
         image_identifier = self.get_image_identifier(file_name)
-        self.image_type_dictionary[image_identifier] = str(image_type) + fit_type  # '0SHOT', '0SYNC', etc
+        if image_type == ImageTypeEnum.LIGHT.value and fit_type == FitTypeEnum.SHOT.value:
+            self.image_type_set.add(image_identifier)
 
     # Helper methods
 
