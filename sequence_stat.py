@@ -10,7 +10,7 @@ import matplotlib
 import numpy as np
 from matplotlib import axes
 from matplotlib import pyplot as plt
-from matplotlib.dates import ConciseDateFormatter, HourLocator
+from matplotlib.dates import ConciseDateFormatter, HourLocator, AutoDateLocator
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
@@ -152,16 +152,20 @@ class StatPlotter:
         time_series = [datetime.fromtimestamp(x.timestamp) for x in memory_history]
         ax.set_facecolor('#212121')
 
-        locator = HourLocator()
+        locator = AutoDateLocator()
         formatter = ConciseDateFormatter(locator=locator)
 
         ax.xaxis.set_major_formatter(formatter)
         ax.xaxis.set_major_locator(locator)
 
+        for memory_usage in memory_history:
+            if memory_usage.oom_observed:
+                ax.axvline(x=datetime.fromtimestamp(memory_usage.timestamp), color='#FF6D00')
+
         # hfd and star index
         ax.plot(time_series, voyager_physical_memory, color='#F44336', linewidth=10, zorder=1)
         ax.plot(time_series, voyager_virtual_memory, color='#B71C1C', linewidth=10, zorder=1)
-        #ax.plot(time_series, bot_virtual_memory, color='#2196F3', linewidth=10, zorder=1)
+        ax.plot(time_series, bot_virtual_memory, color='#2196F3', linewidth=10, zorder=1)
         ax.plot(time_series, bot_physical_memory, color='#3F51B5', linewidth=10, zorder=1)
 
         ax.tick_params(axis='y', labelcolor='#F44336')

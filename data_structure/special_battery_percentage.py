@@ -15,3 +15,4 @@ class MemoryUsage:
     bot_vms: float = 0  # Virtual Memory used by bot in mega bytes
     voyager_rss: float = 0  # Physical Memory used by voyager in mega bytes.
     bot_rss: float = 0  # Physical Memory used by bot in mega bytes
+    oom_observed: bool = False  # whether an OOM exception was observed recently

@@ -24,6 +24,7 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
         self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
         self.memory_usage_history = deque(maxlen=8640)  # 1 data point for 10 sec duration => 1 day usage.
         self.start_gathering()
+        self.battery_check_enabled = True
 
     def interested_event_names(self):
         try:
@@ -31,19 +32,25 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
             if battery is None:
                 ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
                         battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
-                return list()
-            return ['LogEvent', 'ShotRunning', 'ControlData']
         except Exception as exception:
             ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
                     battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
-            return list()
+            self.battery_check_enabled = False
+        return ['LogEvent', 'ShotRunning', 'ControlData']
 
     def handle_event(self, event_name: str, message: Dict):
         if not self.config.monitor_local_computer:
             ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
                     battery_percentage=SpecialBatteryPercentageEnum.NOT_MONITORED, update=False)
             return
+
         self.check_battery_status()
+
+        # Check log content and see if there's an OOM exception
+        if event_name == 'LogEvent':
+            text = message['Text']  # type: str
+            if text.lower().find('insufficient memory') >= 0 or text.lower().find('OutOfMemoryException') >= 0:
+                self.maybe_add_memory_datapoint(oom_observed=True)
 
     def start_gathering(self):
         if self.thread:
@@ -57,7 +64,7 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
             self.maybe_add_memory_datapoint()
             sleep(10)
 
-    def maybe_add_memory_datapoint(self):
+    def maybe_add_memory_datapoint(self, oom_observed: bool = False):
         # Iterate over the list
         voyager_vms_usage = 0
         voyager_rss_usage = 0
@@ -78,14 +85,22 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
                 pass
         timestamp = datetime.datetime.now().timestamp()
         memory_usage = MemoryUsage(timestamp=timestamp, voyager_vms=voyager_vms_usage, voyager_rss=voyager_rss_usage,
-                                   bot_vms=bot_vms_usage, bot_rss=bot_rss_usage)
+                                   bot_vms=bot_vms_usage, bot_rss=bot_rss_usage, oom_observed=oom_observed)
         self.memory_usage_history.append(memory_usage)
         ee.emit(BotEvent.UPDATE_MEMORY_USAGE.name,
                 memory_history=self.memory_usage_history, memory_usage=memory_usage)
 
     def check_battery_status(self):
+        if not self.battery_check_enabled:
+            return
         battery_msg = ''
         battery = psutil.sensors_battery()
+
+        if not battery:
+            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                    battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=True)
+            return
+
         if battery.power_plugged:
             ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
                     battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=False)
