@@ -21,6 +21,7 @@ class HTMLReporter:
         Path("./replay/images").mkdir(parents=True, exist_ok=True)
 
         self.html_file = codecs.open('./replay/index1.html', 'w', encoding='utf-8')
+        self.json_file = codecs.open('./replay/data.json', 'w', encoding='utf-8')
         self.write_header()
         self.image_count = 0
         self.event_sequence = 0
@@ -64,6 +65,7 @@ class HTMLReporter:
         url = 'file://' + str(Path(self.html_file.name).absolute())
         self.html_file.flush()
         self.html_file.close()
+
         webbrowser.open(url, new=2)
 
     def send_text_message(self, message) -> Tuple[str, Dict]:
@@ -123,7 +125,7 @@ class HTMLReporter:
 
         return 'OK', dict()
 
-    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str, sequence_stat_message:str):
+    def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str, sequence_stat_message: str):
         self.send_image_message(image_data=sequence_stat_image, filename='SequenceStats.jpg',
                                 caption=sequence_name, as_document=False)
 

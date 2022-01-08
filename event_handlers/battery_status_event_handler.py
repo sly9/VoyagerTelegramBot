@@ -21,21 +21,16 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)
         self.thread = None
-        self.throttle_count = 0  # A throttle counter, limits the frequency of sending local battery alerts.
+
+        self.last_battery_warning_timestamp = datetime.datetime.now()
+        self.battery_check_enabled = True
+        self.last_battery_status = None
+
         self.memory_usage_history = deque(maxlen=8640)  # 1 data point for 10 sec duration => 1 day usage.
         self.start_gathering()
-        self.battery_check_enabled = True
+
 
     def interested_event_names(self):
-        try:
-            battery = psutil.sensors_battery()
-            if battery is None:
-                ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
-                        battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
-        except Exception as exception:
-            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
-                    battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=False)
-            self.battery_check_enabled = False
         return ['LogEvent', 'ShotRunning', 'ControlData']
 
     def handle_event(self, event_name: str, message: Dict):
@@ -62,6 +57,12 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
     def run_loop(self):
         while True:
             self.maybe_add_memory_datapoint()
+            try:
+                if datetime.datetime.now() - self.last_battery_warning_timestamp > datetime.timedelta(minutes=1):
+                    self.check_battery_status()
+                    self.last_battery_warning_timestamp = datetime.datetime.now()
+            except Exception as exception:
+                pass
             sleep(10)
 
     def maybe_add_memory_datapoint(self, oom_observed: bool = False):
@@ -91,31 +92,29 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
                 memory_history=self.memory_usage_history, memory_usage=memory_usage)
 
     def check_battery_status(self):
-        if not self.battery_check_enabled:
-            return
-        battery_msg = ''
         battery = psutil.sensors_battery()
+        if battery and self.last_battery_status and battery.percent == self.last_battery_status.percent and battery.power_plugged == self.last_battery_status.power_plugged:
+            # nothing really changed, return.
+            return
 
         if not battery:
-            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
-                    battery_percentage=SpecialBatteryPercentageEnum.NOT_AVAILABLE, update=True)
+            # no battery, nothing to watch for. just return
             return
 
         if battery.power_plugged:
-            ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
-                    battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=False)
-            battery_msg = 'AC power is connected.'
-        elif battery.percent > 30:
-            battery_msg = f'Battery ({battery.percent}%)'
-        else:
-            battery_msg = f'!!Critical battery ({battery.percent}%)!!'
-
-        telegram_message = f'<b><pre>{battery_msg}</pre></b>'
-
-        if self.throttle_count < 30:
-            self.throttle_count += 1
-        else:
+            # this means battery status has changed from unplugged to plugged.
             ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
                     battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=True)
-            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
-            self.throttle_count = 0
+            battery_msg = 'Power is back on AC again'
+        else:
+            if battery.percent > 30:
+                battery_msg = f'Battery ({battery.percent}%)'
+            else:
+                battery_msg = f'!!Critical battery ({battery.percent}%)!!'
+
+        telegram_message = f'<b><pre>{battery_msg}</pre></b>'
+        ee.emit(BotEvent.UPDATE_BATTERY_PERCENTAGE.name,
+                battery_percentage=SpecialBatteryPercentageEnum.ON_AC_POWER, update=True)
+        ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
+
+        self.last_battery_status = battery

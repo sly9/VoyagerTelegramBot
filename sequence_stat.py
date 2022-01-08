@@ -143,7 +143,7 @@ class StatPlotter:
         ax.yaxis.label.set_color('#F5F5F5')
         ax.set_title('Cumulative Exposure Time by Filter ({target})'.format(target=target_name))
 
-    def memory_history_plot(self, ax: axes.Axes = None, memory_history: deque[MemoryUsage] = deque()):
+    def memory_history_plot(self, ax: axes.Axes = None, memory_history: deque = deque()):
         voyager_physical_memory = [x.voyager_rss for x in memory_history]
         voyager_virtual_memory = [x.voyager_vms for x in memory_history]
         bot_physical_memory = [x.bot_rss for x in memory_history]
