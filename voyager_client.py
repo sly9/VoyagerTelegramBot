@@ -8,7 +8,7 @@ from destination.console_manager import ConsoleManager
 from destination.html_reporter import HTMLReporter
 from destination.rich_console_manager import RichConsoleManager
 from destination.telegram import Telegram
-from event_handlers.battery_status_event_handler import BatteryStatusEventHandler
+from event_handlers.bot_computer_status_event_handler import BotComputerStatusEventHandler
 from event_handlers.giant_event_handler import GiantEventHandler
 from event_handlers.log_event_handler import LogEventHandler
 from event_handlers.misc_event_handler import MiscellaneousEventHandler
@@ -42,7 +42,7 @@ class VoyagerClient:
         self.register_event_handler(MiscellaneousEventHandler(config=config))
         self.register_event_handler(GiantEventHandler(config=config))
         self.register_event_handler(LogEventHandler(config=config))
-        self.register_event_handler(BatteryStatusEventHandler(config=config))
+        self.register_event_handler(BotComputerStatusEventHandler(config=config))
         self.register_event_handler(SystemStatusEventHandler(config=config))
         self.register_event_handler(ShotRunningEventHandler(config=config))
 

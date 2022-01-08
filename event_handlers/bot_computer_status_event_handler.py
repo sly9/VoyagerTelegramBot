@@ -13,9 +13,10 @@ from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
 
 
-class BatteryStatusEventHandler(VoyagerEventHandler):
+class BotComputerStatusEventHandler(VoyagerEventHandler):
     """
-    An event handler which is interested in local -- the bot's local, not voyager application's local, battery status.
+    An event handler which monitors the battery status, and bot memory usages of the bot computer.
+    If Voyager and bot are running on the same computer, Voyager memory usages are also monitored.
     """
 
     def __init__(self, config):
@@ -28,7 +29,6 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
 
         self.memory_usage_history = deque(maxlen=8640)  # 1 data point for 10 sec duration => 1 day usage.
         self.start_gathering()
-
 
     def interested_event_names(self):
         return ['LogEvent', 'ShotRunning', 'ControlData']
@@ -44,7 +44,7 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
         # Check log content and see if there's an OOM exception
         if event_name == 'LogEvent':
             text = message['Text']  # type: str
-            if text.lower().find('insufficient memory') >= 0 or text.lower().find('OutOfMemoryException') >= 0:
+            if text.lower().find('insufficient memory') >= 0 or text.lower().find('outofmemoryexception') >= 0:
                 self.maybe_add_memory_datapoint(oom_observed=True)
 
     def start_gathering(self):
@@ -72,6 +72,7 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
         bot_vms_usage = 0
         bot_rss_usage = 0
         bot_pid = os.getpid()
+
         for proc in psutil.process_iter():
             try:
                 # Fetch process details as dict
@@ -84,16 +85,21 @@ class BatteryStatusEventHandler(VoyagerEventHandler):
                     bot_rss_usage = proc.memory_info().rss / (1024 * 1024)
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
+
         timestamp = datetime.datetime.now().timestamp()
         memory_usage = MemoryUsage(timestamp=timestamp, voyager_vms=voyager_vms_usage, voyager_rss=voyager_rss_usage,
                                    bot_vms=bot_vms_usage, bot_rss=bot_rss_usage, oom_observed=oom_observed)
+
         self.memory_usage_history.append(memory_usage)
+
         ee.emit(BotEvent.UPDATE_MEMORY_USAGE.name,
                 memory_history=self.memory_usage_history, memory_usage=memory_usage)
 
     def check_battery_status(self):
         battery = psutil.sensors_battery()
-        if battery and self.last_battery_status and battery.percent == self.last_battery_status.percent and battery.power_plugged == self.last_battery_status.power_plugged:
+        if battery and self.last_battery_status and \
+                battery.percent == self.last_battery_status.percent and \
+                battery.power_plugged == self.last_battery_status.power_plugged:
             # nothing really changed, return.
             return
 
