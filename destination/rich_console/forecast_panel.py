@@ -124,8 +124,8 @@ class ForecastPanel:
                 forecast_table.add_column(width=2, max_width=2)  # Fit -99 ~ 100
 
             hour_list = ['Hour']
-            temperature_list = ['Temperature ']
-            dew_list = ['Dew Point']
+            temperature_list = ['Temp.']
+            dew_list = ['Dew Point ']
             humidity_list = ['Humidity']
             cloud_cover_list = ['Cloud']
             wind_speed_list = ['Wind']
@@ -204,7 +204,7 @@ class ForecastPanel:
             observation = self.current_service.forecast
 
             def readable_time(time):
-                return f'{time.hour}:{time.minute}'
+                return f'{time.hour:02d}:{time.minute:02d}'
 
             table.add_row('Summary', Text('Clear', style='white on green'), Text('Calm', style='white on green'),
                           Text('Dry', style='white on green'), Text('Dark', style='white on green'))
