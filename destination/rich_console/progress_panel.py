@@ -26,7 +26,7 @@ class ProgressPanel:
         if self.shot_running_info:
             if self.shot_running_info.status == ShotRunningStatus.EXPOSE:
                 progress_table.add_row(
-                    f'Status: {self.shot_running_info.status.name}    {self.shot_running_info.elapsed_exposure}s / {self.shot_running_info.total_exposure}s')
+                    f'Status: {self.shot_running_info.status.name}    {self.shot_running_info.elapsed_exposure:0.0f}s / {self.shot_running_info.total_exposure:0.0f}s')
             else:
                 progress_table.add_row(f'Status: {self.shot_running_info.status.name}')
             imaging_text = Text(f'Imaging: {self.shot_running_info.filename}', overflow='ellipsis', no_wrap=True)

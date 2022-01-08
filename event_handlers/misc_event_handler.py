@@ -1,6 +1,6 @@
 from typing import Dict
 
-from data_structure.host_info import HostInfo
+from data_structure.host_info import HostInfo, VoyagerConnectionStatus
 from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
@@ -24,7 +24,8 @@ class MiscellaneousEventHandler(VoyagerEventHandler):
         host_info = HostInfo(host_name=message['Host'],
                              url=self.config.voyager_setting.domain,
                              port=str(self.config.voyager_setting.port),
-                             voyager_ver=message['VOYVersion'])
+                             voyager_ver=message['VOYVersion'],
+                             connection_status=VoyagerConnectionStatus.CONNECTED)
         telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
             host_name=host_info.host_name,
             url=host_info.url,

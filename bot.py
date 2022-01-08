@@ -13,9 +13,13 @@ from collections import deque
 import websocket
 from rich import pretty
 from rich.console import Console
+from websocket import WebSocketAddressException
 
 from configs import ConfigBuilder
 from console import main_console
+from data_structure.host_info import VoyagerConnectionStatus, HostInfo
+from event_emitter import ee
+from event_names import BotEvent
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
 
@@ -101,10 +105,20 @@ class VoyagerConnectionManager:
             self.config.allow_auto_reconnect = False
             main_console.print('Received KeyboardInterrupt, quit gracefully')
         else:
-            main_console.print_exception(show_locals=True)
+            if type(error) == WebSocketAddressException or type(error) == ConnectionRefusedError:
+                main_console.print('Connected refused')
+            else:
+                main_console.print_exception(show_locals=True)
 
     def on_close(self, ws, close_status_code, close_msg):
         main_console.print(f'Closing connection, Code={close_status_code}, description= {close_msg}')
+        host_info = HostInfo(host_name='',
+                             url=self.config.voyager_setting.domain,
+                             port=str(self.config.voyager_setting.port),
+                             voyager_ver='',
+                             connection_status=VoyagerConnectionStatus.DISCONNECTED)
+        ee.emit(BotEvent.UPDATE_HOST_INFO.name, host_info=host_info)
+
         # try to reconnect with an exponentially increasing delay
         if self.config.allow_auto_reconnect:
             time.sleep(self.reconnect_delay_sec)

@@ -202,7 +202,7 @@ class GiantEventHandler(VoyagerEventHandler):
         fit_type = message['VoyType']
 
         image_identifier = self.get_image_identifier(file_name)
-        if image_type == ImageTypeEnum.LIGHT.value and fit_type == FitTypeEnum.SHOT.value:
+        if image_type == ImageTypeEnum.LIGHT.value and fit_type != FitTypeEnum.SYNC.value:
             self.image_type_set.add(image_identifier)
 
     # Helper methods
