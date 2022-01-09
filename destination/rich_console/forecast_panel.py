@@ -208,7 +208,7 @@ class ForecastPanel:
 
             table.add_row('Summary', Text('Clear', style='white on green'), Text('Calm', style='white on green'),
                           Text('Dry', style='white on green'), Text('Dark', style='white on green'))
-            table.add_row('☀', f'Alt {observation.sun_altitude:.1f}°',
+            table.add_row('🔆', f'Alt {observation.sun_altitude:.1f}°',
                           'Set ' + readable_time(observation.sunset_localtime),
                           'Rise ' + readable_time(observation.sunrise_localtime))
             table.add_row(observation.moon_phase_emoji, f'Illum {observation.moon_phase * 100:0.0f}%',
