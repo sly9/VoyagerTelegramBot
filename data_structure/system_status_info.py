@@ -45,6 +45,11 @@ class MountStatusEnum(enum.Enum):
     UNDEFINED = 'UNDEFINED'
 
 
+class SpecialDeviceReadingEnum(enum.IntEnum):
+    VALUE_DEVICE_OFF = -123456789,
+    VALUE_ERROR = 123456789
+
+
 @dataclass
 class CcdStatus:
     status: CcdStatusEnum = CcdStatusEnum.OFF,

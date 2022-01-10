@@ -6,7 +6,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from data_structure.system_status_info import DitherStatusEnum, GuideStatusEnum, MountStatusEnum, CcdStatusEnum
+from data_structure.system_status_info import DitherStatusEnum, GuideStatusEnum, MountStatusEnum, CcdStatusEnum, \
+    SpecialDeviceReadingEnum
 from destination.rich_console.styles import RichTextStylesEnum
 
 
@@ -43,9 +44,20 @@ class DeviceStatusPanel:
             elif ccd_status == CcdStatusEnum.TIMEOUT_COOLING or ccd_status == CcdStatusEnum.ERROR:
                 ccd_text = Text(ccd_status.name, style=RichTextStylesEnum.CRITICAL.value)
             elif ccd_status == CcdStatusEnum.COOLING or ccd_status == CcdStatusEnum.WARMUP_RUNNING:
-                ccd_text = Text(f'{ccd_temperature}°C | {ccd_status.name}', style=RichTextStylesEnum.WARNING.value)
+                if ccd_temperature == SpecialDeviceReadingEnum.VALUE_DEVICE_OFF:
+                    ccd_text = Text(CcdStatusEnum.OFF.name, style=RichTextStylesEnum.CRITICAL.value)
+                elif ccd_temperature == SpecialDeviceReadingEnum.VALUE_ERROR:
+                    ccd_text = Text(CcdStatusEnum.ERROR.name, style=RichTextStylesEnum.CRITICAL.value)
+                else:
+                    ccd_text = Text(f'{ccd_temperature}°C | {ccd_status.name}', style=RichTextStylesEnum.WARNING.value)
             elif ccd_status == CcdStatusEnum.COOLED or ccd_status == CcdStatusEnum.WARMUP_END:
-                ccd_text = Text(f'{ccd_temperature}°C | {ccd_power_percentage} %', style=RichTextStylesEnum.SAFE.value)
+                if ccd_temperature == SpecialDeviceReadingEnum.VALUE_DEVICE_OFF:
+                    ccd_text = Text(CcdStatusEnum.OFF.name, style=RichTextStylesEnum.CRITICAL.value)
+                elif ccd_temperature == SpecialDeviceReadingEnum.VALUE_ERROR:
+                    ccd_text = Text(CcdStatusEnum.ERROR.name, style=RichTextStylesEnum.CRITICAL.value)
+                else:
+                    ccd_text = Text(f'{ccd_temperature}°C | {ccd_power_percentage} %',
+                                    style=RichTextStylesEnum.SAFE.value)
             else:
                 # CcdStatEnum.INIT, NO_COOLER, or OFF:
                 ccd_text = Text(ccd_status.name, style=RichTextStylesEnum.SAFE.value)
@@ -85,10 +97,20 @@ class DeviceStatusPanel:
         if device_connection_info.focuser_connected:
             status_table.add_row(self.i18n['focuser'])
             focuser_status = device_status_info.focuser_status
-            status_table.add_row(Text(f'{focuser_status.temperature}°C | {focuser_status.position}',
-                                      style=RichTextStylesEnum.SAFE.value))
+
+            if focuser_status.temperature == SpecialDeviceReadingEnum.VALUE_DEVICE_OFF:
+                focuser_text = Text('OFF', style=RichTextStylesEnum.CRITICAL.value)
+            elif focuser_status.temperature == SpecialDeviceReadingEnum.VALUE_ERROR:
+                focuser_text = Text('ERROR', style=RichTextStylesEnum.CRITICAL.value)
+            else:
+                focuser_text = Text(f'{focuser_status.temperature}°C | {focuser_status.position}',
+                                    style=RichTextStylesEnum.SAFE.value)
+            
+            status_table.add_row(focuser_text)
+
         if height > 22:
             status_table.add_row(end_section=True)
+
         # Rotator
         if device_connection_info.rotator_connected:
             status_table.add_row(self.i18n['rotator'])
