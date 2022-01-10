@@ -153,11 +153,12 @@ class RichConsoleManager:
         self.progress_panel.update_shot_running_info(shot_running_info=shot_running_info)
         self.layout['imaging'].update(self.progress_panel)
 
-    def update_footer_panel(self, host_info: HostInfo = HostInfo(),
+    def update_footer_panel(self, host_info: HostInfo = None,
                             battery_percentage: int = SpecialBatteryPercentageEnum.NOT_MONITORED.value,
                             update: bool = False, memory_history: deque = None,
                             memory_usage: MemoryUsage = None):
-        self.footer_panel.host_info = host_info
+        if host_info:
+            self.footer_panel.host_info = host_info
         if update:
             self.footer_panel.battery_percentage = battery_percentage
         if memory_usage:
