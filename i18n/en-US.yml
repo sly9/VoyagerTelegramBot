@@ -1,3 +1,15 @@
+# Author: Kun
+messages:
+  host_connected: 'Connected to <b>{host_name}({url})</b> [{version}].'
+  drag_script_start: 'DragScript {ds_name} started.'
+  drag_script_finish: 'DragScript {ds_name} finished.'
+  drag_script_switch: 'Switching DragScript from {old_ds_name} to {new_ds_name}.'
+  sequence_start: 'Sequence {seq_name} started.'
+  sequence_finish: 'Sequence {seq_name} finished.'
+  sequence_switch: 'Switching Sequence from {old_seq_name} to {new_seq_name}.'
+  focus_error_message: 'Auto focusing failed with reason: {err_msg}'
+  focus_success_message: 'AutoFocusing for filter {filter_name} succeeded with position {position}, HFD: {hfd:.2f}'
+  shot_success_message: 'Exposure of {sequence_target} for {expo}sec using {filter_name} filter. HFD: {hfd}, StarIndex: { star_index }'
 device_status_panel: 'device_status_panel'
   panel_name: 'Device Status'
   connected: 'Connected'

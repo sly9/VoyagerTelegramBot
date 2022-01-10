@@ -36,6 +36,8 @@ class GiantEventHandler(VoyagerEventHandler):
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
         self.image_type_set = set()
         self.memory_history = deque()
+
+        self.i18n = self.config.i18n.messages
         ee.on(BotEvent.UPDATE_MEMORY_USAGE.name, self.update_memory_usage)
 
     def interested_event_names(self):
@@ -65,10 +67,9 @@ class GiantEventHandler(VoyagerEventHandler):
     # Handles each types of events
 
     def handle_version(self, message: Dict):
-        telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
-            host_name=message['Host'],
-            url=self.config.voyager_setting.domain,
-            version=message['VOYVersion'])
+        telegram_message = self.i18n['host_connected'].format(host_name=message['Host'],
+                                                              url=self.config.voyager_setting.domain,
+                                                              version=message['VOYVersion'])
         ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
     def handle_remote_action_result(self, message: Dict):
@@ -105,26 +106,31 @@ class GiantEventHandler(VoyagerEventHandler):
         if running_dragscript != self.running_dragscript:
             self.sequence_map = {}
             if running_dragscript == '':
-                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Just finished DragScript {self.running_dragscript}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
+                        self.i18n['drag_script_finish'].format(ds_name=self.running_dragscript))
             elif self.running_dragscript == '':
-                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Starting DragScript {running_dragscript}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
+                        self.i18n['drag_script_start'].format(ds_name=running_dragscript))
             else:
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
-                        f'Switching DragScript from {running_dragscript} to {self.running_dragscript}')
+                        self.i18n['drag_script_switch'].format(old_ds_name=running_dragscript,
+                                                               new_ds_name=self.running_dragscript))
             self.running_dragscript = running_dragscript
 
         if running_seq != self.running_seq:
             # self.report_stats_for_current_sequence()
             if running_seq == '':
-                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Just finished Sequence {self.running_seq}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
+                        self.i18n['sequence_finish'].format(seq_name=self.running_seq))
             elif self.running_seq == '':
-                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Starting Sequence {running_seq}')
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
+                        self.i18n['sequence_start'].format(seq_name=running_seq))
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
             else:
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
-                        f'Switching Sequence from {running_seq} to {self.running_seq}')
+                        self.i18n['sequence_switch'].format(old_seq_name=running_seq, new_seq_name=self.running_seq))
                 self.current_sequence_stat_chat_id = None
                 self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
@@ -138,9 +144,10 @@ class GiantEventHandler(VoyagerEventHandler):
         done = message['Done']
         last_error = message['LastError']
         if not done:
+            error_message = self.i18n['focus_error_message'].format(err_msg=last_error)
             ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                    error=LogMessageInfo(type='ERROR', message=f'Auto focusing failed with reason: {last_error}'))
-            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, f'Auto focusing failed with reason: {last_error}')
+                    error=LogMessageInfo(type='ERROR', message=error_message))
+            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, error_message)
             return
 
         filter_index = message['FilterIndex']
@@ -156,7 +163,7 @@ class GiantEventHandler(VoyagerEventHandler):
 
         filter_name = self.filter_name_list[filter_index]
 
-        telegram_message = f'AutoFocusing for filter {filter_name} succeeded with position {position}, HFD: {hfd:.2f}'
+        telegram_message = self.i18n['focus_error_message'].format(filter_name=filter_name, position=position, hfd=hfd)
         ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
     def handle_jpg_ready(self, message: Dict):
@@ -168,8 +175,9 @@ class GiantEventHandler(VoyagerEventHandler):
         sequence_target = message['SequenceTarget']
         timestamp = message['TimeInfo']
 
-        telegram_message = f'Exposure of {sequence_target} for {expo}sec using {filter_name} filter.' \
-                           + f'HFD: {hfd}, StarIndex: {star_index}'
+        telegram_message = self.i18n['shot_success_message'].format(sequence_target=sequence_target, expo=expo,
+                                                                    filter_name=filter_name, hfd=hfd,
+                                                                    star_index=star_index)
 
         file_identifier = self.get_image_identifier(raw_path=file_name)
         should_send_image = False

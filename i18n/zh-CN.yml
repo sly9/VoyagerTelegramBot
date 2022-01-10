@@ -1,3 +1,15 @@
+# Author: Kun
+messages:
+  host_connected: '已经连接到 <b>{host_name}({url})</b> [{version}]。'
+  drag_script_start: 'DragScript {ds_name} 开始。'
+  drag_script_finish: 'DragScript {ds_name} 结束。'
+  drag_script_switch: 'DragScript 从 {old_ds_name} 切换至 {new_ds_name}。'
+  sequence_start: '拍摄序列 {seq_name} 开始。'
+  sequence_finish: '拍摄序列 {seq_name} 完成。'
+  sequence_switch: '拍摄序列从 {old_seq_name} 切换至 {new_seq_name}。'
+  focus_error_message: '自动对焦发生错误： {err_msg}。'
+  focus_success_message: '通道 {filter_name} 自动对焦完成 @{position}， HFD：{hfd:.2f}。'
+  shot_success_message: '{sequence_target} 在 {filter_name} 通道完成 {expo} 秒曝光。HFD：{hfd}，StarIndex：{star_index}。'
 device_status_panel:
   panel_name: '设备状态'
   connected: '已连接'
@@ -9,4 +21,4 @@ device_status_panel:
   guiding: '导星'
   dithering: '相场抖动'
 footer_panel:
-  copyright: '2021-2022。Liuyi 和 Kun 在加利福尼亚州打造。'
+  copyright: '2021-2022。Liuyi 和 Kun 在加利福尼亚打造。'
