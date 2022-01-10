@@ -63,8 +63,10 @@ class ConfigBuilder:
         i18n_path = resource_path(i18n_relative_path)
 
         if not os.path.exists(i18n_path):
+            # Designated language file does not exist.
             i18n_path = resource_path('i18n/en-US.yml')
             if not os.path.exists(i18n_path):
+                # Even default English language file is missing.
                 return 'LOAD_CONFIG_FAILED'
 
         with open(i18n_path, 'r') as language_yaml_f:
