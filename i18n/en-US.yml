@@ -1,0 +1,12 @@
+device_status_panel: 'device_status_panel'
+  panel_name: 'Device Status'
+  connected: 'Connected'
+  disconnected: 'Disconnected'
+  main_camera: 'Main Camera'
+  mount: 'Mount'
+  focuser: 'Focuser'
+  rotator: 'Rotator'
+  guiding: 'Guiding'
+  dithering: 'Dithering'
+footer_panel:
+  copyright: '2021-2022. Liuyi and Kun in California.'

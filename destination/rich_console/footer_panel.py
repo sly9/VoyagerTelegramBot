@@ -11,6 +11,7 @@ class FooterPanel:
         self.battery_percentage = SpecialBatteryPercentageEnum.NOT_MONITORED.value
         self.memory_usage = None  # type: MemoryUsage
         self.config = config
+        self.i18n = self.config.i18n.footer_panel
 
     def host_info_row(self):
         host_name = self.host_info.host_name
@@ -42,10 +43,6 @@ class FooterPanel:
         footer_table.add_column(justify='right', style='bold gold3', min_width=40)
         footer_table.add_column(justify='center', min_width=2)
 
-
-        footer_table.add_row('',
-                             self.host_info_row(),
-                             '2021-2022. Liuyi and Kun in California.',
-                             self.battery_row())
+        footer_table.add_row('', self.host_info_row(), self.i18n['copyright'], self.battery_row())
 
         yield footer_table

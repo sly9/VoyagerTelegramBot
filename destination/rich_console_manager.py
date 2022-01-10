@@ -56,8 +56,8 @@ class RichConsoleManager:
 
         self.mount_panel = MountPanel(config=self.config)
         self.progress_panel = ProgressPanel()
-        self.footer_panel = FooterPanel(config=self.config,host_info=HostInfo())
-        self.device_status_panel = DeviceStatusPanel(layout=self.layout['logs'])
+        self.footer_panel = FooterPanel(config=self.config, host_info=HostInfo())
+        self.device_status_panel = DeviceStatusPanel(config=self.config, layout=self.layout['logs'])
         self.forecast_panel = ForecastPanel(layout=self.layout['logs'], config=self.config)
         self.layout['forecast'].update(self.forecast_panel)
         self.layout['header'].update(self.header)

@@ -1,0 +1,12 @@
+device_status_panel:
+  panel_name: '设备状态'
+  connected: '已连接'
+  disconnected: '未连接'
+  main_camera: '主相机'
+  mount: '赤道仪'
+  focuser: '调焦器'
+  rotator: '转动环'
+  guiding: '导星'
+  dithering: '相场抖动'
+footer_panel:
+  copyright: '2021-2022。Liuyi 和 Kun 在加利福尼亚州打造。'

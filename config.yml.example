@@ -58,6 +58,7 @@ should_dump_log: False  # [Optional] If true, all received JSON messages will be
 # Whether bot should try to monitor the system status of the computer it's running on. Useful when bot and voyager is running on the same computer
 monitor_local_computer: False
 allow_auto_reconnect: True
+language: en-US  # en-US for English, zh-CN for simplified Chinese, zh-TW for traditional Chinese
 
 telegram_enabled: True
 html_report_enabled: False

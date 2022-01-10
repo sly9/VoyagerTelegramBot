@@ -13,9 +13,11 @@ from destination.rich_console.styles import RichTextStylesEnum
 class DeviceStatusPanel:
     """Display header with clock."""
 
-    def __init__(self, layout: Layout):
+    def __init__(self, config: object, layout: Layout):
         self.system_status_info = None  # type: SystemStatusInfo
         self.layout = layout
+        self.config = config
+        self.i18n = self.config.i18n.device_status_panel
 
     def __rich_console__(
             self, console: Console, options: ConsoleOptions
@@ -31,13 +33,13 @@ class DeviceStatusPanel:
         device_connection_info = self.system_status_info.device_connection_info
         device_status_info = self.system_status_info.device_status_info
         # CCD
-        status_table.add_row('[bold]Main Camera[/bold]')
+        status_table.add_row('[bold]' + self.i18n['main_camera'] + '[/bold]')
         if device_connection_info.camera_connected:
             ccd_status = device_status_info.ccd_status.status
             ccd_temperature = device_status_info.ccd_status.temperature
             ccd_power_percentage = device_status_info.ccd_status.power_percentage
             if ccd_status == CcdStatusEnum.UNDEF:
-                ccd_text = Text('CONNECTED', style=RichTextStylesEnum.SAFE.value)
+                ccd_text = Text(self.i18n['connected'], style=RichTextStylesEnum.SAFE.value)
             elif ccd_status == CcdStatusEnum.TIMEOUT_COOLING or ccd_status == CcdStatusEnum.ERROR:
                 ccd_text = Text(ccd_status.name, style=RichTextStylesEnum.CRITICAL.value)
             elif ccd_status == CcdStatusEnum.COOLING or ccd_status == CcdStatusEnum.WARMUP_RUNNING:
@@ -48,7 +50,8 @@ class DeviceStatusPanel:
                 # CcdStatEnum.INIT, NO_COOLER, or OFF:
                 ccd_text = Text(ccd_status.name, style=RichTextStylesEnum.SAFE.value)
         else:
-            ccd_text = Text('DISCONNECTED', style=(RichTextStylesEnum.CRITICAL.value + ' blink'))
+            ccd_text = Text(self.i18n['disconnected'],
+                            style=(RichTextStylesEnum.CRITICAL.value + ' blink'))
 
         status_table.add_row(ccd_text)
 
@@ -56,7 +59,7 @@ class DeviceStatusPanel:
             status_table.add_row(end_section=True)
 
         # Mount
-        status_table.add_row('Mount')
+        status_table.add_row(self.i18n['mount'])
         if device_connection_info.mount_connected:
             mount_status = device_status_info.mount_status
             if mount_status == MountStatusEnum.TRACKING:
@@ -67,9 +70,11 @@ class DeviceStatusPanel:
                 mount_text = Text(mount_status.name, style=RichTextStylesEnum.WARNING.value)
             else:
                 # MountOperationEnum.UNDEF and invalid values
-                mount_text = Text('CONNECTED', style=RichTextStylesEnum.SAFE.value)
+                mount_text = Text(self.i18n['connected'],
+                                  style=RichTextStylesEnum.SAFE.value)
         else:
-            mount_text = Text('DISCONNECTED', style=(RichTextStylesEnum.CRITICAL.value + ' blink'))
+            mount_text = Text(self.i18n['disconnected'],
+                              style=(RichTextStylesEnum.CRITICAL.value + ' blink'))
 
         status_table.add_row(mount_text)
 
@@ -78,7 +83,7 @@ class DeviceStatusPanel:
 
         # Auto Focuser
         if device_connection_info.focuser_connected:
-            status_table.add_row('Focuser')
+            status_table.add_row(self.i18n['focuser'])
             focuser_status = device_status_info.focuser_status
             status_table.add_row(Text(f'{focuser_status.temperature}°C | {focuser_status.position}',
                                       style=RichTextStylesEnum.SAFE.value))
@@ -86,7 +91,7 @@ class DeviceStatusPanel:
             status_table.add_row(end_section=True)
         # Rotator
         if device_connection_info.rotator_connected:
-            status_table.add_row('Rotator')
+            status_table.add_row(self.i18n['rotator'])
             rotator_status = device_status_info.rotator_status
             if rotator_status.is_rotating:
                 status_table.add_row(Text('ROTATING', style=RichTextStylesEnum.WARNING.value))
@@ -96,7 +101,7 @@ class DeviceStatusPanel:
             status_table.add_row(end_section=True)
 
         # Guiding
-        status_table.add_row('Guiding')
+        status_table.add_row(self.i18n['guiding'])
         if device_status_info.guide_status == GuideStatusEnum.RUNNING:
             guide_text = Text('ON', style=RichTextStylesEnum.SAFE.value)
         else:
@@ -105,7 +110,7 @@ class DeviceStatusPanel:
         if height > 22:
             status_table.add_row(end_section=True)
         # Dithering
-        status_table.add_row('Dithering')
+        status_table.add_row(self.i18n['dithering'])
         if device_status_info.dither_status == DitherStatusEnum.RUNNING or \
                 device_status_info.dither_status == DitherStatusEnum.WAITING_SETTLE:
             dither_text = Text(device_status_info.dither_status.name, style=RichTextStylesEnum.SAFE.value)
@@ -120,7 +125,7 @@ class DeviceStatusPanel:
             Align.center(status_table, vertical='top'),
             box=box.ROUNDED,
             padding=(1, 2),
-            title="[b blue]Device Status",
+            title="[b blue]" + self.i18n['panel_name'],
             border_style='bright_blue',
         )
 

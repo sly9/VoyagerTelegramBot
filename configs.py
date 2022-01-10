@@ -54,6 +54,26 @@ class ConfigBuilder:
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
             self.config_yaml['telegram_setting']['chat_id'] = self.config_yaml['telegram_setting']['chat_ids'][0]
 
+        if 'language' not in self.config_yaml:
+            # Default language is set to English
+            self.config_yaml['language'] = 'en-US'
+
+        # Load language yaml file
+        i18n_relative_path = 'i18n/' + self.config_yaml['language'] + '.yml'
+        i18n_path = resource_path(i18n_relative_path)
+
+        if not os.path.exists(i18n_path):
+            i18n_path = resource_path('i18n/en-US.yml')
+            if not os.path.exists(i18n_path):
+                return 'LOAD_CONFIG_FAILED'
+
+        with open(i18n_path, 'r') as language_yaml_f:
+            try:
+                self.config_yaml['i18n'] = yaml.safe_load(language_yaml_f)
+            except Exception as exc:
+                main_console.print_exception(exc)
+                return 'LOAD_CONFIG_FAILED'
+
         config_for_printing = self.config_yaml.copy()
         config_for_printing.pop('telegram_setting')
         config_for_printing.pop('voyager_setting')
