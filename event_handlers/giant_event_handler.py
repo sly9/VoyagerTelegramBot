@@ -163,7 +163,8 @@ class GiantEventHandler(VoyagerEventHandler):
 
         filter_name = self.filter_name_list[filter_index]
 
-        telegram_message = self.i18n['focus_error_message'].format(filter_name=filter_name, position=position, hfd=hfd)
+        telegram_message = self.i18n['focus_success_message'].format(filter_name=filter_name, position=position,
+                                                                     hfd=hfd)
         ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
 
     def handle_jpg_ready(self, message: Dict):
