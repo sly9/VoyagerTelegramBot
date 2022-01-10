@@ -10,6 +10,7 @@ class MiscellaneousEventHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)
         self.message_counter = 0
+        self.i18n = self.config.i18n.messages
 
     def interested_in_all_events(self):
         return True
@@ -26,9 +27,8 @@ class MiscellaneousEventHandler(VoyagerEventHandler):
                              port=str(self.config.voyager_setting.port),
                              voyager_ver=message['VOYVersion'],
                              connection_status=VoyagerConnectionStatus.CONNECTED)
-        telegram_message = 'Connected to <b>{host_name}({url})</b> [{version}]'.format(
-            host_name=host_info.host_name,
-            url=host_info.url,
-            version=host_info.voyager_ver)
+        telegram_message = self.i18n['host_connected'].format(host_name=host_info.host_name,
+                                                              url=host_info.url,
+                                                              version=host_info.voyager_ver)
         ee.emit(BotEvent.UPDATE_HOST_INFO.name, host_info=host_info)
         ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)

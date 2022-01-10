@@ -65,13 +65,6 @@ class GiantEventHandler(VoyagerEventHandler):
             return
 
     # Handles each types of events
-
-    def handle_version(self, message: Dict):
-        telegram_message = self.i18n['host_connected'].format(host_name=message['Host'],
-                                                              url=self.config.voyager_setting.domain,
-                                                              version=message['VOYVersion'])
-        ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
-
     def handle_remote_action_result(self, message: Dict):
         method_name = message['MethodName']
         if method_name == 'RemoteGetFilterConfiguration':

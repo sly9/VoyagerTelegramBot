@@ -105,7 +105,7 @@ class DeviceStatusPanel:
             else:
                 focuser_text = Text(f'{focuser_status.temperature}°C | {focuser_status.position}',
                                     style=RichTextStylesEnum.SAFE.value)
-            
+
             status_table.add_row(focuser_text)
 
         if height > 22:
