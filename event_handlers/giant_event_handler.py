@@ -28,10 +28,9 @@ class GiantEventHandler(VoyagerEventHandler):
         self.shot_running = False  # whether the camera is exposing, inferred from 'ShotRunning' event
 
         # A dictionary of 'sequence name' => 'sequence stats'
+        # A special sequence with name 'default' will be used for all images taken without a sequence.
+        # This map will be cleared when a dragscript starts.
         self.sequence_map = dict()
-
-        self.current_sequence_stat_chat_id = None
-        self.current_sequence_stat_message_id = None
 
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
         self.image_type_set = set()
@@ -97,14 +96,17 @@ class GiantEventHandler(VoyagerEventHandler):
             self.add_guide_error_stat(guide_x, guide_y)
 
         if running_dragscript != self.running_dragscript:
-            self.sequence_map = {}
             if running_dragscript == '':
+                # a dragscript has changed from non-empty to empty. probably a DS has finished running.
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         self.i18n['drag_script_finish'].format(ds_name=self.running_dragscript))
             elif self.running_dragscript == '':
+                # a DS has changed from empty to non-empty. Probably a new DS has started.
+                self.sequence_map = {}
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         self.i18n['drag_script_start'].format(ds_name=running_dragscript))
             else:
+                # a DS has changed from one to another.
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         self.i18n['drag_script_switch'].format(old_ds_name=running_dragscript,
                                                                new_ds_name=self.running_dragscript))
@@ -118,14 +120,10 @@ class GiantEventHandler(VoyagerEventHandler):
             elif self.running_seq == '':
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         self.i18n['sequence_start'].format(seq_name=running_seq))
-                self.current_sequence_stat_chat_id = None
-                self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
             else:
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         self.i18n['sequence_switch'].format(old_seq_name=running_seq, new_seq_name=self.running_seq))
-                self.current_sequence_stat_chat_id = None
-                self.current_sequence_stat_message_id = None
                 self.report_stats_for_current_sequence()
             self.running_seq = running_seq
 
@@ -210,8 +208,9 @@ class GiantEventHandler(VoyagerEventHandler):
     # Helper methods
 
     def current_sequence_stat(self) -> SequenceStat:
-        self.sequence_map.setdefault(self.running_seq, SequenceStat(name=self.running_seq))
-        return self.sequence_map[self.running_seq]
+        name = self.running_seq or 'default'
+        self.sequence_map.setdefault(name, SequenceStat(name=name))
+        return self.sequence_map[name]
 
     def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):
         self.current_sequence_stat().add_exposure(exposure)
@@ -239,9 +238,6 @@ class GiantEventHandler(VoyagerEventHandler):
     # Reporting methods
 
     def report_stats_for_current_sequence(self):
-        if self.current_sequence_stat().name == '':
-            # one-off shots doesn't need stats, we only care about sequences.
-            return
         sequence_stat = self.current_sequence_stat()
 
         sequence_stat_image = self.stat_plotter.plot(sequence_stat=sequence_stat, memory_history=self.memory_history)
