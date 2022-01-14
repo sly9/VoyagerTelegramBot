@@ -1,3 +1,4 @@
+import codecs
 import os
 import sys
 from os.path import exists
@@ -48,7 +49,7 @@ class ConfigBuilder:
 
                 self.config_yaml.update(config_yaml)
             except Exception as exc:
-                main_console.print_exception(exc)
+                main_console.print_exception()
                 return 'LOAD_CONFIG_FAILED'
 
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
@@ -69,11 +70,11 @@ class ConfigBuilder:
                 # Even default English language file is missing.
                 return 'LOAD_CONFIG_FAILED'
 
-        with open(i18n_path, 'r') as language_yaml_f:
+        with codecs.open(i18n_path, 'r', encoding='utf-8') as language_yaml_f:
             try:
                 self.config_yaml['i18n'] = yaml.safe_load(language_yaml_f)
             except Exception as exc:
-                main_console.print_exception(exc)
+                main_console.print_exception()
                 return 'LOAD_CONFIG_FAILED'
 
         config_for_printing = self.config_yaml.copy()
