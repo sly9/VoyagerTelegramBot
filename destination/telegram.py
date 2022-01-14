@@ -31,8 +31,7 @@ class Telegram:
             'unpin_all_messages': f'https://api.telegram.org/bot{self.token}/unpinAllChatMessages',
         }
 
-        self.current_chat_id = None
-        self.current_sequence_stat_message_id = None
+        self.sequence_name_to_message_id_map = {}
 
         ee.on(BotEvent.SEND_TEXT_MESSAGE.name, self.send_text_message)
         ee.on(BotEvent.SEND_IMAGE_MESSAGE.name, self.send_image_message)
@@ -43,36 +42,31 @@ class Telegram:
         ee.on(BotEvent.UNPIN_ALL_MESSAGE.name, self.unpin_all_messages)
 
     def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str, sequence_stat_message: str):
-
-        if not self.current_chat_id and not self.current_sequence_stat_message_id:
+        known_message_id = self.sequence_name_to_message_id_map.get(sequence_name, '')
+        if known_message_id:
+            status, info_dict = self.edit_image_message(chat_id=self.chat_id,
+                                                        message_id=known_message_id,
+                                                        image_data=sequence_stat_image,
+                                                        filename=sequence_name + '_stat.jpg')
+            if status == 'ERROR':
+                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
+                        error=LogMessageInfo(type='ERROR', message='EditMessage: ' + info_dict["description"]))
+        else:
             status, info_dict = self.send_image_message(image_data=sequence_stat_image,
                                                         filename='good_night_stats.jpg',
                                                         caption=f'Statistics for {sequence_name}',
                                                         send_as_file=False)
-            chat_id = info_dict.get('chat_id', '')
             message_id = info_dict.get('message_id', '')
-            if status == 'OK' and chat_id and message_id:
-                self.current_chat_id = chat_id
-                self.current_sequence_stat_message_id = message_id
-                status, info_dict = self.unpin_all_messages(chat_id=chat_id)
-                if status == 'ERROR':
-                    ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                            error=LogMessageInfo(type='ERROR', message='UnpinAllMessage: ' + info_dict["description"]))
-                status, info_dict = self.pin_message(chat_id=chat_id, message_id=message_id)
+            self.sequence_name_to_message_id_map[sequence_name] = message_id
+
+            if status == 'OK' and message_id:
+                status, info_dict = self.pin_message(chat_id=self.chat_id, message_id=message_id)
                 if status == 'ERROR':
                     ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                             error=LogMessageInfo(type='ERROR', message='PinMessage: ' + info_dict["description"]))
             else:
                 ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                         error=LogMessageInfo(type='ERROR', message='send_image_message: ' + info_dict["description"]))
-        else:
-            status, info_dict = self.edit_image_message(chat_id=self.current_chat_id,
-                                                        message_id=self.current_sequence_stat_message_id,
-                                                        image_data=sequence_stat_image,
-                                                        filename=sequence_name + '_stat.jpg')
-            if status == 'ERROR':
-                ee.emit(BotEvent.APPEND_ERROR_LOG.name,
-                        error=LogMessageInfo(type='ERROR', message='EditMessage: ' + info_dict["description"]))
 
     def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
@@ -180,15 +174,17 @@ class Telegram:
             response_json.pop('ok')
             return 'ERROR', response_json
 
-    def unpin_all_messages(self, chat_id: str) -> Tuple[str, Dict[str, Any]]:
+    def unpin_all_messages(self, chat_id: str = '') -> Tuple[str, Dict[str, Any]]:
+        if not chat_id:
+            chat_id = self.chat_id
         payload = {'chat_id': chat_id}
         unpin_message_response = requests.post(self.urls['unpin_all_messages'], data=payload)
         response_json = json.loads(unpin_message_response.text)
 
         if response_json['ok']:
+            self.sequence_name_to_message_id_map = {}
             return 'OK', dict()
         else:
-            response_json.pop('ok')
             return 'ERROR', response_json
 
 

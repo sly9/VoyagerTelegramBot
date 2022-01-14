@@ -103,6 +103,7 @@ class GiantEventHandler(VoyagerEventHandler):
             elif self.running_dragscript == '':
                 # a DS has changed from empty to non-empty. Probably a new DS has started.
                 self.sequence_map = {}
+                ee.emit(BotEvent.UNPIN_ALL_MESSAGE.name)
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         self.i18n['drag_script_start'].format(ds_name=running_dragscript))
             else:
