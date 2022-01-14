@@ -128,7 +128,7 @@ class RichConsoleManager:
         # Device Status panel which shows status of all connected devices
         self.update_device_status_panel(system_status_info=system_status_info)
         # Progress Panel which shows the progress of the imaging session
-        self.progress_panel.sequence_name = system_status_info.sequence_name
+        self.progress_panel.sequence_target = system_status_info.sequence_name
         if system_status_info.sequence_total_time_in_sec > 0:
             self.progress_panel.sequence_progress.update(
                 system_status_info.sequence_elapsed_time_in_sec * 100.0 / system_status_info.sequence_total_time_in_sec)

@@ -46,7 +46,7 @@ class DummyDebugger:
                 self.connection_manager.on_message(ws=None, message_string=line.strip())
                 counter = counter + 1
                 if counter == 10000000:
-                    time.sleep(0.01)
+                    #time.sleep(0.01)
                     counter = 0
 
     def good_night(self):
@@ -56,7 +56,6 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('logs/log_2nd.txt')
+    dd.load_messages('2021_11_28__voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()
-    console.main_console.main_console.save_html('./replay/stdout.html')

@@ -10,11 +10,10 @@ import matplotlib
 import numpy as np
 from matplotlib import axes
 from matplotlib import pyplot as plt
-from matplotlib.dates import ConciseDateFormatter, HourLocator, AutoDateLocator
+from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
-from data_structure.special_battery_percentage import MemoryUsage
 
 matplotlib.use('agg')
 
@@ -48,11 +47,11 @@ class SequenceStat:
     def exposure_time_stat_dictionary(self):
         """
         Exposure time stats in a dictionary form.
-        Key is the filter name, normalized, value is the cumulative time in seconds.
+        Key is the target_name+filter name, normalized, value is the cumulative time in seconds.
         """
         result = defaultdict(float)
         for expo in self.exposure_info_list:
-            result[expo.filter_name] += expo.exposure_time
+            result[expo.sequence_target + ' ' + expo.filter_name] += expo.exposure_time
         return result
 
 
@@ -126,7 +125,7 @@ class StatPlotter:
         values = total_exposure_stat.values()
         rectangles = ax.bar(keys, values)
         for i in range(len(keys)):
-            filter_name = keys[i]
+            filter_name = keys[i].split()[-1]
             if filter_name in self.filter_meta:
                 color = self.filter_meta[filter_name]['color']
             else:
@@ -293,7 +292,6 @@ class StatPlotter:
             self.guiding_plot(ax_main=ax_main, ax_scatter=ax_scatter, sequence_stat=sequence_stat,
                               target_name=sequence_stat.name)
             figure_index += 1
-
 
         # fig.tight_layout()
 

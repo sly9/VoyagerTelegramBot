@@ -118,7 +118,7 @@ class HTMLReporter:
 
         return 'OK', dict()
 
-    def unpin_all_messages(self, chat_id: str) -> Tuple[str, Dict]:
+    def unpin_all_messages(self, chat_id: str='Test') -> Tuple[str, Dict]:
         message = f'Unpinning all messages for room [{chat_id}]'
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin all Messages</td><td>N/A</td></tr>\n')
         self.event_sequence += 1

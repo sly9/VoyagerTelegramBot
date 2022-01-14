@@ -30,6 +30,7 @@ class GiantEventHandler(VoyagerEventHandler):
         # A dictionary of 'sequence name' => 'sequence stats'
         # A special sequence with name 'default' will be used for all images taken without a sequence.
         # This map will be cleared when a dragscript starts.
+        # Each sequence stats contains all the sequence targets's stats.
         self.sequence_map = dict()
 
         self.filter_name_list = [i for i in range(10)]  # initial with 10 unnamed filters
@@ -182,8 +183,8 @@ class GiantEventHandler(VoyagerEventHandler):
         if should_send_image:
             # new stat code
             exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
-                                    timestamp=timestamp)
-            self.add_exposure_stats(exposure=exposure, sequence_name=sequence_target)
+                                    timestamp=timestamp, sequence_target=sequence_target)
+            self.add_exposure_stats(exposure=exposure, sequence_name=self.running_seq)
             # with PINNING and UNPINNING implemented, we can safely report stats for all images
             self.report_stats_for_current_sequence()
 

@@ -1,6 +1,6 @@
 class ExposureInfo:
     def __init__(self, filter_name: str = '', exposure_time: int = 0, hfd: float = 0, star_index: float = 0,
-                 timestamp: float = 0, sequence_name: str = ''):
+                 timestamp: float = 0, sequence_target: str = ''):
         self._filter_name = None
         self.filter_name = filter_name
         # exposure time in seconds
@@ -8,7 +8,7 @@ class ExposureInfo:
         self.hfd = hfd
         self.star_index = star_index
         self.timestamp = timestamp
-        self.sequence_name = sequence_name
+        self.sequence_target = sequence_target
 
     @property
     def filter_name(self) -> str:
