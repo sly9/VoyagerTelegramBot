@@ -177,6 +177,7 @@ class GiantEventHandler(VoyagerEventHandler):
         should_send_image = False
 
         if file_identifier in self.image_type_set:
+            # TODO(bigpizza) should save hfd info to FITS file
             should_send_image = True
             self.image_type_set.remove(file_identifier)
 
@@ -245,17 +246,3 @@ class GiantEventHandler(VoyagerEventHandler):
         sequence_stat_image = self.stat_plotter.plot(sequence_stat=sequence_stat, memory_history=self.memory_history)
         ee.emit(BotEvent.UPDATE_SEQUENCE_STAT_IMAGE.name, sequence_stat_image=sequence_stat_image,
                 sequence_name=self.running_seq, sequence_stat_message='This is a test message')
-
-
-def main():
-    fns = ['C:\\Users\\bigpi\\Documents\\GitHub\\VoyagerTelegramBot.fit',
-           'VoyagerTelegramBot.fit',
-           'VoyagerTelegramBot',
-           'C:\\Users\\bigpi\\Documents\\GitHub\\VoyagerTelegramBot']
-
-    for fn in fns:
-        print(fn, GiantEventHandler.get_image_identifier(fn))
-
-
-if __name__ == '__main__':
-    main()
