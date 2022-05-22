@@ -49,6 +49,7 @@ voyager_setting:
 telegram_setting:
   bot_token: <telegram_token>
   chat_id: <chat_id>
+  image_chat_id: <image_chat_id>  # This chat id is designated for images and statistics charts, could be the same with 'chat_id'
 
 ### Miscellaneous
 # The timezone of your observatory -- not necessary the computer running this bot. Valid timezone names can be found here:
