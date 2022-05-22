@@ -5,9 +5,9 @@
 by Liuyi Sun ([AstroBin](https://www.astrobin.com/users/liuyisun/)) and Kun
 Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
-Last updates: 01/02/2022
+Last updates: 05/22/2022
 
-> We just released `v0.2.6` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/0.2.6)!
+> We just released `v0.3.0` for Windows users! 🎉 Download it [here](https://github.com/sly9/VoyagerTelegramBot/releases/tag/0.3.0)!
 
 > Please visit our [discussion](https://github.com/sly9/VoyagerTelegramBot/discussions) page for any questions, suggestions, ideas and supports.
 

@@ -3,9 +3,9 @@
 by Liuyi Sun ([AstroBin](https://www.astrobin.com/users/liuyisun/)) and Kun
 Wang ([AstroBin](https://www.astrobin.com/users/bigpizza/))
 
-最后更新日期: 01/02/2022
+最后更新日期: 05/22/2022
 
-> 我们刚刚为 Windows 用户发布了 `v0.2.6` 版本! 🎉 请点击 [这里](https://github.com/sly9/VoyagerTelegramBot/releases/tag/0.2.6) 下载!
+> 我们刚刚为 Windows 用户发布了 `v0.3.0` 版本! 🎉 请点击 [这里](https://github.com/sly9/VoyagerTelegramBot/releases/tag/0.3.0) 下载!
 
 > 如果您对我们的软件有任何疑问和建议，或者想支持我们的努力，欢迎访问 [讨论版](https://github.com/sly9/VoyagerTelegramBot/discussions) 。
 
