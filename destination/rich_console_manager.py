@@ -92,8 +92,8 @@ class RichConsoleManager:
 
         layout['status'].split_row(
             Layout(name='mount_info', size=45),  # DEC, RA, ALT, AZ, etc.
-            Layout(name='forecast', ratio=3),  # guiding error, last focusing result, last image HFD, staridx,
-            Layout(name='imaging', ratio=2),  # current_img, sequence_%
+            Layout(name='forecast', ratio=7),  # guiding error, last focusing result, last image HFD, staridx,
+            Layout(name='imaging', ratio=3),  # current_img, sequence_%
         )
 
         layout['main'].split_row(

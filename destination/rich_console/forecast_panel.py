@@ -10,13 +10,16 @@ from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
+from typing import Dict
 from data_structure.forecast_color_mapping import get_temperature_color, get_humidity_color, get_cloud_cover_color, \
-    get_wind_speed_color
+    get_wind_speed_color, get_sky_condition_bg_color, get_roof_condition_bg_color, get_alert_bg_color
 from destination.rich_console.styles import RichTextStylesEnum
 from utils.forecast.base_forecast import BaseAlgorithmForecast, BaseHttpForecast
 from utils.forecast.clear_dark_sky_forecast import ClearDarkSkyForecast
 from utils.forecast.open_weather_forecast import OpenWeatherForecast
 from utils.forecast.sun_and_moon import SunAndMoon
+from utils.sky_data_utils import get_weather_conditions, get_roof_condition, SkyCondition, CloudCondition, \
+    WindCondition, RainCondition, DayCondition, AlertCondition
 
 
 class ForecastPanel:
@@ -47,6 +50,15 @@ class ForecastPanel:
                 sun_moon.maybe_update_forecast()
                 self.enabled_services.append(sun_moon)
                 self.enabled_tables.append(self.sun_moon_table)
+
+                if hasattr(config.observing_condition_config, 'sky_condition_file'):
+                    self.sky_condition_file = config.observing_condition_config.sky_condition_file
+                else:
+                    self.sky_condition_file = ''
+                if hasattr(config.observing_condition_config, 'roof_condition_file'):
+                    self.roof_condition_file = config.observing_condition_config.roof_condition_file
+                else:
+                    self.roof_condition_file = ''
 
         self.current_service_idx = 0
         self.current_service = self.enabled_services[self.current_service_idx]
@@ -138,22 +150,21 @@ class ForecastPanel:
                 hour_list.append(Text('Now ', style='white on black'))
 
                 color_string = get_temperature_color(forecast.temperature)
-                temperature_list.append(Text(str(forecast.temperature) + '°C', style=f'black on {color_string}'))
+                temperature_list.append(Text(f'{forecast.temperature}°C', style=f'black on {color_string}'))
 
                 color_string = get_temperature_color(forecast.dew_point)
-                dew_list.append(Text(str(forecast.dew_point) + '°C', style=f'black on {color_string}'))
+                dew_list.append(Text(f'{forecast.dew_point}°C', style=f'black on {color_string}'))
 
                 color_string = get_humidity_color(forecast.humidity)
-                humidity_list.append(Text(str(forecast.humidity) + '%', style=f'black on {color_string}'))
+                humidity_list.append(Text(f'{forecast.humidity}%', style=f'black on {color_string}'))
 
                 color_string = get_cloud_cover_color(forecast.cloud_cover_percentage)
-                cloud_cover_list.append(
-                    Text(str(forecast.cloud_cover_percentage) + '%', style=f'black on {color_string}'))
+                cloud_cover_list.append(Text(f'{forecast.cloud_cover_percentage}%', style=f'black on {color_string}'))
 
                 # weather_list.append(Text(str(forecast.weather_id), style=style_string))
 
                 color_string = get_wind_speed_color(forecast.wind_speed)
-                wind_speed_list.append(Text(str(forecast.wind_speed) + 'm/s', style=f'black on {color_string}'))
+                wind_speed_list.append(Text(f'{forecast.wind_speed}m/s', style=f'black on {color_string}'))
 
             time_zone = pytz.timezone(self.config.timezone)
             for i in range(length):
@@ -206,16 +217,30 @@ class ForecastPanel:
             def readable_time(time):
                 return f'{time.hour:02d}:{time.minute:02d}'
 
-            table.add_row('Summary', Text('Clear', style='white on green'), Text('Calm', style='white on green'),
-                          Text('Dry', style='white on green'), Text('Dark', style='white on green'))
-            table.add_row('🔆', f'Alt {observation.sun_altitude:.1f}°',
-                          'Set ' + readable_time(observation.sunset_localtime),
-                          'Rise ' + readable_time(observation.sunrise_localtime))
-            table.add_row(observation.moon_phase_emoji, f'Illum {observation.moon_phase * 100:0.0f}%',
-                          f'Set {readable_time(observation.moonset_localtime)}',
-                          f'Rise {readable_time(observation.moonrise_localtime)}')
-            table.add_row('Astro Twi', 'Start', f'{readable_time(observation.astro_twilight_start_localtime)}', 'End',
-                          f'{readable_time(observation.astro_twilight_end_localtime)}')
+            sky_conditions = get_weather_conditions(file_path=self.sky_condition_file)
+            roof_condition = get_roof_condition(file_path=self.roof_condition_file)
+
+            # Sky Condition
+            table.add_row('Condition',
+                          Text(CloudCondition(sky_conditions[SkyCondition.CLOUD]).name,
+                               style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.CLOUD])}'),
+                          Text(WindCondition(sky_conditions[SkyCondition.WIND]).name,
+                               style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.WIND])}'),
+                          Text(RainCondition(sky_conditions[SkyCondition.RAIN]).name,
+                               style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.RAIN])}'),
+                          Text(DayCondition(sky_conditions[SkyCondition.DAYLIGHT]).name,
+                               style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.DAYLIGHT])}'))
+            # Roof Condition
+            table.add_row('🚨', Text(AlertCondition(sky_conditions[SkyCondition.ALERT]).name,
+                                      style=f'black on {get_alert_bg_color(sky_conditions[SkyCondition.ALERT])}'),
+                          'Roof', Text(roof_condition, style=f'black on {get_roof_condition_bg_color(roof_condition)}'))
+            table.add_row('')
+            # Sun
+            table.add_row(f'🔆 {observation.sun_altitude:.1f}°', f'S: {readable_time(observation.sunset_localtime)}', f'R: {readable_time(observation.sunrise_localtime)}')
+            # Moon
+            table.add_row(f'{observation.moon_phase_emoji} {observation.moon_phase * 100:0.0f}%', f'R: {readable_time(observation.moonrise_localtime)}', f'S: {readable_time(observation.moonset_localtime)}')
+            # Twilight
+            table.add_row('Twilight', f'{readable_time(observation.astro_twilight_start_localtime)}',f'{readable_time(observation.astro_twilight_end_localtime)}')
 
         return table
 

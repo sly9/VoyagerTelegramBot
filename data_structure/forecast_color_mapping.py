@@ -112,3 +112,40 @@ def get_wind_speed_color(wind_speed: float = 0.0) -> str:
         return '#C7C7C7'
     else:
         return '#F9F9F9'
+
+
+def get_sky_condition_bg_color(value: int = 0) -> str:
+    if value == 0:
+        # UNKNOWN
+        return '#4285F4'
+    elif value == 1:
+        # CloudCondition.CLEAR, WindCondition.CALM, RainCondition.DRY, DayCondition.DARK
+        return '#0F9D58'
+    elif value == 2:
+        # CloudCondition.CLOUDY, WindCondition.WINDY, RainCondition.WET, DayCondition.LIGHT
+        return '#F4B400'
+    elif value == 3:
+        # CloudCondition.VERY_CLOUDY, WindCondition.VERY_WINDY, RainCondition.RAIN, DayCondition.VERY_LIGHT
+        return '#DB4437'
+
+    return '#000000'
+
+
+def get_alert_bg_color(value: int = 0) -> str:
+    if value == 0:
+        # SAFE
+        return '#0F9D58'
+    elif value == 1:
+        # UNSAFE
+        return '#DB4437'
+
+    return '#000000'
+
+
+def get_roof_condition_bg_color(value: str = '') -> str:
+    if value == 'OPENED':
+        return '#0F9D58'
+    elif value == 'CLOSED':
+        return '#DB4437'
+
+    return '#000000'

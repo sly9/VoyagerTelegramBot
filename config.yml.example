@@ -67,6 +67,8 @@ console_config:
   use_emoji: True
   console_type: FULL # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'
 observing_condition_config:
+  roof_condition_file: <absolute_path_to_roof_condition_file>  # SkyRoof condition file
+  sky_condition_file: <absolute_path_to_sky_condition_file>  # One line weather data file (sometimes known as "SkyAlert Weather", "Clarity", "Boltwood II" or "Weather Data")
   forecast_service: [ClearDarkSky, SunAndMoon]  # Options are [ClearDarkSky, OpenWeather, SunAndMoon]
   clear_dark_sky_key: RnhHdlAZkey # The string between the last slash and .html of a clear dark sky link, for example: http://www.cleardarksky.com/c/RnhHdlAZkey.html
   open_weather_api_key: <open_weather_api_key>  # Sign up your own free API key for OpenWeather API at https://home.openweathermap.org/users/sign_up
