@@ -165,11 +165,7 @@ class Telegram:
         response_json = json.loads(unpin_message_response.text)
 
         if response_json['ok']:
-            info_dict = {
-                'chat_id': str(response_json['result']['chat']['id']),
-                'message_id': str(response_json['result']['message_id'])
-            }
-            return 'OK', info_dict
+            return 'OK', dict()
         else:
             response_json.pop('ok')
             return 'ERROR', response_json
