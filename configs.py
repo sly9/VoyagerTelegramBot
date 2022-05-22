@@ -55,6 +55,10 @@ class ConfigBuilder:
         if 'chat_ids' in self.config_yaml['telegram_setting'] and len(self.config_yaml['telegram_setting']):
             self.config_yaml['telegram_setting']['chat_id'] = self.config_yaml['telegram_setting']['chat_ids'][0]
 
+        # Duplicate main telegram setting to image chat if not exists
+        if 'image_chat_id' not in self.config_yaml['telegram_setting']:
+            self.config_yaml['telegram_setting']['image_chat_id'] = self.config_yaml['telegram_setting']['chat_id']
+
         if 'language' not in self.config_yaml:
             # Default language is set to English
             self.config_yaml['language'] = 'en-US'
@@ -113,6 +117,7 @@ class ConfigBuilder:
     def build(self):
         if self.already_built:
             main_console.print('This is likely a bug -- building the configuration twice.')
+
         self.already_built = True
         return class_from_dict('Configs', self.config_yaml.copy())()
 

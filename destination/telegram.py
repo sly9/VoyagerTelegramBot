@@ -20,6 +20,7 @@ class Telegram:
         self.config = config
         self.token = self.config.telegram_setting.bot_token
         self.chat_id = self.config.telegram_setting.chat_id
+        self.image_chat_id = self.config.telegram_setting.image_chat_id
 
         self.urls = {
             'text': f'https://api.telegram.org/bot{self.token}/sendMessage',
@@ -44,7 +45,7 @@ class Telegram:
     def update_sequence_stat_image(self, sequence_stat_image: bytes, sequence_name: str, sequence_stat_message: str):
         known_message_id = self.sequence_name_to_message_id_map.get(sequence_name, '')
         if known_message_id:
-            status, info_dict = self.edit_image_message(chat_id=self.chat_id,
+            status, info_dict = self.edit_image_message(chat_id=self.image_chat_id,
                                                         message_id=known_message_id,
                                                         image_data=sequence_stat_image,
                                                         filename=sequence_name + '_stat.jpg')
@@ -60,7 +61,7 @@ class Telegram:
             self.sequence_name_to_message_id_map[sequence_name] = message_id
 
             if status == 'OK' and message_id:
-                status, info_dict = self.pin_message(chat_id=self.chat_id, message_id=message_id)
+                status, info_dict = self.pin_message(chat_id=self.image_chat_id, message_id=message_id)
                 if status == 'ERROR':
                     ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                             error=LogMessageInfo(type='ERROR', message='PinMessage: ' + info_dict["description"]))
@@ -97,14 +98,14 @@ class Telegram:
             thumb_f.seek(0)
 
             if send_as_file:
-                payload = {'chat_id': self.chat_id, 'thumb': 'attach://preview_' + filename,
+                payload = {'chat_id': self.image_chat_id, 'thumb': 'attach://preview_' + filename,
                            'caption': caption}
                 files = {'document': (filename, f, 'image/jpeg'),
                          'thumb': ('preview_' + filename, thumb_f, 'image/jpeg')}
 
                 send_image_response = requests.post(self.urls['doc'], data=payload, files=files)
             else:
-                payload = {'chat_id': self.chat_id, 'caption': caption}
+                payload = {'chat_id': self.image_chat_id, 'caption': caption}
                 files = {'photo': (filename, f, 'image/jpeg')}
                 send_image_response = requests.post(self.urls['pic'], data=payload, files=files)
 
@@ -186,15 +187,17 @@ class Telegram:
 
 if __name__ == '__main__':
     c = ConfigBuilder()
+    c.validate()
     t = Telegram(config=c.build())
     response = t.send_text_message(message='hello world')
     main_console.print(response)
-    the_chat_id = response[1]['chat_id']
-    the_message_id = response[1]['message_id']
 
     with open("tests/ic5070.jpg", "rb") as image_file, open("tests/m42.jpg", "rb") as second_image_file:
         response = t.send_image_message(image_file.read(), 'ic5070.jpg')
         main_console.print(response)
+
+        the_chat_id = response[1]['chat_id']
+        the_message_id = response[1]['message_id']
 
         response = t.pin_message(chat_id=the_chat_id, message_id=the_message_id)
         main_console.print(response)
