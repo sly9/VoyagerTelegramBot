@@ -106,6 +106,7 @@ class RichConsoleManager:
     def update_mount_info_panel(self, mount_info: MountInfo = MountInfo()):
         # Update mount information sub-panel
         self.mount_panel.mount_info = mount_info
+        self.forecast_panel.mount_info = mount_info
         self.layout['mount_info'].update(self.mount_panel)
 
     def update_metrics_panel(self, imaging_metircs: ImagingMetrics = ImagingMetrics()):

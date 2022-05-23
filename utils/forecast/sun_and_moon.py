@@ -15,7 +15,9 @@ class SunAndMoonDataPoint:
     astro_twilight_start_localtime: datetime.time = datetime.time()
     astro_twilight_end_localtime: datetime.time = datetime.time()
 
+    # Altitude and azimuth in degrees
     moon_altitude: float = 0
+    moon_azimuth: float = 0
     moonset_localtime: datetime.time = datetime.time()
     moonrise_localtime: datetime.time = datetime.time()
     moon_phase: float = 0
@@ -116,6 +118,7 @@ class SunAndMoon(BaseAlgorithmForecast):
         moon = ephem.Moon()
         moon.compute(self.observer)
         moon_altitude = moon.alt
+        moon_azimuth = moon.az
         moonrise = self.localtime_from_ephem_date(self.observer.next_rising(moon))
         moonset = self.localtime_from_ephem_date(self.observer.next_setting(moon))
         moon_phase_string = self.human_moon()
@@ -126,6 +129,17 @@ class SunAndMoon(BaseAlgorithmForecast):
                                             astro_twilight_start_localtime=astro_twilight_start,
                                             astro_twilight_end_localtime=astro_twilight_end,
                                             moon_altitude=moon_altitude * 180 / math.pi,
+                                            moon_azimuth=moon_azimuth * 180 / math.pi,
                                             moon_phase=moon.moon_phase, moon_phase_string=moon_phase_string,
                                             moon_phase_emoji=moon_phase_emoji,
                                             moonset_localtime=moonset, moonrise_localtime=moonrise)
+
+
+if __name__ == '__main__':
+    moon = ephem.Moon()
+    s=ephem.separation((312 / 180 * math.pi, 62 / 180 * math.pi), (312 / 180 * math.pi, 57.2 / 180 * math.pi))
+    print(s)
+    degrees = '310°12\'15"'
+    from astropy.coordinates import Angle
+    a= Angle(degrees)
+    print(a)

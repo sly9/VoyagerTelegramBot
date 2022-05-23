@@ -1,7 +1,9 @@
 import math
 from datetime import datetime, timezone
 
+import ephem
 import pytz
+from astropy.coordinates import Angle
 from rich.align import Align
 from rich.console import RenderResult, Console, ConsoleOptions
 from rich.layout import Layout
@@ -10,11 +12,10 @@ from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
 
-from typing import Dict
 from data_structure.forecast_color_mapping import get_temperature_color, get_humidity_color, get_cloud_cover_color, \
     get_wind_speed_color, get_sky_condition_bg_color, get_roof_condition_bg_color, get_alert_bg_color
+from data_structure.system_status_info import MountInfo
 from destination.rich_console.styles import RichTextStylesEnum
-from utils.forecast.base_forecast import BaseAlgorithmForecast, BaseHttpForecast
 from utils.forecast.clear_dark_sky_forecast import ClearDarkSkyForecast
 from utils.forecast.open_weather_forecast import OpenWeatherForecast
 from utils.forecast.sun_and_moon import SunAndMoon
@@ -31,6 +32,7 @@ class ForecastPanel:
 
         self.enabled_services = list()
         self.enabled_tables = list()
+        self.mount_info = MountInfo()  # type: MountInfo
 
         if hasattr(config.observing_condition_config, 'forecast_service'):
             if 'ClearDarkSky' in config.observing_condition_config.forecast_service:
@@ -232,15 +234,28 @@ class ForecastPanel:
                                style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.DAYLIGHT])}'))
             # Roof Condition
             table.add_row('🚨', Text(AlertCondition(sky_conditions[SkyCondition.ALERT]).name,
-                                      style=f'black on {get_alert_bg_color(sky_conditions[SkyCondition.ALERT])}'),
+                                     style=f'black on {get_alert_bg_color(sky_conditions[SkyCondition.ALERT])}'),
                           'Roof', Text(roof_condition, style=f'black on {get_roof_condition_bg_color(roof_condition)}'))
             table.add_row('')
             # Sun
-            table.add_row(f'🔆 {observation.sun_altitude:.1f}°', f'S: {readable_time(observation.sunset_localtime)}', f'R: {readable_time(observation.sunrise_localtime)}')
+            table.add_row(f'🔆 {observation.sun_altitude:.1f}°', f'S: {readable_time(observation.sunset_localtime)}',
+                          f'R: {readable_time(observation.sunrise_localtime)}')
             # Moon
-            table.add_row(f'{observation.moon_phase_emoji} {observation.moon_phase * 100:0.0f}%', f'R: {readable_time(observation.moonrise_localtime)}', f'S: {readable_time(observation.moonset_localtime)}')
+            mount_alt_angle = Angle(self.mount_info.alt).dms
+            mount_alt_degree = mount_alt_angle.d + mount_alt_angle.m / 60 + mount_alt_angle.s / 3600
+            mount_az_angle = Angle(self.mount_info.az).dms
+            mount_az_degree = mount_az_angle.d + mount_az_angle.m / 60 + mount_az_angle.s / 3600
+            separation = ephem.separation(
+                (observation.moon_azimuth / 180 * math.pi, observation.moon_altitude / 180 * math.pi),
+                (mount_az_degree / 180 * math.pi, mount_alt_degree / 180 * math.pi))
+            table.add_row(f'{observation.moon_phase_emoji} {observation.moon_phase * 100:0.0f}%',
+                          f'R: {readable_time(observation.moonrise_localtime)}',
+                          f'S: {readable_time(observation.moonset_localtime)}',
+                          f'Alt: {observation.moon_altitude:.1f}°',
+                          f'🌙 {separation.real / math.pi * 180:.1f}° 🔭')
             # Twilight
-            table.add_row('Twilight', f'{readable_time(observation.astro_twilight_start_localtime)}',f'{readable_time(observation.astro_twilight_end_localtime)}')
+            table.add_row('Twilight', f'{readable_time(observation.astro_twilight_start_localtime)}',
+                          f'{readable_time(observation.astro_twilight_end_localtime)}')
 
         return table
 
