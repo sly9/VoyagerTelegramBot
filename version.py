@@ -1,6 +1,6 @@
 bot_major_version = 0
 bot_minor_version = 3
-bot_patch_version = 0
+bot_patch_version = 1
 
 
 def bot_version_string():
