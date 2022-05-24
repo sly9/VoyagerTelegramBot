@@ -173,7 +173,7 @@ class Telegram:
 
     def unpin_all_messages(self, chat_id: str = '') -> Tuple[str, Dict[str, Any]]:
         if not chat_id:
-            chat_id = self.chat_id
+            chat_id = self.image_chat_id
         payload = {'chat_id': chat_id}
         unpin_message_response = requests.post(self.urls['unpin_all_messages'], data=payload)
         response_json = json.loads(unpin_message_response.text)
