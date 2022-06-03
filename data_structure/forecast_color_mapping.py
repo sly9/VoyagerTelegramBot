@@ -143,7 +143,7 @@ def get_alert_bg_color(value: int = 0) -> str:
 
 
 def get_roof_condition_bg_color(value: str = '') -> str:
-    if value == 'OPENED':
+    if value == 'OPEN':
         return '#0F9D58'
     elif value == 'CLOSED':
         return '#DB4437'
