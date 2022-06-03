@@ -23,7 +23,7 @@ class MountPanel:
 
     @mount_info.setter
     def mount_info(self, value: MountInfo):
-        if self.mount_info_.time_to_flip != value.time_to_flip:
+        if self.mount_info_.time_to_flip != value.time_to_flip and len(value.time_to_flip):
             self.flip_updated_time = datetime.now()
             flip_string = value.time_to_flip.replace('+', '').strip()
             sign = 1

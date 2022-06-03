@@ -15,4 +15,4 @@ IF %ERRORLEVEL% NEQ 0 (
     ECHO "pyinstaller was installed successfully, please restart the application."
 )
 
-pyinstaller -F bot.spec
+pyinstaller bot.spec
