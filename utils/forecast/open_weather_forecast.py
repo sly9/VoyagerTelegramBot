@@ -79,9 +79,9 @@ class OpenWeatherForecast(BaseHttpForecast):
 if __name__ == '__main__':
     config = {
         'observing_condition_config': {
-            'open_weather_api_key': '6e704a710ffa1784bc31cfb3d525aa95',
-            'latitude': 37.2569,
-            'longitude': -121.8955},
+            'open_weather_api_key': '',
+            'latitude': 0,
+            'longitude': 0},
         'timezone': 'America/Los_Angeles'}
     config = class_from_dict('Configs', config)()
     pretty.install()
