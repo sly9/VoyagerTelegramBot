@@ -69,8 +69,8 @@ class Telegram:
                 ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                         error=LogMessageInfo(type='ERROR', message='send_image_message: ' + info_dict["description"]))
 
-    def send_text_message(self, message) -> Tuple[str, Dict[str, Any]]:
-        payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html'}
+    def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict[str, Any]]:
+        payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html', 'disable_notification': silent}
         send_text_message_response = requests.post(self.urls['text'], data=payload)
         response_json = json.loads(send_text_message_response.text)
 

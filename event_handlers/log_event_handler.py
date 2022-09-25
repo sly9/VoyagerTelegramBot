@@ -25,9 +25,11 @@ class LogEventHandler(VoyagerEventHandler):
         type_name = type_dict[message['Type']]
 
         telegram_message = f'<b><pre>{type_emoji}  {message["Text"]}</pre></b>'
-        allowed_log_type_names = self.config.allowed_log_types
 
-        if type_name in allowed_log_type_names:
+        if type_name in self.config.allowed_log_types:
             ee.emit(BotEvent.APPEND_LOG.name,
                     log=LogMessageInfo(type=type_name, type_emoji=type_emoji, message=message['Text']))
-            ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
+            if type_name in self.config.notified_log_types:
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message)
+            else:
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, telegram_message, True)  # Send message silently

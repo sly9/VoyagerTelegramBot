@@ -39,6 +39,7 @@ sequence_stats_config:
 ### Messages
 # Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
 allowed_log_types: [ WARNING, CRITICAL, TITLE, SUBTITLE, REQUEST, EMERGENCY ]
+notified_log_types: [ WARNING, CRITICAL, EMERGENCY ]
 
 ### Software
 voyager_setting:
