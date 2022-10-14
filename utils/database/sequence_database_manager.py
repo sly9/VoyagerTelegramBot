@@ -63,23 +63,52 @@ class SequenceDatabaseManager:
                 try:
                     hdul = fits.open(full_path)
                     headers = hdul[0].header
-
-                    object = headers['OBJECT']
-                    filter = headers['FILTER']
+                    object_name = headers['OBJECT']
+                    filter_name = headers['FILTER']
                     exposure = headers['EXPOSURE']
                     datetime = headers['DATE-OBS']
                     print(len(path) * '---', file)
-                    print(len(path) * '    ', object, filter, exposure, datetime)
-                    records.append((object, filter, int(exposure), datetime, full_path))
+                    print(len(path) * '    ', object_name, filter_name, exposure, datetime)
+                    records.append((object_name, filter_name, int(exposure), datetime, full_path))
                     id = id + 1
                 except Exception as exception:
                     pass
         cur = self.connection.cursor()
         print(records)
-        cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);', records)
+        cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
+                        records)
         self.connection.commit()
+
+    def add_fit_file(self, fit_filename: str) -> None:
+        try:
+            hdul = fits.open(fit_filename)
+            headers = hdul[0].header
+            object_name = headers['OBJECT']
+            filter_name = headers['FILTER']
+            exposure = headers['EXPOSURE']
+            datetime = headers['DATE-OBS']
+            cur = self.connection.cursor()
+            cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
+                            (object_name, filter_name, int(exposure), datetime, fit_filename))
+            self.connection.commit()
+        except Exception as exception:
+            pass
+
+    def get_accumulated_exposure(self, object_name: str) -> dict:
+        """
+        Find accumlated exposure time per filter, using provided object name.
+        :param object_name: The name of the target. Usually the name of the sequence.
+        :return: A dictionary of filter name to accumulated exposure time in seconds.
+        """
+        get_accumulated_exposure_sql = f'select filter, sum(exposure) from sequences where target_name="{object_name}" ' \
+                       f'group by target_name, filter; '
+        cur = self.connection.cursor()
+        cur.execute(get_accumulated_exposure_sql)
+        rows = cur.fetchall()
+        return dict(rows)
 
 
 if __name__ == '__main__':
-    s = SequenceDatabaseManager(sequence_folder_path='Y:\\GoogleDrive\\Images\\Sequences\\vdb141_Pane1')
-    s.scan_sequence_folder()
+    s = SequenceDatabaseManager(sequence_folder_path='Y:\\GoogleDrive\\Images\\Sequences')
+    #s.scan_sequence_folder()
+    s.get_accumulated_exposure(object_name='Abell_85')
