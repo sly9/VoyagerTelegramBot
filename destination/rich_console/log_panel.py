@@ -7,7 +7,7 @@ from rich.panel import Panel
 from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
-
+from utils.localization import get_translated_text as _
 from data_structure.log_message_info import LogMessageInfo
 from destination.rich_console.styles import RichTextStylesEnum
 
@@ -66,7 +66,6 @@ class LogPanel:
         yield Panel(
             Align.left(self.visible_log_table(height=height), vertical="top"),
             style=self.style,
-            title=f'Important logs ({width}x{height})',
+            title=_('Important logs ({width}x{height})').format(width=width, height=height),
             border_style="blue",
         )
-

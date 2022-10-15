@@ -129,9 +129,10 @@ class GiantEventHandler(VoyagerEventHandler):
                         _('Sequence {seq_name} started.').format(seq_name=running_seq))
                 self.report_stats_for_current_sequence()
             else:
-                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
-                        _('Switching Sequence from {old_seq_name} to {new_seq_name}.').format(old_seq_name=running_seq,
-                                                                                              new_seq_name=self.running_seq))
+                message = _('Switching Sequence from {old_seq_name} to {new_seq_name}.').format(
+                    old_seq_name=running_seq,
+                    new_seq_name=self.running_seq)
+                ee.emit(BotEvent.SEND_TEXT_MESSAGE.name, message)
                 self.report_stats_for_current_sequence()
             self.running_seq = running_seq
 

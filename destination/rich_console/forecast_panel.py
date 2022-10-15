@@ -21,6 +21,7 @@ from utils.forecast.open_weather_forecast import OpenWeatherForecast
 from utils.forecast.sun_and_moon import SunAndMoon
 from utils.sky_data_utils import get_weather_conditions, get_roof_condition, SkyCondition, CloudCondition, \
     WindCondition, RainCondition, DayCondition, AlertCondition
+from utils.localization import get_translated_text as _
 
 
 class ForecastPanel:
@@ -71,7 +72,7 @@ class ForecastPanel:
         forecast_table.add_column(style='bold')
 
         if not self.current_service:
-            forecast_table.add_row(Text('Unable to execute ClearDarkSky forecast service',
+            forecast_table.add_row(Text(_('Unable to execute ClearDarkSky forecast service'),
                                         style=RichTextStylesEnum.CRITICAL.value))
         else:
             length = min(len(self.current_service.forecast), int(math.floor((width - 2 - 2 - 7) / 2)))
@@ -79,12 +80,12 @@ class ForecastPanel:
             for i in range(length - 1):
                 forecast_table.add_column(width=2, max_width=2)
 
-            hour_list = ['Hour']
-            seeing_list = ['Seeing']
-            cloud_cover_list = ['Cloud']
-            transparency_list = ['Transp ']
-            wind_list = ['Wind S']
-            temperature_list = ['Temp']
+            hour_list = [_('Hour')]
+            seeing_list = [_('Seeing')]
+            cloud_cover_list = [_('Cloud')]
+            transparency_list = [_('Transp ')]
+            wind_list = [_('Wind S')]
+            temperature_list = [_('Temp')]
 
             # find the right index to blink:
             right_index_to_blink = 0
@@ -126,7 +127,7 @@ class ForecastPanel:
         forecast_table.add_column(style='bold')
 
         if not self.current_service:
-            forecast_table.add_row(Text('Unable to execute ClearDarkSky forecast service',
+            forecast_table.add_row(Text(_('Unable to execute ClearDarkSky forecast service'),
                                         style=RichTextStylesEnum.CRITICAL.value))
         else:
             length = min(len(self.current_service.forecast), 12)
@@ -137,19 +138,19 @@ class ForecastPanel:
             for i in range(1, length):
                 forecast_table.add_column(width=2, max_width=2)  # Fit -99 ~ 100
 
-            hour_list = ['Hour']
-            temperature_list = ['Temp.']
-            dew_list = ['Dew Point ']
-            humidity_list = ['Humidity']
-            cloud_cover_list = ['Cloud']
-            wind_speed_list = ['Wind']
+            hour_list = [_('Hour')]
+            temperature_list = [_('Temp.')]
+            dew_list = [_('Dew Point ')]
+            humidity_list = [_('Humidity')]
+            cloud_cover_list = [_('Cloud')]
+            wind_speed_list = [_('Wind')]
             # weather_list = ['Weather ']
 
             if length > 0:
                 forecast = self.current_service.forecast[0]
                 # Explicitly show current condition
 
-                hour_list.append(Text('Now ', style='white on black'))
+                hour_list.append(Text(_('Now '), style='white on black'))
 
                 color_string = get_temperature_color(forecast.temperature)
                 temperature_list.append(Text(f'{forecast.temperature}°C', style=f'black on {color_string}'))
@@ -211,7 +212,7 @@ class ForecastPanel:
         table = Table.grid(padding=(0, 2), expand=False)
 
         if not self.current_service:
-            table.add_row(Text('Unable to execute ClearDarkSky forecast service',
+            table.add_row(Text(_('Unable to execute ClearDarkSky forecast service'),
                                style=RichTextStylesEnum.CRITICAL.value))
         else:
             observation = self.current_service.forecast
@@ -223,7 +224,7 @@ class ForecastPanel:
             roof_condition = get_roof_condition(file_path=self.roof_condition_file)
 
             # Sky Condition
-            table.add_row('Condition',
+            table.add_row(_('Condition'),
                           Text(CloudCondition(sky_conditions[SkyCondition.CLOUD]).name,
                                style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.CLOUD])}'),
                           Text(WindCondition(sky_conditions[SkyCondition.WIND]).name,
@@ -234,12 +235,14 @@ class ForecastPanel:
                                style=f'black on {get_sky_condition_bg_color(sky_conditions[SkyCondition.DAYLIGHT])}'))
             # Roof Condition
             table.add_row('🚨', Text(AlertCondition(sky_conditions[SkyCondition.ALERT]).name,
-                                     style=f'black on {get_alert_bg_color(sky_conditions[SkyCondition.ALERT])}'),
-                          'Roof', Text(roof_condition, style=f'black on {get_roof_condition_bg_color(roof_condition)}'))
+                                    style=f'black on {get_alert_bg_color(sky_conditions[SkyCondition.ALERT])}'),
+                          _('Roof'),
+                          Text(roof_condition, style=f'black on {get_roof_condition_bg_color(roof_condition)}'))
             table.add_row('')
             # Sun
-            table.add_row(f'🔆 {observation.sun_altitude:.1f}°', f'S: {readable_time(observation.sunset_localtime)}',
-                          f'R: {readable_time(observation.sunrise_localtime)}')
+            table.add_row(f'🔆 {observation.sun_altitude:.1f}°',
+                          _('S: {}').format(readable_time(observation.sunset_localtime)),
+                          _('R: {}').format(readable_time(observation.sunrise_localtime)))
             # Moon
             mount_alt_angle = Angle(self.mount_info.alt).dms
             mount_alt_degree = mount_alt_angle.d + mount_alt_angle.m / 60 + mount_alt_angle.s / 3600
@@ -249,12 +252,12 @@ class ForecastPanel:
                 (observation.moon_azimuth / 180 * math.pi, observation.moon_altitude / 180 * math.pi),
                 (mount_az_degree / 180 * math.pi, mount_alt_degree / 180 * math.pi))
             table.add_row(f'{observation.moon_phase_emoji} {observation.moon_phase * 100:0.0f}%',
-                          f'R: {readable_time(observation.moonrise_localtime)}',
-                          f'S: {readable_time(observation.moonset_localtime)}',
+                          _('R: {}').format(readable_time(observation.moonrise_localtime)),
+                          _('S: {}').format(readable_time(observation.moonset_localtime)),
                           f'Alt: {observation.moon_altitude:.1f}°',
                           f'🌙 {separation.real / math.pi * 180:.1f}° 🔭')
             # Twilight
-            table.add_row('Twilight', f'{readable_time(observation.astro_twilight_start_localtime)}',
+            table.add_row(_('Twilight'), f'{readable_time(observation.astro_twilight_start_localtime)}',
                           f'{readable_time(observation.astro_twilight_end_localtime)}')
 
         return table

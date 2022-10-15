@@ -8,6 +8,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from data_structure.system_status_info import MountInfo
+from utils.localization import get_translated_text as _
 
 
 class MountPanel:
@@ -73,6 +74,6 @@ class MountPanel:
             Align.center(self.mount_table(height=height), vertical="top"),
             box=box.ROUNDED,
             padding=(1, 1),
-            title="[bold blue]Mount Info",
+            title='[bold blue]' + _('Mount Status'),
             border_style='bright_blue',
         )

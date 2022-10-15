@@ -8,6 +8,7 @@ from rich.text import Text
 
 from destination.rich_console.styles import RichTextStylesEnum
 from version import bot_version_string
+from utils.localization import get_translated_text as _
 
 
 class RichConsoleHeader:
@@ -30,7 +31,7 @@ class RichConsoleHeader:
         grid.add_column(justify='right', min_width=25)
 
         grid.add_row(
-            f'VogagerBot v{bot_version_string()}',
+            _('VogagerBot v{}').format(bot_version_string()),
             Text(self.toast_string, overflow='ellipsis', no_wrap=True),
             datetime.now(tz=self.timezone).strftime('%m/%d/%Y %H[blink]:[/]%M[blink]:[/]%S'),
         )

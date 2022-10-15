@@ -192,7 +192,6 @@ if __name__ == "__main__":
         main_console = Console()
     try:
         connection_manager = VoyagerConnectionManager(config=config)
-        a = _('Something is clearly wrong with the config!')
         connection_manager.run_forever()
     except Exception as e:
         main_console.print_exception()

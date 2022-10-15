@@ -7,6 +7,7 @@ from rich.table import Table
 from rich.text import Text
 
 from data_structure.shot_running_info import ShotRunningStatus, ShotRunningInfo
+from utils.localization import get_translated_text as _
 
 
 class ProgressPanel:
@@ -25,20 +26,25 @@ class ProgressPanel:
         progress_table.add_column(justify='left', style='bold gold3')
         if self.shot_running_info:
             if self.shot_running_info.status == ShotRunningStatus.EXPOSE:
-                progress_table.add_row(
-                    f'Status: {self.shot_running_info.status.name}    {self.shot_running_info.elapsed_exposure:0.0f}s / {self.shot_running_info.total_exposure:0.0f}s')
+                status_string = _('Status: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}s').format(
+                    status_name=self.shot_running_info.status.name,
+                    elapsed_exposure=self.shot_running_info.elapsed_exposure,
+                    total_exposure=self.shot_running_info.total_exposure
+                )
             else:
-                progress_table.add_row(f'Status: {self.shot_running_info.status.name}')
-            imaging_text = Text(f'Imaging: {self.shot_running_info.filename}', overflow='ellipsis', no_wrap=True)
+                status_string = _('Status: {status_name}').format(status_name=self.shot_running_info.status.name)
+            progress_table.add_row(status_string)
+            imaging_text = Text(_('Imaging: {}').format(self.shot_running_info.filename), overflow='ellipsis',
+                                no_wrap=True)
             progress_table.add_row(imaging_text)
             progress_table.add_row(self.image_progress)
-            progress_table.add_row(f'Sequence: {self.sequence_name}')
+            progress_table.add_row(_('Sequence: {}').format(self.sequence_name))
             progress_table.add_row(self.sequence_progress)
 
         yield Panel(Align.center(progress_table, vertical='top'),
                     box=box.ROUNDED,
                     padding=(1, 2, 0, 2),
-                    title="[bold blue]Progress",
+                    title='[bold blue]' + _('Progress'),
                     border_style='bright_blue', )
 
     def update_shot_running_info(self, shot_running_info: ShotRunningInfo):
