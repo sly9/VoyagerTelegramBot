@@ -188,7 +188,7 @@ if __name__ == "__main__":
     if config.console_config.console_type == 'FULL':
         Path(config.log_folder).mkdir(parents=True, exist_ok=True)
         sys.stderr = open(config.log_folder + '/error_log.txt', 'a')
-        main_console = Console(stderr=True, color_system=None)
+        main_console = Console(stderr=True, color_system=None, record=True)
     else:
         main_console = Console()
     try:
