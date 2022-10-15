@@ -8,12 +8,14 @@ from typing import Tuple
 
 import matplotlib
 import numpy as np
+from colour import Color
 from matplotlib import axes
 from matplotlib import pyplot as plt
 from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
+import math
 
 matplotlib.use('agg')
 
@@ -22,12 +24,18 @@ class SequenceStat:
     def __init__(self, name: str = ''):
         # target name, like 'M31', or 'NGC 6992'
         self.name = name
+        self.existing_exposure_info_list = list()
         self.exposure_info_list = list()
         self.focus_result_list = list()
         self.guide_x_error_list = list()  # list of guide error on x axis in pixel
         self.guide_y_error_list = list()  # list of guide error on y axis in pixel
 
-    def add_exposure(self, exposure: ExposureInfo):
+    def merge_existing_exposure_info(self, existing_exposure_info_dict: dict) -> None:
+        for filter_name, exposure_time in existing_exposure_info_dict.items():
+            exposure = ExposureInfo(filter_name=filter_name, exposure_time=exposure_time, sequence_target=self.name)
+            self.existing_exposure_info_list.append(exposure)
+
+    def add_exposure(self, exposure: ExposureInfo) -> None:
         self.exposure_info_list.append(exposure)
 
     def add_focus_result(self, focus_result: FocusResult):
@@ -43,6 +51,23 @@ class SequenceStat:
 
     def exposure_count(self):
         return len(self.exposure_info_list)
+
+    def new_exposure_time_stat_dictionary(self):
+        """
+        Exposure time stats in a dictionary form.
+        Key is the target_name+filter name, normalized. Value is a pair of seconds, the first value is the cumulative
+        exposure time recorded today, while the second value is the previously accumulated results.
+        """
+        result = defaultdict(lambda: (0.0, 0.0))
+        for expo in self.exposure_info_list:
+            key = expo.sequence_target + ' ' + expo.filter_name
+            left, right = result[key]
+            result[key] = (left + expo.exposure_time, right)
+        for expo in self.existing_exposure_info_list:
+            key = expo.sequence_target + ' ' + expo.filter_name
+            left, right = result[key]
+            result[key] = (left, right + expo.exposure_time)
+        return result
 
     def exposure_time_stat_dictionary(self):
         """
@@ -120,23 +145,45 @@ class StatPlotter:
 
     def exposure_plot(self, ax: axes.Axes = None, sequence_stat: SequenceStat = None, target_name: str = ''):
         ax.set_facecolor('#212121')
-        total_exposure_stat = sequence_stat.exposure_time_stat_dictionary()
+        total_exposure_stat = sequence_stat.new_exposure_time_stat_dictionary()
         keys = list(total_exposure_stat.keys())
-        values = total_exposure_stat.values()
-        rectangles = ax.bar(keys, values)
+        today_exposure_values = list(map(lambda x: total_exposure_stat[x][0], keys))
+
+        def seconds_to_readable_hours(seconds):
+            if seconds == 0:
+                return ''
+            hours = int(math.floor(seconds / 3600))
+            minutes = int(math.floor((seconds - hours * 3600) / 60))
+            sec = int(seconds % 60)
+            return f'{hours}:{minutes:02d}:{sec:02d}'
+
+        previously_exposure_values = list(map(lambda x: total_exposure_stat[x][1], keys))
+
+        previous_rectangles = ax.bar(keys, previously_exposure_values)
+        today_rectangles = ax.bar(keys, today_exposure_values, bottom=previously_exposure_values)
         for i in range(len(keys)):
             filter_name = keys[i].split()[-1]
             if filter_name in self.filter_meta:
                 color = self.filter_meta[filter_name]['color']
             else:
                 color = '#660874'
-            rect = rectangles[i]
+            rect = today_rectangles[i]
             rect.set_color(color)
+            previous_color = Color(color)
+            previous_color.set_saturation(previous_color.get_saturation() * 0.7)
+            previous_color.set_luminance(previous_color.get_luminance() * 0.7)
+            previous_rectangles[i].set_color(previous_color.hex)
 
         x_bound_lower, x_bound_higher = ax.get_xbound()
+        y_bound_lower, y_bound_higher = ax.get_ybound()
         ax.set_xbound(x_bound_lower - 0.3, x_bound_higher + 0.3)
+        ax.set_ybound(y_bound_lower, y_bound_higher * 1.1)
 
-        ax.bar_label(rectangles, label_type='center', fontsize=48)
+        today_exposure_labels = list(map(lambda x: seconds_to_readable_hours(total_exposure_stat[x][0]), keys))
+        previously_exposure_labels = list(map(lambda x: seconds_to_readable_hours(total_exposure_stat[x][1]), keys))
+
+        ax.bar_label(previous_rectangles, label_type='center', labels=previously_exposure_labels, fontsize=48)
+        ax.bar_label(today_rectangles, label_type='center', labels=today_exposure_labels, fontsize=48)
 
         ax.set_ylabel('Exposure Time(s)')
         ax.yaxis.label.set_color('#F5F5F5')

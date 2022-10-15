@@ -14,3 +14,4 @@ PyYAML~=6.0
 requests~=2.26.0
 rich~=10.16.1
 websocket-client~=1.2.1
+colour~=0.1.5

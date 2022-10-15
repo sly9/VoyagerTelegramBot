@@ -4,6 +4,8 @@
 config_template_version: 0.1
 
 ### Sequence Statistics
+sequence_stats_database: 'sequence.db' # The filename of the database which saves existing exposure history.
+sequence_folder_path: None # [Optional] The folder name containing historical sequences. Bot will scan this folder only once to gather history. To force the whole scan again, just delete the database file, and it will be recreated automatically.
 sequence_stats_config:
   # Possible values are: HFDPlot, ExposurePlot, GuidingPlot, MemoryHistoryPlot
   types: [ HFDPlot, ExposurePlot, GuidingPlot ]  # Select chart types of stats

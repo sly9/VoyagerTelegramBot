@@ -2,6 +2,7 @@ import base64
 import os
 from collections import deque
 from typing import Dict
+import colour
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
@@ -13,6 +14,7 @@ from event_emitter import ee
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_names import BotEvent
 from sequence_stat import StatPlotter, SequenceStat
+from utils.database.sequence_database_manager import SequenceDatabaseManager
 
 
 # noinspection SpellCheckingInspection
@@ -21,6 +23,8 @@ class GiantEventHandler(VoyagerEventHandler):
         super().__init__(config=config)
 
         self.stat_plotter = StatPlotter(config=self.config)
+        self.sequence_database_manager = SequenceDatabaseManager(database_filename=config.sequence_stats_database,
+                                                                 sequence_folder_path=config.sequence_folder_path)
 
         self.running_seq = ''
         self.running_dragscript = ''
@@ -177,7 +181,6 @@ class GiantEventHandler(VoyagerEventHandler):
         should_send_image = False
 
         if file_identifier in self.image_type_set:
-            # TODO(bigpizza) should save hfd info to FITS file
             should_send_image = True
             self.image_type_set.remove(file_identifier)
 
@@ -205,6 +208,8 @@ class GiantEventHandler(VoyagerEventHandler):
         fit_type = message['VoyType']
 
         image_identifier = self.get_image_identifier(file_name)
+        self.current_sequence_stat()
+        self.sequence_database_manager.add_fit_file(file_name)
         if image_type == ImageTypeEnum.LIGHT.value and fit_type != FitTypeEnum.SYNC.value:
             self.image_type_set.add(image_identifier)
 
@@ -212,7 +217,10 @@ class GiantEventHandler(VoyagerEventHandler):
 
     def current_sequence_stat(self) -> SequenceStat:
         name = self.running_seq or 'default'
-        self.sequence_map.setdefault(name, SequenceStat(name=name))
+        default_sequence_stat = SequenceStat(name=name)
+        existing_exposure_info = self.sequence_database_manager.get_accumulated_exposure(object_name=name)
+        default_sequence_stat.merge_existing_exposure_info(existing_exposure_info)
+        self.sequence_map.setdefault(name, default_sequence_stat)
         return self.sequence_map[name]
 
     def add_exposure_stats(self, exposure: ExposureInfo, sequence_name: str):

@@ -17,8 +17,8 @@ from event_names import BotEvent
 
 class HTMLReporter:
     def __init__(self):
-        shutil.rmtree("./replay/images")
-        Path("./replay/images").mkdir(parents=True, exist_ok=True)
+        shutil.rmtree('./replay/images', ignore_errors=True)
+        Path('./replay/images').mkdir(parents=True, exist_ok=True)
 
         self.html_file = codecs.open('./replay/index1.html', 'w', encoding='utf-8')
         self.json_file = codecs.open('./replay/data.json', 'w', encoding='utf-8')
@@ -68,7 +68,7 @@ class HTMLReporter:
 
         webbrowser.open(url, new=2)
 
-    def send_text_message(self, message) -> Tuple[str, Dict]:
+    def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict]:
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Text Message</td><td>{message}</td></tr>\n')
         self.event_sequence += 1
 
@@ -118,7 +118,7 @@ class HTMLReporter:
 
         return 'OK', dict()
 
-    def unpin_all_messages(self, chat_id: str='Test') -> Tuple[str, Dict]:
+    def unpin_all_messages(self, chat_id: str = 'Test') -> Tuple[str, Dict]:
         message = f'Unpinning all messages for room [{chat_id}]'
         self.html_file.write(f'<tr><td>{self.event_sequence}</td><td>Unpin all Messages</td><td>N/A</td></tr>\n')
         self.event_sequence += 1
