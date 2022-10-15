@@ -3,7 +3,7 @@ from rich.table import Table
 
 from data_structure.host_info import HostInfo, VoyagerConnectionStatus
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum, MemoryUsage
-
+from utils.localization import get_translated_text as _
 
 class FooterPanel:
     def __init__(self, config: object, host_info: HostInfo = HostInfo()):
@@ -11,7 +11,6 @@ class FooterPanel:
         self.battery_percentage = SpecialBatteryPercentageEnum.NOT_MONITORED.value
         self.memory_usage = None  # type: MemoryUsage
         self.config = config
-        self.i18n = self.config.i18n.footer_panel
 
     def host_info_row(self):
         host_name = self.host_info.host_name
@@ -43,6 +42,6 @@ class FooterPanel:
         footer_table.add_column(justify='right', style='bold gold3', min_width=40)
         footer_table.add_column(justify='center', min_width=2)
 
-        footer_table.add_row('', self.host_info_row(), self.i18n['copyright'], self.battery_row())
+        footer_table.add_row('', self.host_info_row(), _('2021-2022. Liuyi and Kun in California.'), self.battery_row())
 
         yield footer_table

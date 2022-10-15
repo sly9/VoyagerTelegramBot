@@ -10,7 +10,6 @@ import time
 import uuid
 from collections import deque
 from pathlib import Path
-
 import websocket
 from rich import pretty
 from rich.console import Console
@@ -23,6 +22,7 @@ from event_emitter import ee
 from event_names import BotEvent
 from log_writer import LogWriter
 from voyager_client import VoyagerClient
+from utils.localization import get_translated_text as _, select_locale
 
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 pretty.install()
@@ -39,6 +39,8 @@ class VoyagerConnectionManager:
     def __init__(self, config=None):
         self.config = config
         self.voyager_settings = self.config.voyager_setting
+
+        select_locale(config.language)
 
         self.ws = None
         self.keep_alive_thread = None
@@ -104,10 +106,10 @@ class VoyagerConnectionManager:
         self.log_writer.maybe_flush()
         if isinstance(error, KeyboardInterrupt):
             self.config.allow_auto_reconnect = False
-            main_console.print('Received KeyboardInterrupt, quit gracefully')
+            main_console.print(_('Received KeyboardInterrupt, quit gracefully'))
         else:
             if type(error) == WebSocketAddressException or type(error) == ConnectionRefusedError:
-                main_console.print('Connected refused')
+                main_console.print(_('Connected refused'))
             else:
                 main_console.print_exception(show_locals=True)
 
@@ -170,12 +172,12 @@ if __name__ == "__main__":
     config_builder = ConfigBuilder(config_filename='config.yml')
 
     if validate_result := config_builder.validate():
-        main_console.print(f'validation failed: {validate_result}')
+        main_console.print(_('validation failed: {}').format(validate_result))
         if validate_result == 'NO_CONFIG_FILE':
             config_builder.copy_template()
 
         elif validate_result == 'LOAD_CONFIG_FAILED':
-            main_console.print('Something is clearly wrong with the config!!')
+            main_console.print(_('Something is clearly wrong with the config!!'))
         elif validate_result == 'TEMPLATE_VERSION_DIFFERENCE':
             config_builder.merge()
         sys.exit()
@@ -188,6 +190,10 @@ if __name__ == "__main__":
         main_console = Console(stderr=True, color_system=None)
     else:
         main_console = Console()
-
-    connection_manager = VoyagerConnectionManager(config=config)
-    connection_manager.run_forever()
+    try:
+        connection_manager = VoyagerConnectionManager(config=config)
+        a = _('Something is clearly wrong with the config!')
+        connection_manager.run_forever()
+    except Exception as e:
+        main_console.print_exception()
+        print(e)
