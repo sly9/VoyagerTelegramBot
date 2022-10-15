@@ -55,7 +55,7 @@ class SystemStatusEventHandler(VoyagerEventHandler):
         mount_info = MountInfo(
             ra=message['MNTRA'], dec=message['MNTDEC'].replace(' ', ''),
             ra_j2000=message['MNTRAJ2000'], dec_j2000=message['MNTDECJ2000'].replace(' ', ''),
-            az=message['MNTAZ'].replace(' ', ''), alt=message['MNTALT'].replace(' ', ''),
+            az=message['MNTAZ'].replace(' ', '') or '0°00\'00"', alt=message['MNTALT'].replace(' ', '') or '0°00\'00"',
             pier=message['MNTPIER'][4:], time_to_flip=message['MNTTFLIP']
         )
 

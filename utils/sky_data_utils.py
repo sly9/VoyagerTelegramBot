@@ -70,34 +70,36 @@ def get_weather_conditions(file_path: str = '') -> Dict[SkyCondition, int]:
     if not os.path.exists(file_path) or not os.path.isfile(file_path):
         return sky_conditions
 
-    with open(file_path, 'r') as sky_file:
-        conditions = sky_file.readline().rsplit(sep=' ', maxsplit=7)
+    try:
+        with open(file_path, 'r') as sky_file:
+            conditions = sky_file.readline().rsplit(sep=' ', maxsplit=7)
 
-        if len(conditions) < 7:
-            return sky_conditions
+            if len(conditions) < 7:
+                return sky_conditions
 
-        sky_conditions[SkyCondition.CLOUD] = int(conditions[-6])
-        sky_conditions[SkyCondition.WIND] = int(conditions[-5])
-        sky_conditions[SkyCondition.RAIN] = int(conditions[-4])
-        sky_conditions[SkyCondition.DAYLIGHT] = int(conditions[-3])
-        sky_conditions[SkyCondition.ROOF] = int(conditions[-2])
-        sky_conditions[SkyCondition.ALERT] = int(conditions[-1])
-
+            sky_conditions[SkyCondition.CLOUD] = int(conditions[-6])
+            sky_conditions[SkyCondition.WIND] = int(conditions[-5])
+            sky_conditions[SkyCondition.RAIN] = int(conditions[-4])
+            sky_conditions[SkyCondition.DAYLIGHT] = int(conditions[-3])
+            sky_conditions[SkyCondition.ROOF] = int(conditions[-2])
+            sky_conditions[SkyCondition.ALERT] = int(conditions[-1])
+    except PermissionError:
+        pass
     return sky_conditions
 
 
 def get_roof_condition(file_path: str = '') -> str:
     roof_condition = 'UNKNOWN'
-
     if not os.path.exists(file_path) or not os.path.isfile(file_path):
         return roof_condition
+    try:
+        with open(file_path, 'r') as sky_file:
+            conditions = sky_file.readline().rsplit(sep=':', maxsplit=2)
 
-    with open(file_path, 'r') as sky_file:
-        conditions = sky_file.readline().rsplit(sep=':', maxsplit=2)
+            if len(conditions) < 2:
+                return roof_condition
 
-        if len(conditions) < 2:
-            return roof_condition
-
-        roof_condition = conditions[-1].strip()
-
+            roof_condition = conditions[-1].strip()
+    except PermissionError:
+        pass
     return roof_condition
