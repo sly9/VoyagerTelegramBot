@@ -34,7 +34,7 @@ message MiscSettings {
 //notified_log_types: [ WARNING, CRITICAL, EMERGENCY ]
 
 enum LogType {
-  UNKNOWN = 0;
+  UNKNOWN_LOG_TYPE = 0;
   DEBUG = 1;
   INFO = 2;
   WARNING = 3;

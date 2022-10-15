@@ -1,9 +1,9 @@
 syntax = "proto3";
-import "sequence_stats.proto";
-import "voyager_settings.proto";
-import "misc.proto";
-import "console.proto";
-import "telegram.proto";
+import "generated/config/sequence_stats.proto";
+import "generated/config/voyager_settings.proto";
+import "generated/config/misc.proto";
+import "generated/config/console.proto";
+import "generated/config/telegram.proto";
 
 package bot.config;
 
