@@ -142,3 +142,4 @@ dmypy.json
 *.txt
 /replay/
 *.db
+/data/

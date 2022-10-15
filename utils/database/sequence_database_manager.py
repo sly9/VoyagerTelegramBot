@@ -1,6 +1,8 @@
 import sqlite3
 from os.path import exists
 import os
+from pathlib import Path
+
 from astropy.io import fits
 
 create_table_sql = '''CREATE TABLE IF NOT EXISTS SEQUENCES (
@@ -23,6 +25,7 @@ class SequenceDatabaseManager:
         self.database_filename = database_filename
         self.sequence_folder_path = sequence_folder_path
         if not exists(database_filename):
+            Path(os.path.dirname(database_filename)).mkdir(parents=True, exist_ok=True)
             self.connection = self.create_database()
             if sequence_folder_path:
                 self.scan_sequence_folder()
@@ -52,7 +55,6 @@ class SequenceDatabaseManager:
         :return:
         """
         records = []
-        id = 1
         for root, dirs, files in os.walk(self.sequence_folder_path):
             path = root.split(os.sep)
             print((len(path) - 1) * '---', os.path.basename(root))

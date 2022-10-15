@@ -2,6 +2,7 @@
 import os
 from datetime import datetime
 from datetime import timedelta
+from pathlib import Path
 
 import pytz
 
@@ -9,8 +10,11 @@ import pytz
 class LogWriter:
     def __init__(self, config):
         self.config = config
+        self.log_folder = config.log_folder
         self._log_file = None
         self.should_dump_log = self.config.should_dump_log
+        if self.should_dump_log:
+            Path(self.log_folder).mkdir(parents=True, exist_ok=True)
 
     def __current_log_file_created_time(self):
         if not self._log_file:
@@ -57,5 +61,5 @@ class LogWriter:
         now = datetime.now()
         date_str = now.strftime('%Y_%m_%d_')
         self.close()
-        self._log_file = open(date_str + '_voyager_bot_log.txt', 'a')
+        self._log_file = open(self.log_folder + '/' + date_str + 'voyager_bot_log.txt', 'a')
         return self._log_file

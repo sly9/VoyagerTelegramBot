@@ -4,7 +4,7 @@
 config_template_version: 0.1
 
 ### Sequence Statistics
-sequence_stats_database: 'sequence.db' # The filename of the database which saves existing exposure history.
+sequence_stats_database: 'data/sequence.db' # The filename of the database which saves existing exposure history.
 sequence_folder_path: None # [Optional] The folder name containing historical sequences. Bot will scan this folder only once to gather history. To force the whole scan again, just delete the database file, and it will be recreated automatically.
 sequence_stats_config:
   # Possible values are: HFDPlot, ExposurePlot, GuidingPlot, MemoryHistoryPlot
@@ -59,6 +59,7 @@ telegram_setting:
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: America/Los_Angeles
 should_dump_log: False  # [Optional] If true, all received JSON messages will be stored in a log file for replay purpose.
+log_folder: 'data/logs/'
 # Whether bot should try to monitor the system status of the computer it's running on. Useful when bot and voyager is running on the same computer
 monitor_local_computer: False
 allow_auto_reconnect: True
@@ -66,6 +67,7 @@ language: en-US  # en-US for English, zh-CN for simplified Chinese, zh-TW for tr
 
 telegram_enabled: True
 html_report_enabled: False
+report_folder: 'data/report/'
 console_config:
   use_emoji: True
   console_type: FULL # Whether you want your console to be an application or not. Valid values are 'PLAIN', 'BASIC', 'FULL'

@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 from rich.console import Console
 
@@ -24,8 +25,8 @@ class DummyDebugger:
             sys.exit()
 
         config = config_builder.build()
-
-        sys.stderr = open('error_log.txt', 'a')
+        Path(config.log_folder).mkdir(parents=True, exist_ok=True)
+        sys.stderr = open(config.log_folder+'/error_log.txt', 'a')
         console.main_console = Console(stderr=True, color_system=None)
 
         config.telegram_enabled = False

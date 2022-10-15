@@ -22,7 +22,7 @@ class VoyagerClient:
         self.config = config
 
         if self.config.html_report_enabled:
-            self.html_reporter = HTMLReporter()
+            self.html_reporter = HTMLReporter(config=config)
         if self.config.telegram_enabled:
             self.telegram = Telegram(config=config)
 

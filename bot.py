@@ -9,6 +9,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from pathlib import Path
 
 import websocket
 from rich import pretty
@@ -182,7 +183,8 @@ if __name__ == "__main__":
     config = config_builder.build()
 
     if config.console_config.console_type == 'FULL':
-        sys.stderr = open('error_log.txt', 'a')
+        Path(config.log_folder).mkdir(parents=True, exist_ok=True)
+        sys.stderr = open(config.log_folder + '/error_log.txt', 'a')
         main_console = Console(stderr=True, color_system=None)
     else:
         main_console = Console()

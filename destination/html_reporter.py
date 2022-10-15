@@ -16,12 +16,13 @@ from event_names import BotEvent
 
 
 class HTMLReporter:
-    def __init__(self):
-        shutil.rmtree('./replay/images', ignore_errors=True)
-        Path('./replay/images').mkdir(parents=True, exist_ok=True)
+    def __init__(self, config=None):
+        path = config.report_folder
+        shutil.rmtree(path, ignore_errors=True)
+        Path(path + '/images').mkdir(parents=True, exist_ok=True)
 
-        self.html_file = codecs.open('./replay/index1.html', 'w', encoding='utf-8')
-        self.json_file = codecs.open('./replay/data.json', 'w', encoding='utf-8')
+        self.html_file = codecs.open(path + '/index.html', 'w', encoding='utf-8')
+        self.json_file = codecs.open(path + '/data.json', 'w', encoding='utf-8')
         self.write_header()
         self.image_count = 0
         self.event_sequence = 0
