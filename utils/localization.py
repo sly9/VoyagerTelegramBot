@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import gettext
-from typing import Callable
 import os
+from typing import Callable
 
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 get_translated_text_impl: Callable[[str], str] = gettext.gettext

@@ -1,6 +1,6 @@
-from typing import Dict
-from enum import Enum, IntEnum
 import os
+from enum import Enum
+from typing import Dict
 
 
 class SkyCondition(Enum):

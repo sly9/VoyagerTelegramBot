@@ -137,9 +137,10 @@ class SunAndMoon(BaseAlgorithmForecast):
 
 if __name__ == '__main__':
     moon = ephem.Moon()
-    s=ephem.separation((312 / 180 * math.pi, 62 / 180 * math.pi), (312 / 180 * math.pi, 57.2 / 180 * math.pi))
+    s = ephem.separation((312 / 180 * math.pi, 62 / 180 * math.pi), (312 / 180 * math.pi, 57.2 / 180 * math.pi))
     print(s)
     degrees = '310°12\'15"'
     from astropy.coordinates import Angle
-    a= Angle(degrees)
+
+    a = Angle(degrees)
     print(a)

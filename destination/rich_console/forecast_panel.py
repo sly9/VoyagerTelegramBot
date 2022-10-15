@@ -19,9 +19,9 @@ from destination.rich_console.styles import RichTextStylesEnum
 from utils.forecast.clear_dark_sky_forecast import ClearDarkSkyForecast
 from utils.forecast.open_weather_forecast import OpenWeatherForecast
 from utils.forecast.sun_and_moon import SunAndMoon
+from utils.localization import get_translated_text as _
 from utils.sky_data_utils import get_weather_conditions, get_roof_condition, SkyCondition, CloudCondition, \
     WindCondition, RainCondition, DayCondition, AlertCondition
-from utils.localization import get_translated_text as _
 
 
 class ForecastPanel:

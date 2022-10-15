@@ -7,8 +7,8 @@ from rich.table import Table
 from rich.text import Text
 
 from destination.rich_console.styles import RichTextStylesEnum
-from version import bot_version_string
 from utils.localization import get_translated_text as _
+from version import bot_version_string
 
 
 class RichConsoleHeader:

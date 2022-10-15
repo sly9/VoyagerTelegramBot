@@ -1,0 +1,40 @@
+syntax = 'proto3';
+
+package  bot.config;
+
+message SequenceStatistics {
+  // The filename of the database which saves existing exposure history.
+  string database_path = 1;
+
+  // [Optional] The folder name containing historical sequences. Bot will scan this folder only once to gather history.
+  // To force the whole scan again, just delete the database file, and it will be recreated automatically.
+  string sequence_folder_path = 2;
+
+  // Make your own choice of the sub plots
+  repeated SequencePlotType plot_types = 3;
+  GuidingErrorPlot guiding_error_plot = 4;
+
+  // Map of filter name to color hex string.
+  map<string, string> filter_styles = 5;
+}
+
+enum  SequencePlotType {
+  UNKNOWN_PLOT_TYPE = 0;
+  HFD = 1;
+  EXPOSURE = 2;
+  GUIDING_ERROR = 3;
+  MEMORY_HISTORY = 4;
+}
+
+enum UNIT {
+  PIXEL = 0;
+  ARCSEC = 1;
+}
+
+message GuidingErrorPlot {
+  UNIT unit = 1;
+  // Arcsec for each pixel of your guiding camera + OTA. Voyager doesn't know this, you have to specify this yourself.
+  float scale = 2;
+  //guiding error scatter chart will be limited to [-error_boundary, error_boundary] for both x and y axis. It doesn't care about unit (no auto converstion between pix and arcsec)
+  float error_boundary = 3;
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+import "sequence_stats.proto";
+import "voyager_settings.proto";
+import "misc.proto";
+import "console.proto";
+import "telegram.proto";
+
+package bot.config;
+
+message Configuration {
+  VoyagerSettings voyager_settings = 1;
+  SequenceStatistics sequence_stats = 2;
+  MiscSettings misc_settings = 3;
+  ConsoleConfig console_config = 4;
+  LogConfig log_config = 5;
+  TelegramConfig telegram_config = 6;
+  ObservingConditionConfig observing_condition_config = 7;
+}

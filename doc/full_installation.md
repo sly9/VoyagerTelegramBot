@@ -1,6 +1,7 @@
 # Full Installation guide
 
-> > If you are confident with your skill of playing with python, or you are using Mac OS / Linux, please follow this full installation guide.
+> > If you are confident with your skill of playing with python, or you are using Mac OS / Linux, please follow this
+> > full installation guide.
 
 To deploy / use the `VoyagerTelegramBot` on your system, there are some basic requirements:
 

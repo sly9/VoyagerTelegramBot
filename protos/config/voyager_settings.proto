@@ -1,0 +1,10 @@
+syntax = 'proto3';
+
+package  bot.config;
+
+message VoyagerSettings{
+  string host = 1;
+  int32 port = 2;
+  string username = 3;
+  string password = 4;
+}

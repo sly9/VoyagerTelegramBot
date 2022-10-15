@@ -5,6 +5,7 @@ from data_structure.host_info import HostInfo, VoyagerConnectionStatus
 from data_structure.special_battery_percentage import SpecialBatteryPercentageEnum, MemoryUsage
 from utils.localization import get_translated_text as _
 
+
 class FooterPanel:
     def __init__(self, config: object, host_info: HostInfo = HostInfo()):
         self.host_info = host_info

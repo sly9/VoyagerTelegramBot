@@ -2,7 +2,6 @@ import os
 from collections import OrderedDict
 
 import xmltodict
-from dicttoxml import dicttoxml
 
 ITEM_LOCATOR = {
     'TARGET_ARRAY': 'ref-3',
@@ -17,6 +16,7 @@ ITEM_LOCATOR = {
 
 A3_SCHEMA = 'http://schemas.microsoft.com/clr/nsassem/Voyager2/Voyager2%2C%20Version%3D1.0.0.0%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull'
 START_IDX = 150
+
 
 # Personalized dict2xml parser since dicttoxml cannot parse xmltodict object
 def dict2xml(d, root_node=None):
@@ -62,6 +62,7 @@ def dict2xml(d, root_node=None):
             xml = xml + '</' + root + '>'
 
     return xml
+
 
 class GainOffset:
     def __init__(self, gain: int = 100, offset: int = 10):

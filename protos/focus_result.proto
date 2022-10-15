@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package bot;
+
+message FocusResult {
+  string filter_name = 1;
+  string filter_color = 2;
+  float hfd = 3;
+  int64 timestamp = 4;
+  float temperature = 5;
+  int32 recommended_index = 6; // ??
+}

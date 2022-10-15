@@ -1,0 +1,13 @@
+syntax = 'proto3';
+
+package bot.config;
+
+message TelegramConfig {
+  bool telegram_enabled = 1;
+  // The secret bot token.
+  string bot_token = 2;
+  // The chat id for sending verbose messages.
+  string chat_id = 3;
+  // The chat id for sending preview images and stat images. Could be the same as chat_id.
+  string image_chat_id = 4;
+}

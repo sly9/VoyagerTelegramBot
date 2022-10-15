@@ -1,4 +1,3 @@
-import codecs
 import os
 import sys
 from os.path import exists

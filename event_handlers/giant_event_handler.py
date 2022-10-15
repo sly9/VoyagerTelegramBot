@@ -2,7 +2,6 @@ import base64
 import os
 from collections import deque
 from typing import Dict
-import colour
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult

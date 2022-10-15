@@ -7,9 +7,10 @@ from rich.panel import Panel
 from rich.style import StyleType
 from rich.table import Table
 from rich.text import Text
-from utils.localization import get_translated_text as _
+
 from data_structure.log_message_info import LogMessageInfo
 from destination.rich_console.styles import RichTextStylesEnum
+from utils.localization import get_translated_text as _
 
 
 class LogPanel:

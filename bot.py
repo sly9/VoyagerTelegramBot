@@ -10,6 +10,7 @@ import time
 import uuid
 from collections import deque
 from pathlib import Path
+
 import websocket
 from rich import pretty
 from rich.console import Console
@@ -21,8 +22,8 @@ from data_structure.host_info import VoyagerConnectionStatus, HostInfo
 from event_emitter import ee
 from event_names import BotEvent
 from log_writer import LogWriter
-from voyager_client import VoyagerClient
 from utils.localization import get_translated_text as _, select_locale
+from voyager_client import VoyagerClient
 
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 pretty.install()

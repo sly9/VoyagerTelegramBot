@@ -1,6 +1,6 @@
+import os
 import sqlite3
 from os.path import exists
-import os
 from pathlib import Path
 
 from astropy.io import fits
@@ -103,7 +103,7 @@ class SequenceDatabaseManager:
         :return: A dictionary of filter name to accumulated exposure time in seconds.
         """
         get_accumulated_exposure_sql = f'select filter, sum(exposure) from sequences where target_name="{object_name}" ' \
-                       f'group by target_name, filter; '
+                                       f'group by target_name, filter; '
         cur = self.connection.cursor()
         cur.execute(get_accumulated_exposure_sql)
         rows = cur.fetchall()
@@ -112,5 +112,5 @@ class SequenceDatabaseManager:
 
 if __name__ == '__main__':
     s = SequenceDatabaseManager(sequence_folder_path='Y:\\GoogleDrive\\Images\\Sequences')
-    #s.scan_sequence_folder()
+    # s.scan_sequence_folder()
     s.get_accumulated_exposure(object_name='Abell_85')

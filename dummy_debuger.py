@@ -26,7 +26,7 @@ class DummyDebugger:
 
         config = config_builder.build()
         Path(config.log_folder).mkdir(parents=True, exist_ok=True)
-        sys.stderr = open(config.log_folder+'/error_log.txt', 'a')
+        sys.stderr = open(config.log_folder + '/error_log.txt', 'a')
         console.main_console = Console(stderr=True, color_system=None)
 
         config.telegram_enabled = False

@@ -1,6 +1,7 @@
 #!/bin/env python3
 import gc
 import io
+import math
 from collections import defaultdict, deque
 from datetime import datetime
 from statistics import mean, stdev
@@ -15,7 +16,6 @@ from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 
 from data_structure.filter_info import ExposureInfo
 from data_structure.focus_result import FocusResult
-import math
 
 matplotlib.use('agg')
 

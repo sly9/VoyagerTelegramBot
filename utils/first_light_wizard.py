@@ -168,4 +168,4 @@ class Wizard:
 if __name__ == '__main__':
     w = Wizard(config_yml_path='test.yml', config_yml_example_path='../config.yml.example')
     w.go()
-    #w.test_voyager_connection('liuyi.us', 5950, 'admin', 'A.qW!7q7F$')
+    # w.test_voyager_connection('liuyi.us', 5950, 'admin', 'A.qW!7q7F$')

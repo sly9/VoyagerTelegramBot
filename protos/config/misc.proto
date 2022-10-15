@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package bot.config;
+
+message MiscSettings {
+  // The timezone of your observatory -- not necessary the computer running this bot. Valid timezone names can be
+  // found here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  string timezone = 1;
+  // If true, all received JSON messages will be stored in a log file for replay purpose.
+  bool should_dump_log = 2;
+
+  // The directory for saving logs and error logs.
+  string log_folder = 3;
+
+  // Whether bot should try to monitor the system status of the computer it's running on. Useful when bot and voyager
+  // is running on the same computer
+  bool should_monitor_local_computer = 4;
+
+  // When connection is broken, should bot try to re-establish the connection or not.
+  bool should_auto_reconnect = 5;
+
+  // Locale string. en-US for English, zh-CN for simplified Chinese, zh-TW for traditional Chinese
+  string locale = 6;
+
+  // Whether html reporter is enabled or not.
+  string html_report_enabled = 7;
+
+  string html_report_folder = 8;
+}
+
+
+// Possible values are: [ DEBUG, INFO, WARNING, CRITICAL, TITLE, SUBTITLE, EVENT, REQUEST, EMERGENCY ]
+//allowed_log_types: [ WARNING, CRITICAL, TITLE, SUBTITLE, REQUEST, EMERGENCY ]
+//notified_log_types: [ WARNING, CRITICAL, EMERGENCY ]
+
+enum LogType {
+  UNKNOWN = 0;
+  DEBUG = 1;
+  INFO = 2;
+  WARNING = 3;
+  CRITICAL = 4;
+  TITLE = 5;
+  SUBTITLE = 6;
+  EVENT = 7;
+  REQUEST = 8;
+  EMERGENCY = 9;
+  PLACE_HOLDER1 = 10; // I believe this is shown before
+  PLACE_HOLDER2 = 11;
+  PLACE_HOLDER3 = 12;
+}
+
+message LogConfig{
+  // Types that are *NOT* in this list will be totally ignored
+  repeated LogType allowed_types = 1;
+  // Types in this list will be sent out as a normal message, otherwise it will be sent out silently.
+  repeated LogType notified_types = 2;
+}
+
+enum ForecastServiceType {
+  CLEAR_DARK_SKY = 0;
+  OPEN_WEATHER = 1;
+  SUN_AND_MOON = 2;
+}
+message ObservingConditionConfig{
+  // SkyRoof condition file
+  string roof_condition_file = 1;
+  // One line weather data file (sometimes known as "SkyAlert Weather", "Clarity", "Boltwood II" or "Weather Data")
+  string sky_condition_file = 2;
+  repeated ForecastServiceType forecast_service = 3;
+
+  string clear_dark_sky_key = 4;
+
+  string open_weather_api_key = 5;
+
+  float latitude = 6;
+  float longitude = 7;
+}

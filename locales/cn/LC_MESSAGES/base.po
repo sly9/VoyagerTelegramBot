@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-10-15 13:09-0700\n"
-"PO-Revision-Date: 2022-10-15 13:16-0700\n"
+"POT-Creation-Date: 2022-10-15 13:39-0700\n"
+"PO-Revision-Date: 2022-10-15 13:41-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -31,10 +31,6 @@ msgstr "验证失败： {}"
 
 #: bot.py:180
 msgid "Something is clearly wrong with the config!!"
-msgstr "配置明显出了问题！！"
-
-#: bot.py:195
-msgid "Something is clearly wrong with the config!"
 msgstr "配置明显出了问题！！"
 
 #: destination/rich_console/device_status_panel.py:37
@@ -99,6 +95,113 @@ msgstr "设备状态"
 msgid "2021-2022. Liuyi and Kun in California."
 msgstr "2021-2022。Liuyi 和 Kun 在加利福尼亚打造。"
 
+#: destination/rich_console/forecast_panel.py:75
+#: destination/rich_console/forecast_panel.py:130
+#: destination/rich_console/forecast_panel.py:215
+msgid "Unable to execute ClearDarkSky forecast service"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:83
+#: destination/rich_console/forecast_panel.py:141
+msgid "Hour"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:84
+msgid "Seeing"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:85
+#: destination/rich_console/forecast_panel.py:145
+msgid "Cloud"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:86
+msgid "Transp "
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:87
+msgid "Wind S"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:88
+msgid "Temp"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:142
+msgid "Temp."
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:143
+msgid "Dew Point "
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:144
+msgid "Humidity"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:146
+msgid "Wind"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:153
+msgid "Now "
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:227
+msgid "Condition"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:239
+msgid "Roof"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:244
+#: destination/rich_console/forecast_panel.py:256
+msgid "S: {}"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:245
+#: destination/rich_console/forecast_panel.py:255
+msgid "R: {}"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:260
+msgid "Twilight"
+msgstr ""
+
+#: destination/rich_console/log_panel.py:69
+msgid "Important logs ({width}x{height})"
+msgstr ""
+
+#: destination/rich_console/mount_panel.py:77
+msgid "Mount Status"
+msgstr ""
+
+#: destination/rich_console/progress_panel.py:29
+msgid ""
+"Status: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}s"
+msgstr ""
+
+#: destination/rich_console/progress_panel.py:35
+msgid "Status: {status_name}"
+msgstr ""
+
+#: destination/rich_console/progress_panel.py:37
+msgid "Imaging: {}"
+msgstr ""
+
+#: destination/rich_console/progress_panel.py:41
+msgid "Sequence: {}"
+msgstr ""
+
+#: destination/rich_console/progress_panel.py:47
+msgid "Progress"
+msgstr ""
+
+#: destination/rich_console/rich_console_header.py:34
+msgid "VogagerBot v{}"
+msgstr ""
+
 #: event_handlers/giant_event_handler.py:107
 msgid "DragScript {ds_name} finished."
 msgstr "DragScript {ds_name} 结束。"
@@ -119,21 +222,21 @@ msgstr "拍摄序列 {seq_name} 结束。"
 msgid "Sequence {seq_name} started."
 msgstr "拍摄序列 {seq_name} 开始。"
 
-#: event_handlers/giant_event_handler.py:133
+#: event_handlers/giant_event_handler.py:132
 msgid "Switching Sequence from {old_seq_name} to {new_seq_name}."
 msgstr "拍摄序列从 {old_seq_name} 切换至 {new_seq_name}。"
 
-#: event_handlers/giant_event_handler.py:146
+#: event_handlers/giant_event_handler.py:147
 msgid "Auto focusing failed with reason: {err_msg}"
 msgstr "自动对焦发生错误： {err_msg}。"
 
-#: event_handlers/giant_event_handler.py:165
+#: event_handlers/giant_event_handler.py:166
 msgid ""
 "AutoFocusing for filter {filter_name} succeeded with position {position}, "
 "HFD: {hfd:.2f}"
 msgstr "通道 {filter_name} 自动对焦完成 @{position}， HFD：{hfd:.2f}。"
 
-#: event_handlers/giant_event_handler.py:180
+#: event_handlers/giant_event_handler.py:181
 msgid ""
 "Exposure of {sequence_target} for {expo}sec using {filter_name} filter. HFD: "
 "{hfd}, StarIndex: {star_index}"
@@ -144,3 +247,6 @@ msgstr ""
 #: event_handlers/misc_event_handler.py:30
 msgid "Connected to <b>{host_name}({url})</b> [{version}]."
 msgstr "已经连接到 <b>{host_name}({url})</b> [{version}]。"
+
+#~ msgid "Something is clearly wrong with the config!"
+#~ msgstr "配置明显出了问题！！"
