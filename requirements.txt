@@ -15,4 +15,5 @@ requests~=2.26.0
 rich~=10.16.1
 websocket-client~=1.2.1
 colour~=0.1.5
-google-api-python-client
+xmltodict~=0.13.0
+google~=3.0.0

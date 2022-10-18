@@ -155,7 +155,10 @@ class StatPlotter:
             hours = int(math.floor(seconds / 3600))
             minutes = int(math.floor((seconds - hours * 3600) / 60))
             sec = int(seconds % 60)
-            return f'{hours}:{minutes:02d}:{sec:02d}'
+            if hours > 0:
+                return f'{hours}:{minutes:02d}:{sec:02d}'
+            else:
+                return f'{minutes:02d}:{sec:02d}'
 
         previously_exposure_values = list(map(lambda x: total_exposure_stat[x][1], keys))
 
