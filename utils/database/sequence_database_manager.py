@@ -91,7 +91,7 @@ class SequenceDatabaseManager:
             datetime = headers['DATE-OBS']
             cur = self.connection.cursor()
             cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
-                            (object_name, filter_name, int(exposure), datetime, fit_filename))
+                            [(object_name, filter_name, int(exposure), datetime, fit_filename)])
             self.connection.commit()
         except Exception as exception:
             pass

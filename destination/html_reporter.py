@@ -18,6 +18,7 @@ from event_names import BotEvent
 class HTMLReporter:
     def __init__(self, config=None):
         path = config.report_folder
+        self.path = path
         shutil.rmtree(path, ignore_errors=True)
         Path(path + '/images').mkdir(parents=True, exist_ok=True)
 
@@ -75,7 +76,7 @@ class HTMLReporter:
 
     def edit_image_message(self, chat_id: str, message_id: str,
                            image_data: bytes, filename: str = '') -> Tuple[str, Dict]:
-        f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
+        f = open(f'{self.path}/images/image_{self.image_count}.jpg', 'wb')
 
         f.write(image_data)
         f.close()
@@ -132,7 +133,7 @@ class HTMLReporter:
 
     def send_image_message(self, image_data: bytes, filename: str = '', caption: str = '',
                            as_document: bool = True) -> Tuple[str, Dict]:
-        f = open(f'replay/images/image_{self.image_count}.jpg', 'wb')
+        f = open(f'{self.path}/images/image_{self.image_count}.jpg', 'wb')
         f.write(image_data)
         f.close()
 
