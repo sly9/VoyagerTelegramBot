@@ -144,3 +144,4 @@ dmypy.json
 *.db
 /data/
 /generated/
+data/report/index.html

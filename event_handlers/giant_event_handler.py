@@ -126,7 +126,7 @@ class GiantEventHandler(VoyagerEventHandler):
             elif self.running_seq == '':
                 ee.emit(BotEvent.SEND_TEXT_MESSAGE.name,
                         _('Sequence {seq_name} started.').format(seq_name=running_seq))
-                self.report_stats_for_current_sequence()
+                #self.report_stats_for_current_sequence()
             else:
                 message = _('Switching Sequence from {old_seq_name} to {new_seq_name}.').format(
                     old_seq_name=running_seq,
