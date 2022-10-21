@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-10-15 13:39-0700\n"
-"PO-Revision-Date: 2022-10-15 13:41-0700\n"
+"PO-Revision-Date: 2022-10-21 10:01-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -99,61 +99,61 @@ msgstr "2021-2022。Liuyi 和 Kun 在加利福尼亚打造。"
 #: destination/rich_console/forecast_panel.py:130
 #: destination/rich_console/forecast_panel.py:215
 msgid "Unable to execute ClearDarkSky forecast service"
-msgstr ""
+msgstr "无法运行ClearDarkSky天气预报服务"
 
 #: destination/rich_console/forecast_panel.py:83
 #: destination/rich_console/forecast_panel.py:141
 msgid "Hour"
-msgstr ""
+msgstr "时刻"
 
 #: destination/rich_console/forecast_panel.py:84
 msgid "Seeing"
-msgstr ""
+msgstr "视宁度"
 
 #: destination/rich_console/forecast_panel.py:85
 #: destination/rich_console/forecast_panel.py:145
 msgid "Cloud"
-msgstr ""
+msgstr "云层"
 
 #: destination/rich_console/forecast_panel.py:86
 msgid "Transp "
-msgstr ""
+msgstr "透明度"
 
 #: destination/rich_console/forecast_panel.py:87
 msgid "Wind S"
-msgstr ""
+msgstr "风速"
 
 #: destination/rich_console/forecast_panel.py:88
 msgid "Temp"
-msgstr ""
+msgstr "温度"
 
 #: destination/rich_console/forecast_panel.py:142
 msgid "Temp."
-msgstr ""
+msgstr "温度"
 
 #: destination/rich_console/forecast_panel.py:143
 msgid "Dew Point "
-msgstr ""
+msgstr "露点 "
 
 #: destination/rich_console/forecast_panel.py:144
 msgid "Humidity"
-msgstr ""
+msgstr "湿度"
 
 #: destination/rich_console/forecast_panel.py:146
 msgid "Wind"
-msgstr ""
+msgstr "风速"
 
 #: destination/rich_console/forecast_panel.py:153
 msgid "Now "
-msgstr ""
+msgstr "现在"
 
 #: destination/rich_console/forecast_panel.py:227
 msgid "Condition"
-msgstr ""
+msgstr "条件"
 
 #: destination/rich_console/forecast_panel.py:239
 msgid "Roof"
-msgstr ""
+msgstr "屋顶"
 
 #: destination/rich_console/forecast_panel.py:244
 #: destination/rich_console/forecast_panel.py:256
@@ -167,36 +167,37 @@ msgstr ""
 
 #: destination/rich_console/forecast_panel.py:260
 msgid "Twilight"
-msgstr ""
+msgstr "黄昏"
 
 #: destination/rich_console/log_panel.py:69
 msgid "Important logs ({width}x{height})"
-msgstr ""
+msgstr "重要记录 ({width}x{height})"
 
 #: destination/rich_console/mount_panel.py:77
 msgid "Mount Status"
-msgstr ""
+msgstr "赤道仪状态"
 
 #: destination/rich_console/progress_panel.py:29
 msgid ""
 "Status: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}s"
 msgstr ""
+"状态: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}秒"
 
 #: destination/rich_console/progress_panel.py:35
 msgid "Status: {status_name}"
-msgstr ""
+msgstr "状态: {status_name}"
 
 #: destination/rich_console/progress_panel.py:37
 msgid "Imaging: {}"
-msgstr ""
+msgstr "正在拍摄：{}"
 
 #: destination/rich_console/progress_panel.py:41
 msgid "Sequence: {}"
-msgstr ""
+msgstr "序列：{}"
 
 #: destination/rich_console/progress_panel.py:47
 msgid "Progress"
-msgstr ""
+msgstr "进度"
 
 #: destination/rich_console/rich_console_header.py:34
 msgid "VogagerBot v{}"
