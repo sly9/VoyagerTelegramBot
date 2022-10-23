@@ -17,3 +17,4 @@ websocket-client~=1.2.1
 colour~=0.1.5
 xmltodict~=0.13.0
 google~=3.0.0
+throttler~=1.2.1

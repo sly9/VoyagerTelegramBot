@@ -13,6 +13,7 @@ from console import main_console
 from data_structure.log_message_info import LogMessageInfo
 from event_emitter import ee
 from event_names import BotEvent
+from throttler import throttle
 
 
 class Telegram:
@@ -69,7 +70,15 @@ class Telegram:
                 ee.emit(BotEvent.APPEND_ERROR_LOG.name,
                         error=LogMessageInfo(type='ERROR', message='send_image_message: ' + info_dict["description"]))
 
-    def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict[str, Any]]:
+    # Avoids text message spew caused by talky Voyager
+    # Limits from Telegram API:
+    # To a particular chat, <= 1 message per second.
+    # To multiple users, <= 30 messages per second.
+    # To a group, <=20 messages per minute.
+    #
+    # Limit text message rate to 15 per minute and save 5 more for other types (e.g. image message)
+    @throttle(rate_limit=15, period=60.0)
+    async def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html', 'disable_notification': silent}
         send_text_message_response = requests.post(self.urls['text'], data=payload)
         response_json = json.loads(send_text_message_response.text)
@@ -209,3 +218,16 @@ if __name__ == '__main__':
 
         response = t.unpin_message(chat_id=the_chat_id, message_id=the_message_id)
         main_console.print(response)
+
+    # Test message spew
+    import asyncio
+    import time
+
+    async def spew(count: int = 20):
+        message_spew = [t.send_text_message('message_spew {id}'.format(id=msg_id)) for msg_id in range(count)]
+        for message in message_spew:
+            _ = await message
+            main_console.print('Timestamp: {}'.format(time.time()))
+
+
+    asyncio.run(spew(20))
