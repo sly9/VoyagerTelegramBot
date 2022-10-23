@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VoyagerBot\n"
-"POT-Creation-Date: 2022-10-22 18:32-0700\n"
+"POT-Creation-Date: 2022-10-22 18:49-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: VoyagerBot <mu.astro.4512@gmail.com>\n"
@@ -21,11 +21,16 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: .idea\n"
 
 #: bot.py:110
-msgid "Received KeyboardInterrupt, quit gracefully"
+msgid "Received KeyboardInterrupt, quit gracefully."
 msgstr ""
 
 #: bot.py:113
 msgid "Connected refused"
+msgstr ""
+
+#: bot.py:118
+#, python-brace-format
+msgid "Closing connection, Code={close_status_code}, Description= {close_msg}."
 msgstr ""
 
 #: bot.py:176
@@ -255,4 +260,8 @@ msgstr ""
 #: event_handlers/misc_event_handler.py:30
 #, python-brace-format
 msgid "Connected to <b>{host_name}({url})</b> [{version}]."
+msgstr ""
+
+#: voyager_client.py:37
+msgid "Not planning to take over the console"
 msgstr ""

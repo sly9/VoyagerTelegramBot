@@ -107,7 +107,7 @@ class VoyagerConnectionManager:
         self.log_writer.maybe_flush()
         if isinstance(error, KeyboardInterrupt):
             self.config.allow_auto_reconnect = False
-            main_console.print(_('Received KeyboardInterrupt, quit gracefully'))
+            main_console.print(_('Received KeyboardInterrupt, quit gracefully.'))
         else:
             if type(error) == WebSocketAddressException or type(error) == ConnectionRefusedError:
                 main_console.print(_('Connected refused'))
@@ -115,7 +115,7 @@ class VoyagerConnectionManager:
                 main_console.print_exception(show_locals=True)
 
     def on_close(self, ws, close_status_code, close_msg):
-        main_console.print(f'Closing connection, Code={close_status_code}, description= {close_msg}')
+        main_console.print(_(f'Closing connection, Code={close_status_code}, Description= {close_msg}.'))
         host_info = HostInfo(host_name='',
                              url=self.config.voyager_setting.domain,
                              port=str(self.config.voyager_setting.port),

@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VoyagerBot\n"
-"POT-Creation-Date: 2022-10-15 13:39-0700\n"
-"PO-Revision-Date: 2022-10-22 18:33-0700\n"
+"POT-Creation-Date: 2022-10-22 18:49-0700\n"
+"PO-Revision-Date: 2022-10-22 18:53-0700\n"
 "Last-Translator: Kun Wang <mu.astro.4512@gmail.com>\n"
 "Language-Team: VoyagerBot <mu.astro.4512@gmail.com>\n"
 "Language: zh_CN\n"
@@ -17,19 +17,26 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 "X-Generator: Poedit 3.2\n"
 
-#: bot.py:109
-msgid "Received KeyboardInterrupt, quit gracefully"
+#: bot.py:110
+#, fuzzy
+#| msgid "Received KeyboardInterrupt, quit gracefully"
+msgid "Received KeyboardInterrupt, quit gracefully."
 msgstr "收到键盘打断，优雅退出"
 
-#: bot.py:112
+#: bot.py:113
 msgid "Connected refused"
 msgstr "连接被拒绝"
 
-#: bot.py:175
+#: bot.py:118
+#, python-brace-format
+msgid "Closing connection, Code={close_status_code}, Description= {close_msg}."
+msgstr "关闭连接，状态码={close_status_code}，描述= {close_msg}。"
+
+#: bot.py:176
 msgid "validation failed: {}"
 msgstr "验证失败： {}"
 
-#: bot.py:180
+#: bot.py:181
 msgid "Something is clearly wrong with the config!!"
 msgstr "配置明显出了问题！！"
 
@@ -65,11 +72,11 @@ msgstr "旋转中"
 
 #: destination/rich_console/device_status_panel.py:120
 msgid "Sky PA: {}°"
-msgstr "天角度: {}°"
+msgstr "天球方位角: {}°"
 
 #: destination/rich_console/device_status_panel.py:121
 msgid "Rotator PA: {}°"
-msgstr "转动环角度: {}°"
+msgstr "相机方位角: {}°"
 
 #: destination/rich_console/device_status_panel.py:126
 msgid "Guiding"
@@ -91,7 +98,7 @@ msgstr "相场抖动"
 msgid "Device Status"
 msgstr "设备状态"
 
-#: destination/rich_console/footer_panel.py:45
+#: destination/rich_console/footer_panel.py:46
 msgid "2021-2022. Liuyi and Kun in California."
 msgstr "2021-2022。Liuyi 和 Kun 在加利福尼亚打造。"
 
@@ -158,18 +165,19 @@ msgstr "屋顶"
 #: destination/rich_console/forecast_panel.py:244
 #: destination/rich_console/forecast_panel.py:256
 msgid "S: {}"
-msgstr ""
+msgstr "落：{}"
 
 #: destination/rich_console/forecast_panel.py:245
 #: destination/rich_console/forecast_panel.py:255
 msgid "R: {}"
-msgstr ""
+msgstr "升：{}"
 
 #: destination/rich_console/forecast_panel.py:260
 msgid "Twilight"
 msgstr "黄昏"
 
-#: destination/rich_console/log_panel.py:69
+#: destination/rich_console/log_panel.py:70
+#, python-brace-format
 msgid "Important logs ({width}x{height})"
 msgstr "重要记录 ({width}x{height})"
 
@@ -178,12 +186,14 @@ msgid "Mount Status"
 msgstr "赤道仪状态"
 
 #: destination/rich_console/progress_panel.py:29
+#, python-brace-format
 msgid ""
 "Status: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}s"
 msgstr ""
 "状态: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}秒"
 
 #: destination/rich_console/progress_panel.py:35
+#, python-brace-format
 msgid "Status: {status_name}"
 msgstr "状态: {status_name}"
 
@@ -201,43 +211,52 @@ msgstr "进度"
 
 #: destination/rich_console/rich_console_header.py:34
 msgid "VogagerBot v{}"
-msgstr ""
+msgstr "爱你们的 VogaverBot v{}"
 
-#: event_handlers/giant_event_handler.py:107
+#: event_handlers/giant_event_handler.py:106
+#, python-brace-format
 msgid "DragScript {ds_name} finished."
 msgstr "DragScript {ds_name} 结束。"
 
-#: event_handlers/giant_event_handler.py:113
+#: event_handlers/giant_event_handler.py:112
+#, python-brace-format
 msgid "DragScript {ds_name} started."
 msgstr "DragScript {ds_name} 开始。"
 
-#: event_handlers/giant_event_handler.py:117
+#: event_handlers/giant_event_handler.py:116
+#, python-brace-format
 msgid "Switching DragScript from {old_ds_name} to {new_ds_name}."
 msgstr "DragScript 从 {old_ds_name} 切换至 {new_ds_name}。"
 
-#: event_handlers/giant_event_handler.py:126
+#: event_handlers/giant_event_handler.py:125
+#, python-brace-format
 msgid "Sequence {seq_name} finished."
 msgstr "拍摄序列 {seq_name} 结束。"
 
-#: event_handlers/giant_event_handler.py:129
+#: event_handlers/giant_event_handler.py:128
+#, python-brace-format
 msgid "Sequence {seq_name} started."
 msgstr "拍摄序列 {seq_name} 开始。"
 
-#: event_handlers/giant_event_handler.py:132
+#: event_handlers/giant_event_handler.py:131
+#, python-brace-format
 msgid "Switching Sequence from {old_seq_name} to {new_seq_name}."
 msgstr "拍摄序列从 {old_seq_name} 切换至 {new_seq_name}。"
 
-#: event_handlers/giant_event_handler.py:147
+#: event_handlers/giant_event_handler.py:146
+#, python-brace-format
 msgid "Auto focusing failed with reason: {err_msg}"
 msgstr "自动对焦发生错误： {err_msg}。"
 
 #: event_handlers/giant_event_handler.py:166
+#, python-brace-format
 msgid ""
 "AutoFocusing for filter {filter_name} succeeded with position {position}, "
 "HFD: {hfd:.2f}"
 msgstr "通道 {filter_name} 自动对焦完成 @{position}， HFD：{hfd:.2f}。"
 
 #: event_handlers/giant_event_handler.py:181
+#, python-brace-format
 msgid ""
 "Exposure of {sequence_target} for {expo}sec using {filter_name} filter. HFD: "
 "{hfd}, StarIndex: {star_index}"
@@ -246,8 +265,13 @@ msgstr ""
 "StarIndex：{star_index}。"
 
 #: event_handlers/misc_event_handler.py:30
+#, python-brace-format
 msgid "Connected to <b>{host_name}({url})</b> [{version}]."
 msgstr "已经连接到 <b>{host_name}({url})</b> [{version}]。"
+
+#: voyager_client.py:37
+msgid "Not planning to take over the console"
+msgstr "无意接管控制台"
 
 #~ msgid "Something is clearly wrong with the config!"
 #~ msgstr "配置明显出了问题！！"
