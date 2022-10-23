@@ -127,7 +127,7 @@ class ForecastPanel:
         forecast_table.add_column(style='bold')
 
         if not self.current_service:
-            forecast_table.add_row(Text(_('Unable to execute ClearDarkSky forecast service'),
+            forecast_table.add_row(Text(_('Unable to execute OpenWeather forecast service'),
                                         style=RichTextStylesEnum.CRITICAL.value))
         else:
             length = min(len(self.current_service.forecast), 12)
@@ -254,7 +254,7 @@ class ForecastPanel:
             table.add_row(f'{observation.moon_phase_emoji} {observation.moon_phase * 100:0.0f}%',
                           _('R: {}').format(readable_time(observation.moonrise_localtime)),
                           _('S: {}').format(readable_time(observation.moonset_localtime)),
-                          f'Alt: {observation.moon_altitude:.1f}°',
+                          _(f'Alt: {observation.moon_altitude:.1f}°'),
                           f'🌙 {separation.real / math.pi * 180:.1f}° 🔭')
             # Twilight
             table.add_row(_('Twilight'), f'{readable_time(observation.astro_twilight_start_localtime)}',

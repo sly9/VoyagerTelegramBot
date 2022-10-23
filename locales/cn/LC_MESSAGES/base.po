@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VoyagerBot\n"
-"POT-Creation-Date: 2022-10-22 18:49-0700\n"
-"PO-Revision-Date: 2022-10-22 18:53-0700\n"
+"POT-Creation-Date: 2022-10-22 19:07-0700\n"
+"PO-Revision-Date: 2022-10-22 19:10-0700\n"
 "Last-Translator: Kun Wang <mu.astro.4512@gmail.com>\n"
 "Language-Team: VoyagerBot <mu.astro.4512@gmail.com>\n"
 "Language: zh_CN\n"
@@ -16,10 +16,10 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: pygettext.py 1.5\n"
 "X-Generator: Poedit 3.2\n"
+"X-Poedit-Basepath: ../..\n"
+"X-Poedit-SearchPath-0: .\n"
 
 #: bot.py:110
-#, fuzzy
-#| msgid "Received KeyboardInterrupt, quit gracefully"
 msgid "Received KeyboardInterrupt, quit gracefully."
 msgstr "收到键盘打断，优雅退出"
 
@@ -103,10 +103,9 @@ msgid "2021-2022. Liuyi and Kun in California."
 msgstr "2021-2022。Liuyi 和 Kun 在加利福尼亚打造。"
 
 #: destination/rich_console/forecast_panel.py:75
-#: destination/rich_console/forecast_panel.py:130
 #: destination/rich_console/forecast_panel.py:215
 msgid "Unable to execute ClearDarkSky forecast service"
-msgstr "无法运行ClearDarkSky天气预报服务"
+msgstr "无法运行 ClearDarkSky 天气预报服务"
 
 #: destination/rich_console/forecast_panel.py:83
 #: destination/rich_console/forecast_panel.py:141
@@ -133,6 +132,10 @@ msgstr "风速"
 #: destination/rich_console/forecast_panel.py:88
 msgid "Temp"
 msgstr "温度"
+
+#: destination/rich_console/forecast_panel.py:130
+msgid "Unable to execute OpenWeather forecast service"
+msgstr "无法运行 OpenWeather 预报服务"
 
 #: destination/rich_console/forecast_panel.py:142
 msgid "Temp."
@@ -172,6 +175,11 @@ msgstr "落：{}"
 msgid "R: {}"
 msgstr "升：{}"
 
+#: destination/rich_console/forecast_panel.py:257
+#, python-brace-format
+msgid "Alt: {observation.moon_altitude:.1f}°"
+msgstr "高度: {observation.moon_altitude:.1f}°"
+
 #: destination/rich_console/forecast_panel.py:260
 msgid "Twilight"
 msgstr "黄昏"
@@ -190,7 +198,7 @@ msgstr "赤道仪状态"
 msgid ""
 "Status: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}s"
 msgstr ""
-"状态: {status_name}    {elapsed_exposure:0.0f}s / {total_exposure:0.0f}秒"
+"状态: {status_name}    {elapsed_exposure:0.0f}秒 / {total_exposure:0.0f}秒"
 
 #: destination/rich_console/progress_panel.py:35
 #, python-brace-format

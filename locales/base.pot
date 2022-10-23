@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VoyagerBot\n"
-"POT-Creation-Date: 2022-10-22 18:49-0700\n"
+"POT-Creation-Date: 2022-10-22 19:07-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: VoyagerBot <mu.astro.4512@gmail.com>\n"
@@ -104,7 +104,6 @@ msgid "2021-2022. Liuyi and Kun in California."
 msgstr ""
 
 #: destination/rich_console/forecast_panel.py:75
-#: destination/rich_console/forecast_panel.py:130
 #: destination/rich_console/forecast_panel.py:215
 msgid "Unable to execute ClearDarkSky forecast service"
 msgstr ""
@@ -133,6 +132,10 @@ msgstr ""
 
 #: destination/rich_console/forecast_panel.py:88
 msgid "Temp"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:130
+msgid "Unable to execute OpenWeather forecast service"
 msgstr ""
 
 #: destination/rich_console/forecast_panel.py:142
@@ -171,6 +174,11 @@ msgstr ""
 #: destination/rich_console/forecast_panel.py:245
 #: destination/rich_console/forecast_panel.py:255
 msgid "R: {}"
+msgstr ""
+
+#: destination/rich_console/forecast_panel.py:257
+#, python-brace-format
+msgid "Alt: {observation.moon_altitude:.1f}°"
 msgstr ""
 
 #: destination/rich_console/forecast_panel.py:260
