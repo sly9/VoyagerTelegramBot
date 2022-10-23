@@ -15,6 +15,7 @@ from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.shot_running_event_handler import ShotRunningEventHandler
 from event_handlers.system_status_event_handler import SystemStatusEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
+from utils.localization import get_translated_text as _
 
 
 class VoyagerClient:
@@ -33,7 +34,7 @@ class VoyagerClient:
             self.console_manager = RichConsoleManager(config=config)
             self.console_manager.run()
         else:
-            main_console.print('Not planning to take over the console')
+            main_console.print(_('Not planning to take over the console'))
 
         # Event handlers for business logic:
         self.handler_dict = defaultdict(set)
