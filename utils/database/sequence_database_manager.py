@@ -7,6 +7,8 @@ from threading import Thread
 
 from astropy.io import fits
 
+from console import main_console
+
 create_table_sql = '''CREATE TABLE IF NOT EXISTS SEQUENCES (
   target_name text NOT NULL,
   filter text NOT NULL,
@@ -47,8 +49,8 @@ class SequenceDatabaseManager:
             cur = con.cursor()
             cur.execute(create_table_sql)
             con.commit()
-        except Exception as e:
-            print(e)
+        except Exception:
+            main_console.print_exception()
         return con
 
     def scan_sequence_folder(self) -> None:
@@ -96,8 +98,9 @@ class SequenceDatabaseManager:
             cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
                             [(object_name, filter_name, int(exposure), datetime, fit_filename)])
             connection.commit()
-        except Exception as exception:
-            pass
+        except Exception:
+            main_console.print_exception()
+
     def add_fit_file(self, fit_filename: str) -> None:
         thread = Thread(target=self.add_fit_file_impl, args=(fit_filename, self.connection))
         thread.start()
