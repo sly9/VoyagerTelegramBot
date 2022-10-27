@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from datetime import time
+import time
 from os.path import exists
 from pathlib import Path
 from threading import Thread
@@ -99,7 +99,8 @@ class SequenceDatabaseManager:
             cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
                             [(object_name, filter_name, int(exposure), datetime, fit_filename)])
             connection.commit()
-        except Exception:
+        except Exception as exp:
+            print(exp)
             main_console.print_exception()
 
     def add_fit_file(self, fit_filename: str) -> None:
