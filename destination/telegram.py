@@ -77,8 +77,9 @@ class Telegram:
     # To a group, <=20 messages per minute.
     #
     # Limit text message rate to 15 per minute and save 5 more for other types (e.g. image message)
-    @throttle(rate_limit=15, period=60.0)
-    async def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict[str, Any]]:
+    # @throttle(rate_limit=15, period=60.0)
+    # async def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict[str, Any]]:
+    def send_text_message(self, message: str = '', silent: bool = False) -> Tuple[str, Dict[str, Any]]:
         payload = {'chat_id': self.chat_id, 'text': message, 'parse_mode': 'html', 'disable_notification': silent}
         send_text_message_response = requests.post(self.urls['text'], data=payload)
         response_json = json.loads(send_text_message_response.text)
