@@ -1,14 +1,13 @@
-import subprocess
 import os
 import sqlite3
-import time
+import subprocess
 from os.path import exists
 from pathlib import Path
-from threading import Thread
 from platform import uname
+from time import sleep
 
 from astropy.io import fits
-from time import sleep
+
 from console import main_console
 
 create_table_sql = '''CREATE TABLE IF NOT EXISTS SEQUENCES (
@@ -88,7 +87,7 @@ class SequenceDatabaseManager:
                         records)
         self.connection.commit()
 
-    def in_wsl(self)->bool:
+    def in_wsl(self) -> bool:
         return 'microsoft' in str(uname().release).lower()
 
     def translate_path(self, fit_filename: str) -> str:
@@ -98,11 +97,10 @@ class SequenceDatabaseManager:
         else:
             return fit_filename
 
-
     def add_fit_file(self, fit_filename: str) -> None:
         try:
-            sleep(5)
-            hdul = fits.open(fit_filename)
+            sleep(1)
+            hdul = fits.open(self.translate_path(fit_filename))
             headers = hdul[0].header
             object_name = headers['OBJECT']
             filter_name = headers['FILTER']
@@ -134,5 +132,4 @@ if __name__ == '__main__':
     s = SequenceDatabaseManager(sequence_folder_path='Y:\\GoogleDrive\\Images\\Sequences')
     print(s.translate_path('Y:\\GoogleDrive\\Images\\Sequences\\1.txt'))
     # s.scan_sequence_folder()
-    #s.get_accumulated_exposure(object_name='Abell_85')
-
+    # s.get_accumulated_exposure(object_name='Abell_85')
