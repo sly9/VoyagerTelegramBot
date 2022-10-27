@@ -1,9 +1,11 @@
+import subprocess
 import os
 import sqlite3
 import time
 from os.path import exists
 from pathlib import Path
 from threading import Thread
+from platform import uname
 
 from astropy.io import fits
 from time import sleep
@@ -86,7 +88,18 @@ class SequenceDatabaseManager:
                         records)
         self.connection.commit()
 
-    def add_fit_file_impl(self, fit_filename: str, connection) -> None:
+    def in_wsl(self)->bool:
+        return 'microsoft' in str(uname().release).lower()
+
+    def translate_path(self, fit_filename: str) -> str:
+        if self.in_wsl():
+            result = subprocess.run(['wslpath', fit_filename], stdout=subprocess.PIPE)
+            return str(result.stdout)
+        else:
+            return fit_filename
+
+
+    def add_fit_file(self, fit_filename: str) -> None:
         try:
             sleep(5)
             hdul = fits.open(fit_filename)
@@ -95,17 +108,13 @@ class SequenceDatabaseManager:
             filter_name = headers['FILTER']
             exposure = headers['EXPOSURE']
             datetime = headers['DATE-OBS']
-            cur = connection.cursor()
+            cur = self.connection.cursor()
             cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
                             [(object_name, filter_name, int(exposure), datetime, fit_filename)])
-            connection.commit()
+            self.connection.commit()
         except Exception as exp:
             print(exp)
             main_console.print_exception()
-
-    def add_fit_file(self, fit_filename: str) -> None:
-        self.thread = Thread(target=self.add_fit_file_impl, args=(fit_filename, self.connection))
-        self.thread.start()
 
     def get_accumulated_exposure(self, object_name: str) -> dict:
         """
@@ -123,5 +132,7 @@ class SequenceDatabaseManager:
 
 if __name__ == '__main__':
     s = SequenceDatabaseManager(sequence_folder_path='Y:\\GoogleDrive\\Images\\Sequences')
+    print(s.translate_path('Y:\\GoogleDrive\\Images\\Sequences\\1.txt'))
     # s.scan_sequence_folder()
-    s.get_accumulated_exposure(object_name='Abell_85')
+    #s.get_accumulated_exposure(object_name='Abell_85')
+
