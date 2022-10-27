@@ -98,7 +98,7 @@ class RichConsoleManager:
 
         layout['main'].split_row(
             Layout(name='logs', ratio=1),  # general logs
-            Layout(name='device_status', size=24)  # status of all connected devices, etc.
+            Layout(name='device_status', size=28)  # status of all connected devices, etc.
         )
 
         self.layout = layout
