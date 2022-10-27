@@ -1,7 +1,9 @@
 import os
 import sqlite3
+from datetime import time
 from os.path import exists
 from pathlib import Path
+from threading import Thread
 
 from astropy.io import fits
 
@@ -81,20 +83,24 @@ class SequenceDatabaseManager:
                         records)
         self.connection.commit()
 
-    def add_fit_file(self, fit_filename: str) -> None:
+    def add_fit_file_impl(self, fit_filename: str, connection) -> None:
         try:
+            time.sleep(5)
             hdul = fits.open(fit_filename)
             headers = hdul[0].header
             object_name = headers['OBJECT']
             filter_name = headers['FILTER']
             exposure = headers['EXPOSURE']
             datetime = headers['DATE-OBS']
-            cur = self.connection.cursor()
+            cur = connection.cursor()
             cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
                             [(object_name, filter_name, int(exposure), datetime, fit_filename)])
-            self.connection.commit()
+            connection.commit()
         except Exception as exception:
             pass
+    def add_fit_file(self, fit_filename: str) -> None:
+        thread = Thread(target=self.add_fit_file_impl, args=(fit_filename, self.connection))
+        thread.start()
 
     def get_accumulated_exposure(self, object_name: str) -> dict:
         """
