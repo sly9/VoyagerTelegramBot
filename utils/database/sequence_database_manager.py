@@ -93,7 +93,7 @@ class SequenceDatabaseManager:
     def translate_path(self, fit_filename: str) -> str:
         if self.in_wsl():
             result = subprocess.run(['wslpath', fit_filename], stdout=subprocess.PIPE)
-            return str(result.stdout.readline())
+            return str(result.stdout.decode('utf-8').strip())
         else:
             return fit_filename
 
