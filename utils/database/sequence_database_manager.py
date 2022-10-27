@@ -6,7 +6,7 @@ from pathlib import Path
 from threading import Thread
 
 from astropy.io import fits
-
+from time import sleep
 from console import main_console
 
 create_table_sql = '''CREATE TABLE IF NOT EXISTS SEQUENCES (
@@ -88,7 +88,7 @@ class SequenceDatabaseManager:
 
     def add_fit_file_impl(self, fit_filename: str, connection) -> None:
         try:
-            time.sleep(5)
+            sleep(5)
             hdul = fits.open(fit_filename)
             headers = hdul[0].header
             object_name = headers['OBJECT']
