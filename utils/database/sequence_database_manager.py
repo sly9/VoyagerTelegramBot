@@ -28,6 +28,7 @@ class SequenceDatabaseManager:
         """
         self.database_filename = database_filename
         self.sequence_folder_path = sequence_folder_path
+        self.thread = None
         if not exists(database_filename):
             Path(os.path.dirname(database_filename)).mkdir(parents=True, exist_ok=True)
             self.connection = self.create_database()
@@ -102,8 +103,8 @@ class SequenceDatabaseManager:
             main_console.print_exception()
 
     def add_fit_file(self, fit_filename: str) -> None:
-        thread = Thread(target=self.add_fit_file_impl, args=(fit_filename, self.connection))
-        thread.start()
+        self.thread = Thread(target=self.add_fit_file_impl, args=(fit_filename, self.connection))
+        self.thread.start()
 
     def get_accumulated_exposure(self, object_name: str) -> dict:
         """
