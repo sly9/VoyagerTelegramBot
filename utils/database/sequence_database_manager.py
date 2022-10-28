@@ -4,6 +4,7 @@ import subprocess
 from os.path import exists
 from pathlib import Path
 from platform import uname
+from threading import Thread
 from time import sleep
 
 from astropy.io import fits
@@ -98,8 +99,12 @@ class SequenceDatabaseManager:
             return fit_filename
 
     def add_fit_file(self, fit_filename: str) -> None:
+        self.thread = Thread(target=self.add_fit_file_impl(), args=(fit_filename))
+        self.thread.start()
+
+    def add_fit_file_impl(self, fit_filename: str) -> None:
         try:
-            sleep(1)
+            sleep(10)
             hdul = fits.open(self.translate_path(fit_filename))
             headers = hdul[0].header
             object_name = headers['OBJECT']
