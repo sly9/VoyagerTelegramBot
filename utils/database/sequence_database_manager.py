@@ -48,7 +48,7 @@ class SequenceDatabaseManager:
         :return: None
         """
         try:
-            con = sqlite3.connect(self.database_filename)
+            con = sqlite3.connect(self.database_filename, check_same_thread=False)
             cur = con.cursor()
             cur.execute(create_table_sql)
             con.commit()
@@ -79,7 +79,6 @@ class SequenceDatabaseManager:
                     print(len(path) * '---', file)
                     print(len(path) * '    ', object_name, filter_name, exposure, datetime)
                     records.append((object_name, filter_name, int(exposure), datetime, full_path))
-                    id = id + 1
                 except Exception as exception:
                     pass
         cur = self.connection.cursor()
@@ -99,14 +98,19 @@ class SequenceDatabaseManager:
             return fit_filename
 
     def add_fit_file(self, fit_filename: str) -> None:
-        self.thread = Thread(target=self.add_fit_file_impl(), args=(fit_filename))
+        self.thread = Thread(target=self.add_fit_file_impl, args=[fit_filename])
         self.thread.start()
 
     def add_fit_file_impl(self, fit_filename: str) -> None:
         try:
-            sleep(10)
+            # Wait for extra 10 secs for the file to be fully saved and updated.
+            # Or.. maybe not necessary
+            # sleep(10)
             hdul = fits.open(self.translate_path(fit_filename))
             headers = hdul[0].header
+            if 'OBJECT' not in headers:
+                # not the kind of exposure we care about..
+                return
             object_name = headers['OBJECT']
             filter_name = headers['FILTER']
             exposure = headers['EXPOSURE']
@@ -116,7 +120,7 @@ class SequenceDatabaseManager:
                             [(object_name, filter_name, int(exposure), datetime, fit_filename)])
             self.connection.commit()
         except Exception as exp:
-            print(exp)
+            print(exp, fit_filename)
             main_console.print_exception()
 
     def get_accumulated_exposure(self, object_name: str) -> dict:
