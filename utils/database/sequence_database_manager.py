@@ -37,7 +37,7 @@ class SequenceDatabaseManager:
             if sequence_folder_path:
                 self.scan_sequence_folder()
         else:
-            self.connection = sqlite3.connect(database_filename)
+            self.connection = sqlite3.connect(database_filename, check_same_thread=False)
 
     def __del__(self):
         self.connection.close()
