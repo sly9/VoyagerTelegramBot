@@ -2,12 +2,31 @@
 
 
 block_cipher = None
+##### include mydir in distribution #######
+def extra_datas(mydir):
+    def rec_glob(p, files):
+        import os
+        import glob
+        for d in glob.glob(p):
+            if os.path.isfile(d):
+                files.append(d)
+            rec_glob("%s/*" % d, files)
+    files = []
+    rec_glob("%s/*" % mydir, files)
+    extra_datas = []
+    for f in files:
+        extra_datas.append((f, f, 'DATA'))
+    print('asdfasdf')
+    print(extra_datas)
+    return extra_datas
+###########################################
 
+# append the 'data' dir
 
 a = Analysis(['bot.py'],
              pathex=['./'],
              binaries=[],
-             datas=[('config.yml.example','.'),('i18n/*.yml','i18n')],
+             datas=[('config.yml.example','.')],
              hiddenimports=[],
              hookspath=[],
              hooksconfig={},
@@ -17,6 +36,10 @@ a = Analysis(['bot.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
+a.datas += Tree('./locales', prefix='locales')
+
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
