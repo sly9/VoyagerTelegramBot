@@ -45,14 +45,14 @@ notified_log_types: [ WARNING, CRITICAL, EMERGENCY ]
 
 ### Software
 voyager_setting:
-  domain: <voyager_url>  # Domain or IP for remote Voyager Server
-  port: <voyager_port>  # port of remote Voyager Server
-  username: <user_name>
-  password: <password>
+  domain: 127.0.0.1  # Domain or IP for remote Voyager Server
+  port: 5950  # port of remote Voyager Server
+  username:
+  password:
 telegram_setting:
-  bot_token: <telegram_token>
-  chat_id: <chat_id>
-  image_chat_id: <image_chat_id>  # This chat id is designated for images and statistics charts, could be the same with 'chat_id'
+  bot_token: 'ReplaceMeWithYourBotToken. Default value would not work.'
+  chat_id: 1234567
+  image_chat_id: 123456789  # This chat id is designated for images and statistics charts, could be the same with 'chat_id'
 
 ### Miscellaneous
 # The timezone of your observatory -- not necessary the computer running this bot. Valid timezone names can be found here:

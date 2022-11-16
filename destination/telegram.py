@@ -21,7 +21,7 @@ class Telegram:
         self.config = config
         self.token = self.config.telegram_setting.bot_token
         self.chat_id = self.config.telegram_setting.chat_id
-        self.image_chat_id = self.config.telegram_setting.image_chat_id
+        self.image_chat_id = self.config.telegram_setting.image_chat_id or self.chat_id
 
         self.urls = {
             'text': f'https://api.telegram.org/bot{self.token}/sendMessage',
