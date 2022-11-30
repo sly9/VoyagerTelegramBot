@@ -79,7 +79,9 @@ class SequenceDatabaseManager:
                     print(len(path) * '---', file)
                     print(len(path) * '    ', object_name, filter_name, exposure, datetime)
                     records.append((object_name, filter_name, int(exposure), datetime, full_path))
-                except Exception as exception:
+                except FileNotFoundError:
+                    pass
+                except Exception as exp:
                     pass
         cur = self.connection.cursor()
         print(records)
@@ -119,6 +121,8 @@ class SequenceDatabaseManager:
             cur.executemany('REPLACE INTO SEQUENCES (target_name, filter, exposure, date, filepath) VALUES(?,?,?,?,?);',
                             [(object_name, filter_name, int(exposure), datetime, fit_filename)])
             self.connection.commit()
+        except FileNotFoundError:
+            pass
         except Exception as exp:
             print(exp, fit_filename)
             main_console.print_exception()

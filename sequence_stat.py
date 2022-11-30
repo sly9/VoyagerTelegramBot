@@ -104,9 +104,11 @@ class StatPlotter:
         hfd_values = list()
         dot_colors = list()
         star_indices = list()
+        seeing_values = list()
         for exposure_info in sequence_stat.exposure_info_list:
             hfd_values.append(exposure_info.hfd)
             star_indices.append(exposure_info.star_index)
+            seeing_values.append(exposure_info.seeing)
             if exposure_info.filter_name in self.filter_meta:
                 color = self.filter_meta[exposure_info.filter_name]['color']
             else:
@@ -126,6 +128,10 @@ class StatPlotter:
                 focus_colors.append(focus_result.filter_color)
                 focus_index.append(focus_result.recommended_index)
             ax.scatter(focus_index, focus_hfd_value, c=focus_colors, s=1000, zorder=2)
+
+        # Seeing results:
+        ax.scatter(img_ids, seeing_values, c=dot_colors, s=500, zorder=2)
+        ax.plot(img_ids, seeing_values, color='#333333', linewidth=10, zorder=1)
 
         # hfd and star index
         ax.scatter(img_ids, hfd_values, c=dot_colors, s=500, zorder=2)

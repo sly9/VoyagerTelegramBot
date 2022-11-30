@@ -56,6 +56,6 @@ class DummyDebugger:
 
 if __name__ == "__main__":
     dd = DummyDebugger()
-    dd.load_messages('Y:/GoogleDrive/Images/logs/2022_10_03__voyager_bot_log.txt')
+    dd.load_messages('D:/tmp/logs/2022_10_19_voyager_bot_log.txt')
     dd.dummy_send()
     dd.good_night()

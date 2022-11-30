@@ -18,6 +18,9 @@ from utils.localization import get_translated_text as _
 
 
 # noinspection SpellCheckingInspection
+from utils.seeing_util import seeing
+
+
 class GiantEventHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)
@@ -194,7 +197,7 @@ class GiantEventHandler(VoyagerEventHandler):
         if should_send_image:
             # new stat code
             exposure = ExposureInfo(filter_name=filter_name, exposure_time=expo, hfd=hfd, star_index=star_index,
-                                    timestamp=timestamp, sequence_target=sequence_target)
+                                    timestamp=timestamp, sequence_target=sequence_target, seeing=seeing())
             self.add_exposure_stats(exposure=exposure, sequence_name=self.running_seq)
             # with PINNING and UNPINNING implemented, we can safely report stats for all images
             self.report_stats_for_current_sequence()
