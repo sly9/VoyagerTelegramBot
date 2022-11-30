@@ -16,7 +16,7 @@ def seeing():
     stream.close()
     pixels = image.load()
 
-    result_x, result_y = None, None
+    result_x, result_y = None, 320
     for x in range(760, 40, -1):
         if not result_x:
             for y in range(45, 320):
@@ -28,4 +28,5 @@ def seeing():
     # 320 => 0
     # 40 => 7
     image.close()
+
     return (320 - result_y) / (320 - 40) * 7
