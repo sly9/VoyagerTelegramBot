@@ -130,18 +130,18 @@ class StatPlotter:
             ax.scatter(focus_index, focus_hfd_value, c=focus_colors, s=1000, zorder=2)
 
         # Seeing results:
-        ax.scatter(img_ids, seeing_values, c=dot_colors, s=500, zorder=2)
-        ax.plot(img_ids, seeing_values, color='#333333', linewidth=10, zorder=1)
+        ax.plot(img_ids, seeing_values, color='#888', linewidth=5, zorder=1)
+        ax.scatter(img_ids, seeing_values, c=dot_colors, s=500, zorder=1)
 
         # hfd and star index
-        ax.scatter(img_ids, hfd_values, c=dot_colors, s=500, zorder=2)
         ax.plot(img_ids, hfd_values, color='#FF9800', linewidth=10, zorder=1)
+        ax.scatter(img_ids, hfd_values, c=dot_colors, s=500, zorder=2)
         ax.tick_params(axis='y', labelcolor='#FFB74D')
         ax.set_ylabel('HFD', color='#FFB74D')
 
         secondary_ax = ax.twinx()
-        secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500, zorder=2)
         secondary_ax.plot(img_ids, star_indices, color='#9C27B0', linewidth=10, zorder=1)
+        secondary_ax.scatter(img_ids, star_indices, c=dot_colors, s=500, zorder=2)
         secondary_ax.tick_params(axis='y', labelcolor='#BA68C8')
         secondary_ax.set_ylabel('Star Index', color='#BA68C8')
 
