@@ -79,3 +79,4 @@ observing_condition_config:
   open_weather_api_key: <open_weather_api_key>  # Sign up your own free API key for OpenWeather API at https://home.openweathermap.org/users/sign_up
   latitude: 10
   longitude: 10
+  send_report_when_emergency_status_changed: False

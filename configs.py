@@ -22,15 +22,19 @@ def resource_path(relative_path):
 
 
 class ConfigBuilder:
-    def __init__(self, config_filename: str = 'config.yml'):
+    def __init__(self, config_filename: str = 'config.yml', config_template_filename: str=None):
         self.already_built = False
         self.config_filename = config_filename
+        self.config_template_filename = config_template_filename
 
         self.config_yaml = None
 
     def validate(self):
         config_yml_path = os.path.abspath(self.config_filename)
         config_yml_example_path = resource_path('config.yml.example')
+        if self.config_template_filename:
+            config_yml_example_path =  os.path.abspath(self.config_template_filename)
+
         if not exists(config_yml_path):
             w = Wizard()
             w.go()

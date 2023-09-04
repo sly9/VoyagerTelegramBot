@@ -15,6 +15,7 @@ from event_handlers.misc_event_handler import MiscellaneousEventHandler
 from event_handlers.shot_running_event_handler import ShotRunningEventHandler
 from event_handlers.system_status_event_handler import SystemStatusEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
+from event_handlers.weather_safety_event_handler import WeatherSafetyHandler
 from utils.localization import get_translated_text as _
 
 
@@ -43,6 +44,7 @@ class VoyagerClient:
         self.register_event_handler(MiscellaneousEventHandler(config=config))
         self.register_event_handler(GiantEventHandler(config=config))
         self.register_event_handler(LogEventHandler(config=config))
+        self.register_event_handler(WeatherSafetyHandler(config=config))
         self.register_event_handler(BotComputerStatusEventHandler(config=config))
         self.register_event_handler(SystemStatusEventHandler(config=config))
         self.register_event_handler(ShotRunningEventHandler(config=config))
