@@ -10,4 +10,7 @@ class WeatherSafety:
     wind: str = '' # CALM, WINDY, VERY_WINDY
     rain: str = ''# RAIN, DRY
     light: str = '' # DARK, LIGHT, VERY_LIGHT
-    read: str = '' # OK, OLD, TIMEOUT
+    read: str = '' # OK, OLD, TIMEOUT, n.d. (???)
+    weather_station_connected: bool = True
+    safe_monitor_connected: bool = True
+    safe_monitor_status: str = ''
