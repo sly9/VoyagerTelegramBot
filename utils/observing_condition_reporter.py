@@ -8,6 +8,10 @@ class ObservingConditionReporter:
         self.ws = ws
 
     def report(self):
+        '''
+        This method will be preparing a nice looking image, containing running status, security camera, all sky camera
+        :return:
+        '''
         ws = self.ws
         if ws.old_status != ws.status:
             status_change_str = ''
