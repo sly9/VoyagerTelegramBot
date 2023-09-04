@@ -2,18 +2,21 @@ from typing import Dict
 
 from data_structure.weather_safety import WeatherSafety
 from event_handlers.voyager_event_handler import VoyagerEventHandler
-
+import dataclasses
 
 # This is just one of the event handlers which are interested in log events. You can write more
+from utils.observing_condition_reporter import ObservingConditionReporter
+
+
 class WeatherSafetyHandler(VoyagerEventHandler):
     def __init__(self, config):
         super().__init__(config=config)
         # it could be either resume or suspend or exit
         self.emergency_status = 'RESUME'
-        self.enabled = not self.config.observing_condition_config.send_report_when_emergency_status_changed
+        self.enabled = self.config.observing_condition_config.send_report_when_emergency_status_changed
 
         # latest WeatherSafety data class from 'WeatherAndSafetyMonitorData' event
-        self.ws_wasmd = None
+        self.ws_wasmd = WeatherSafety()
         # latest WeatherSafety data class from 'LogEvent'
         self.ws_log_event = None
 
@@ -35,6 +38,7 @@ class WeatherSafetyHandler(VoyagerEventHandler):
             # 9 means emergency.
             try:
                 self.ws_log_event = self.process_emergency_string(message['Text'])
+                self.send_observing_condition_report()
             except:
                 print("Failed to parse: " + message['Text'])
 
@@ -61,8 +65,8 @@ class WeatherSafetyHandler(VoyagerEventHandler):
         if new_status != self.emergency_status:
             self.emergency_status = new_status
         ws = self.parse_detail_string(detail_string, old_status, new_status)
-        if ws.old_status != ws.status and ws.status != 'RESUME':
-            print(ws)
+        # if ws.old_status != ws.status and ws.status != 'RESUME':
+        #     print(ws)
         return ws
 
     def parse_detail_string(self, detail_string: str = '', old_status: str = '', new_status: str = ''):
@@ -71,11 +75,16 @@ class WeatherSafetyHandler(VoyagerEventHandler):
         ws.old_status = old_status
         ws.status = new_status
         ws.source = self.parse_source(detail_string)
-
+        if 'S' in ws.source: # this is a guess..
+            ws.roof = 'CLOSED'
+        else:
+            ws.roof = 'OPEN'
         self.parse_weather_string(detail_string, ws)
+        if new_status == 'RESUME':
+            ws.read = 'OK'
         return ws
 
-    def parse_source(self, detail_string: str = '', ws: WeatherSafety = None):
+    def parse_source(self, detail_string: str = ''):
         '''
 
         :param detail_string:
@@ -105,6 +114,23 @@ class WeatherSafetyHandler(VoyagerEventHandler):
         ws.rain = parts[2]
         ws.light = parts[3]
         ws.read = parts[5]
+
+    def send_observing_condition_report(self):
+        # merge two ws
+        ws = dataclasses.replace(self.ws_log_event)
+        if not ws.cloud:
+            ws.cloud = self.ws_wasmd.cloud
+        if not ws.wind:
+            ws.wind = self.ws_wasmd.wind
+        if not ws.rain:
+            ws.rain = self.ws_wasmd.rain
+        if not ws.light:
+            ws.light = self.ws_wasmd.light
+        ws.weather_station_connected = self.ws_wasmd.weather_station_connected
+        ws.safe_monitor_connected = self.ws_wasmd.safe_monitor_connected
+        ws.safe_monitor_status = self.ws_wasmd.safe_monitor_status
+        reporter = ObservingConditionReporter(ws=ws)
+        reporter.report()
 
 
 if __name__ == '__main__':

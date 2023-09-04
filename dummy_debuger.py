@@ -33,6 +33,7 @@ class DummyDebugger:
         config.console_config.console_type = 'PLAIN'
         config.html_report_enabled = True
         config.should_dump_log = False
+        config.observing_condition_config.send_report_when_emergency_status_changed=True
 
         self.connection_manager = VoyagerConnectionManager(config=config)
 
