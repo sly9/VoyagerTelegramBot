@@ -49,6 +49,7 @@ voyager_setting:
   port: 5950  # port of remote Voyager Server
   username:
   password:
+  drag_script:
 telegram_setting:
   bot_token: 'ReplaceMeWithYourBotToken. Default value would not work.'
   chat_id: 1234567

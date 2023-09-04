@@ -16,6 +16,7 @@ from event_handlers.shot_running_event_handler import ShotRunningEventHandler
 from event_handlers.system_status_event_handler import SystemStatusEventHandler
 from event_handlers.voyager_event_handler import VoyagerEventHandler
 from event_handlers.weather_safety_event_handler import WeatherSafetyHandler
+from event_handlers.remote_action_handler import RemoteActionHandler
 from utils.localization import get_translated_text as _
 
 
@@ -48,6 +49,7 @@ class VoyagerClient:
         self.register_event_handler(BotComputerStatusEventHandler(config=config))
         self.register_event_handler(SystemStatusEventHandler(config=config))
         self.register_event_handler(ShotRunningEventHandler(config=config))
+        self.register_event_handler(RemoteActionHandler(config=config))
 
     def parse_message(self, event_name: str, message: Dict):
         if event_name in self.handler_dict:

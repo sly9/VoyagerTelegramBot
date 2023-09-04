@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-# Next id: 17
+# Next id: 18
 class BotEvent(Enum):
     # These telegram specific events should be merged into more 'logic' oriented names
     SEND_TEXT_MESSAGE = 1
@@ -23,3 +23,6 @@ class BotEvent(Enum):
     # APPEND_ERROR_LOG is not used anymore, don't use it.
     APPEND_ERROR_LOG = 12
     APPEND_LOG = 13
+
+    # DRAG_SCRIPT
+    RECEIVE_DRAG_SCRIPT_LIST = 17

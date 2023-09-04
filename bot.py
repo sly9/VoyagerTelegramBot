@@ -24,6 +24,9 @@ from event_names import BotEvent
 from log_writer import LogWriter
 from utils.localization import get_translated_text as _, select_locale
 from voyager_client import VoyagerClient
+from commands.voyager_command import VoyagerCommand
+from commands.vc_list_drag_script import VCListDragScript
+from commands.vc_execute_drag_script import VCExecuteDragScript
 
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 pretty.install()
@@ -40,6 +43,7 @@ class VoyagerConnectionManager:
     def __init__(self, config=None):
         self.config = config
         self.voyager_settings = self.config.voyager_setting
+        self.drag_script = None
 
         select_locale(config.language)
 
@@ -56,6 +60,7 @@ class VoyagerConnectionManager:
         self.should_exit_keep_alive_thread = False
 
         self.command_uid_to_method_name_dict = {}
+        ee.on(BotEvent.RECEIVE_DRAG_SCRIPT_LIST.name, self.on_ds_list_received)
 
     def send_command(self, command_name, params):
         command_uuid = str(uuid.uuid1())
@@ -68,6 +73,16 @@ class VoyagerConnectionManager:
         self.command_uid_to_method_name_dict[command_uuid] = command_name
         self.next_id = self.next_id + 1
         self.command_queue.append(command)
+        self.try_to_process_next_command()
+
+    def send_remote_command(self, command: VoyagerCommand = None):
+        if not command:
+            return
+
+        self.command_uid_to_method_name_dict[command.params['UID']] = command.method
+
+        self.next_id += 1
+        self.command_queue.append(command.get_command_dict())
         self.try_to_process_next_command()
 
     def try_to_process_next_command(self):
@@ -145,12 +160,24 @@ class VoyagerConnectionManager:
         self.send_command('RemoteSetDashboardMode', {'IsOn': True})
         self.send_command('RemoteSetLogEvent', {'IsOn': True, 'Level': 0})
         self.send_command('RemoteGetFilterConfiguration', {})
+
+        if hasattr(self.voyager_settings, 'drag_script'):
+            self.drag_script = self.voyager_settings.drag_script
+        command = VCListDragScript.get_command(command_id=self.next_id)
+        self.send_remote_command(command=command)
+
         if self.keep_alive_thread is None:
             self.should_exit_keep_alive_thread = False
             thread = threading.Thread(target=self.keep_alive_routine)
             thread.daemon = True
             self.keep_alive_thread = thread
             thread.start()
+
+    def on_ds_list_received(self, drag_script_list):
+        if not self.drag_script or not drag_script_list or self.drag_script not in drag_script_list:
+            return
+        command = VCExecuteDragScript.get_command(command_id=self.next_id, drag_script_file=self.drag_script)
+        self.send_remote_command(command=command)
 
     def run_forever(self):
         self.ws = websocket.WebSocketApp(
